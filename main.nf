@@ -9,6 +9,7 @@ if (params.workflow == "wgs"){
 }
 if (params.workflow == "stitch"){
   include {STITCH} from './workflows/stitch'
+}
 
 // Conditional to kick off appropriate workflow
 workflow{
