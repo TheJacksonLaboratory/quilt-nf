@@ -14,6 +14,7 @@ nextflow.enable.dsl=2
 // 7) Collect .bam filenames in its own list
 // 8) Generate other required input files for STITCH
 // 9) Run STITCH
+// 10) Aggregate summary statistics
 
 // import modules
 include {help} from "${projectDir}/bin/help/wgs.nf"
@@ -28,6 +29,7 @@ include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
+include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 
 // help if needed
 if (params.help){
@@ -65,7 +67,8 @@ if (params.concat_lanes){
 read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder} Matching Pattern: ${params.pattern}"}
 
 // main workflow
-workflow WGS {
+workflow STITCH {
+
   // Step 0: Concatenate Fastq files if required. 
   if (params.concat_lanes){
     if (params.read_type == 'PE'){
@@ -76,27 +79,37 @@ workflow WGS {
         read_ch = CONCATENATE_READS_SE.out.concat_fastq
     }
   }
+
   // Calculate quality statistics for sequencing
   QUALITY_STATISTICS(read_ch)
 
   // Generate read groups
   READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")
-  bwa_mem_mapping = QUALITY_STATISTICS.out.trimmed_fastq.join(READ_GROUPS.out.read_groups)
+  bwa_mem_mapping = QUALITY_STATISTICS.out.trimmed_fastq
+                    .join(READ_GROUPS.out.read_groups)
 
   // BWA-mem alignment
   BWA_MEM(bwa_mem_mapping)
 
   // Sort SAM files
   PICARD_SORTSAM(BWA_MEM.out.sam)
+
   // Mark duplicates and gather alignment summary information
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
   PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
   PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
-
-  
   // 8) Generate other required input files for STITCH
-  STITCH_INPUT(...)
+  // STITCH_INPUT(...)
   // 9) Run STITCH 
-  STITCH_RUN(...{params_nfounders},{params_downsample}, etc)
+  // STITCH_RUN(...{params_nfounders},{params_downsample}, etc)
+
+  agg_stats = QUALITY_STATISTICS.out.quality_stats
+              .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
+              .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
+              .join(PICARD_COLLECTWGSMETRICS.out.txt)
+
+  // may replace with multiqc
+  AGGREGATE_STATS(agg_stats)
+  }
