@@ -18,7 +18,7 @@ nextflow.enable.dsl=2
 
 // import modules
 include {help} from "${projectDir}/bin/help/wgs.nf"
-include {param_log} from "${projectDir}/bin/log/wgs.nf"
+include {param_log} from "${projectDir}/bin/log/stitch.nf"
 include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
