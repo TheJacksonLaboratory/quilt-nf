@@ -100,10 +100,10 @@ workflow STITCH {
   PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
-  bams = PICARD_MARKDUPLICATES.out.dedup_bam
-  bams
-      .last()
-      .view()
+  // bams = PICARD_MARKDUPLICATES.out.dedup_bam
+  // bams.flatten().filter(~/.bam/).view()
+  bams = Channel.fromPath("${params.pubdir}/*/*.bam")
+  bams.view()
 
   // 8) Generate other required input files for STITCH
   // STITCH_INPUT(...)
