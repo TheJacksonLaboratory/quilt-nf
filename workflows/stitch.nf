@@ -101,8 +101,10 @@ workflow STITCH {
 
   // 7) Collect .bam filenames in its own list
   bams = PICARD_MARKDUPLICATES.out.dedup_bam
-  bams.view()
-  
+  bams
+      .last()
+      .view()
+
   // 8) Generate other required input files for STITCH
   // STITCH_INPUT(...)
   // 9) Run STITCH 
