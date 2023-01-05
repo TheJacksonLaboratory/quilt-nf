@@ -15,11 +15,11 @@ module use --append /projects/omics_share/meta/modules
 module load nextflow
 
 # RUN PIPELINE
-nextflow ../main.nf \
+nextflow main.nf \
 --workflow stitch \
 -profile sumner \
 --sample_folder '/fastscratch/widmas/CC_fastqs' \
 --gen_org mouse \
 --pubdir '/fastscratch/STITCH_outputDir' \
--w '/fastscratch/STITCH_outputDir/work'
+-w '/fastscratch/STITCH_outputDir/work' \
 --comment "This script will run haplotype inference using STITCH on mouse samples using default mm10"
