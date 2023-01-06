@@ -22,7 +22,7 @@ singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -a ${fastqDir}/$
 singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -a ${fastqDir}/${CC062}_R2.fastq.gz > ${fastqDir}/${CC062}_R2.fa
 
 # loop through 20 times and sample 50k reads
-for i in 1:20 ;
+for i in {1..20}
 do
     # subsample CC007 reads
     singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk sample -s20 ${fastqDir}/${CC007}_R1.fa 50000 > ${homeDir}/test/wgs/mouse/CC007-Unc_50k_${i}_R1.fa
@@ -40,8 +40,6 @@ do
     singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk sample -s20 ${fastqDir}/${CC062}_R2.fa 50000 > ${homeDir}/test/wgs/mouse/CC062-Unc_50k_${i}_R2.fa
     singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -F '#' ${homeDir}/test/wgs/mouse/CC062-Unc_50k_${i}_R2.fa > ${homeDir}/test/wgs/mouse/${CC062}_subs${i}_R2.fastq 
     gzip ${homeDir}/test/wgs/mouse/${CC062}_subs${i}_R2.fastq
-
-    
 done
 
 
