@@ -22,4 +22,5 @@ nextflow main.nf \
 --gen_org mouse \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
---comment "This script will run haplotype inference using STITCH on mouse samples using default mm10"
+--comment "This script will run haplotype inference using STITCH on mouse samples using default mm10" \
+-resume
