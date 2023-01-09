@@ -10,12 +10,15 @@ process CREATE_BAMLIST {
   tuple val(bams)
 
   output:
-  tuple val(bamlist), emit: bam_list
+  tuple val('STITCH_bamlist.txt'), emit: bam_list
 
   script:
   log.info "----- Create List of .bam Files for STITCH -----"
 
   """
-  cat ${bams} > STITCH_bamlist.txt
+  for i in ${bams}
+    echo $i > $i.txt
+  done
+  cat *.txt > STITCH_bamlist.txt
   """
 }
