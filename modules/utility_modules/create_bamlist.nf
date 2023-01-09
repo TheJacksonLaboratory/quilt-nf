@@ -4,7 +4,7 @@ process CREATE_BAMLIST {
   memory 15.GB
   time '00:30:00'
 
-  container 'rocker/r-ver:latest'
+  container 'quay.io-jaxcompsci-rstudio-4.2.0'
 
   publishDir "${params.sample_folder}/bams", pattern: "STITCH_bamlist.txt", mode:'copy'
 
