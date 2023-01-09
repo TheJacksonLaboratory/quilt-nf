@@ -4,10 +4,12 @@ process CREATE_BAMLIST {
   memory 15.GB
   time '00:30:00'
 
+  container 'rocker/r-ver:latest'
+
   publishDir "${params.sample_folder}/bams", pattern: "STITCH_bamlist.txt", mode:'copy'
 
   input:
-  tuple val(bams)
+  val(bams)
 
   output:
   path('STITCH_bamlist.txt'), emit: bam_list
@@ -17,5 +19,6 @@ process CREATE_BAMLIST {
 
   """
   echo ${bams} > STITCH_bamlist.txt
+  Rscript --vanilla ${projectDir}/bin/shared/create_bamlist.R
   """
 }
