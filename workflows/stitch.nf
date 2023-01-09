@@ -101,7 +101,7 @@ workflow STITCH {
   PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
-  bams = Channel.fromPath("${params.pubdir}/*/*.bam")
+  bams = Channel.fromPath("${params.sample_folder}/bams/*bam")
   CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
