@@ -30,6 +30,7 @@ include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markdu
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
+include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 
 // help if needed
 if (params.help){
@@ -100,10 +101,8 @@ workflow STITCH {
   PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
-  // bams = PICARD_MARKDUPLICATES.out.dedup_bam
-  // bams.flatten().filter(~/.bam/).view()
   bams = Channel.fromPath("${params.pubdir}/*/*.bam")
-  bams.view()
+  CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
   // STITCH_INPUT(...)
