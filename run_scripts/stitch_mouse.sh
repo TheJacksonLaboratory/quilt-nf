@@ -18,7 +18,7 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder 'test/wgs/mouse' \
+--sample_folder 'test/wgs/mouse/CC_subsampled_fastqs' \
 --gen_org mouse \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \

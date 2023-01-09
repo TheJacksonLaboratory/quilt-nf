@@ -3,7 +3,7 @@
 #SBATCH --job-name=subsample_CC
 #SBATCH -p compute
 #SBATCH -q batch
-#SBATCH -t 01:00:00
+#SBATCH -t 03:00:00
 #SBATCH --mem=2G
 #SBATCH --ntasks=1
 
