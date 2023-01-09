@@ -103,8 +103,9 @@ workflow STITCH {
   // 7) Collect .bam filenames in its own list
   bams = Channel.fromPath("${params.sample_folder}/bams/*bam")
                 .collect()
-                .view()
-  // CREATE_BAMLIST(bams)
+		.groupTuple()
+		.view()
+  CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
   // STITCH_INPUT(...)
