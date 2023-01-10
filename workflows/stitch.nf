@@ -31,6 +31,7 @@ include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/pica
 include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
+include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 
 // help if needed
 if (params.help){
@@ -66,6 +67,8 @@ if (params.concat_lanes){
 
 // if channel is empty give error message and exit
 read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder} Matching Pattern: ${params.pattern}"}
+
+chrs = Channel.of(1..19,'X','Y').view()
 
 // main workflow
 workflow STITCH {
@@ -106,7 +109,7 @@ workflow STITCH {
   CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
-  // STITCH_INPUT(...)
+  CREATE_POSFILE(chrs)
   // 9) Run STITCH 
   // STITCH_RUN(...{params_nfounders},{params_downsample}, etc)
 
