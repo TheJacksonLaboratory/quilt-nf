@@ -17,8 +17,7 @@ process CREATE_POSFILE {
   log.info "----- Generating Position File for: ${chr} -----"
 
   """
-  bcftools query -f '%CHROM %POS %REF %ALT\n' ${params.ref_vcf} | \ 
-  bcftools view --regions ${chr} | \
-  awk '{if($0 !~ /^#/) print "chr"$0; else print $0}' > STITCH_${chr}_pos.txt
+  bcftools view ${params.ref_vcf} --regions ${chr} | bcftools query -f '%CHROM %POS %REF %ALT\n' | awk '{if(\$0 !~ /^#/) print "chr"\$0; else print \$0}'  > STITCH_${chr}_pos.txt
+
   """
 }
