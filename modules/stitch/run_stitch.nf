@@ -2,7 +2,7 @@ process RUN_STITCH {
   tag "$chr"
 
   cpus 1
-  memory 50 GB
+  memory 50.GB
   time '00:30:00'
 
   container 'docker://sjwidmay/lcgbs_hr:stitch'

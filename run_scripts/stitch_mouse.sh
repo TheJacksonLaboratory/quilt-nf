@@ -15,4 +15,4 @@ module use --append /projects/omics_share/meta/modules
 module load nextflow
 
 # RUN PIPELINE
-nextflow main.nf --workflow stitch -profile sumner --sample_folder 'test/wgs/mouse/' --gen_org mouse --pubdir '/fastscratch/STITCH_outputDir' -w '/fastscratch/STITCH_outputDir/work' --nFounders 4 --comment "This script will run haplotype inference using STITCH on test mouse data"
+nextflow main.nf --workflow stitch -profile sumner --sample_folder 'test/wgs/mouse/stitch_test_fastqs/' --gen_org mouse --pubdir '/fastscratch/STITCH_outputDir' -w '/fastscratch/STITCH_outputDir/work' --nFounders 4 --comment "This script will run haplotype inference using STITCH on test mouse data"
