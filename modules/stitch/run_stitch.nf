@@ -1,11 +1,11 @@
 process RUN_STITCH {
   tag "$chr"
 
+  label "STITCH"
+  
   cpus 1
   memory 50.GB
   time '00:30:00'
-
-  container 'docker://sjwidmay/lcgbs_hr:stitch'
   
   input:
   tuple val(chr), file(posfile)
