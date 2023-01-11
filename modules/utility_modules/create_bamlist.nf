@@ -19,6 +19,6 @@ process CREATE_BAMLIST {
 
   """
   echo ${bams} > STITCH_bamlist.txt
-  Rscript --vanilla ${projectDir}/bin/shared/create_bamlist.R
+  Rscript --vanilla ${projectDir}/bin/stitch/create_bamlist.R
   """
 }

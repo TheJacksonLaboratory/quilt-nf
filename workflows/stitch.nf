@@ -32,6 +32,7 @@ include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_col
 include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
+include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
 
 // help if needed
 if (params.help){
@@ -110,8 +111,9 @@ workflow STITCH {
 
   // 8) Generate other required input files for STITCH
   CREATE_POSFILE(chrs)
+
   // 9) Run STITCH 
-  // STITCH_RUN(...{params_nfounders},{params_downsample}, etc)
+  RUN_STITCH(CREATE_POSFILE.out.posfile)
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
