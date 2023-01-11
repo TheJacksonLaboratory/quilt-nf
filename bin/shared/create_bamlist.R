@@ -10,4 +10,6 @@ for(i in 1:nrow(bamlist)){
   bamlist[i,] <- no_comma
 }
 bamlist[,1] <- bamlist[,1][grep(bamlist[,1], pattern = ".bam")]
+bamlist <- bamlist[!duplicated(bamlist[,1]),]
+colnames(bamlist) <- NULL
 write.table(bamlist, file = "STITCH_bamlist.txt", quote = F, row.names = F, col.names = F)
