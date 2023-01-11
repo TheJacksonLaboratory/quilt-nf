@@ -112,8 +112,12 @@ workflow STITCH {
   // 8) Generate other required input files for STITCH
   CREATE_POSFILE(chrs)
 
-  // 9) Run STITCH 
-  RUN_STITCH(CREATE_POSFILE.out.posfile)
+  
+  CREATE_BAMLIST.out.bam_list
+                .join(CREATE_POSFILE.out.posfile)
+                .view()
+  // 9) Run STITCH
+  // RUN_STITCH(CREATE_POSFILE.out.posfile)
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
