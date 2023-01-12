@@ -6,6 +6,10 @@ library(parallel)
 
 # Set arguments
 args <- commandArgs(trailingOnly = TRUE)
+# args <- c("/fastscratch/STITCH_outputDir/work/cc/73ed7fed40b46912004bb84482aa15/STITCH_bamlist.txt",
+#           "/fastscratch/STITCH_outputDir/work/cc/73ed7fed40b46912004bb84482aa15/STITCH_15_pos.txt",
+#           "4",
+#           "15")
 # args[1] = bamlist (from channel)
 # args[2] = mouse_posfile (from channel)
 # args[3] = nFounders
@@ -43,7 +47,7 @@ sample_names_file <- "sample_names.txt"
 # 2) position
 # 3) ref allele
 # 4) alt allele
-mouse_posfile <- "/fastscratch/STITCH_outputDir/work/b7/9f3f7c5a990b6ddc39449bcbb73efd/STITCH_9_pos.txt"
+# mouse_posfile <- "/fastscratch/STITCH_outputDir/work/b7/9f3f7c5a990b6ddc39449bcbb73efd/STITCH_9_pos.txt"
 
 # Read in pos file
 temp_posfile <- read.table(args[2])
@@ -65,7 +69,7 @@ dup_removed_posfile <- "temp_pos.txt"
 
 # Set number of founders
 # This should be a param in nextflow
-mouse_K <- args[3]
+mouse_K <- as.numeric(args[3])
 
 # Number of generations
 # This can be a param in nextflow, but maybe not necessary
@@ -80,4 +84,8 @@ STITCH::STITCH(tempdir = tempdir(),
                posfile = dup_removed_posfile,
                outputdir = paste0(getwd(), "/"),
                sampleNames_file = sample_names_file,
-               K = mouse_K)
+               regionStart = 4000000,
+               regionEnd = 4500000,
+               buffer = 50000,
+               nGen = 20,
+               K = mouse_K, nCores = 16)

@@ -112,9 +112,9 @@ workflow STITCH {
   // 8) Generate other required input files for STITCH
   CREATE_POSFILE(chrs)
 
-  
   stitch_inputs = CREATE_BAMLIST.out.bam_list
-                  .join(CREATE_POSFILE.out.posfile)
+                                .combine(CREATE_POSFILE.out.posfile)
+  
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
 
