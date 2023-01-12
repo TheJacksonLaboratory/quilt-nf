@@ -6,7 +6,8 @@ process RUN_STITCH {
   memory 100.GB
   time '01:00:00'
   
-
+  publishDir "${params.sample_folder}/stitch_vcfs", pattern: "*.vcf.gz", mode:'copy'
+  
   input:
   tuple file(bamlist), val(chr), file(posfile)
 
