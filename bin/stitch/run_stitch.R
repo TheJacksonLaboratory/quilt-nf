@@ -76,7 +76,7 @@ mouse_K <- as.numeric(args[3])
 # mouse_nGen <- args[5]
 
 # Chromosome to be analyzed
-mouse_chr <- paste0("chr",args[4])
+mouse_chr <- paste0(args[4])
 
 STITCH::STITCH(tempdir = tempdir(),
                chr = mouse_chr,
@@ -84,8 +84,6 @@ STITCH::STITCH(tempdir = tempdir(),
                posfile = dup_removed_posfile,
                outputdir = paste0(getwd(), "/"),
                sampleNames_file = sample_names_file,
-               regionStart = 4000000,
-               regionEnd = 4500000,
-               buffer = 50000,
                nGen = 20,
-               K = mouse_K, nCores = 16)
+               K = mouse_K,
+               plotAfterImputation = FALSE)

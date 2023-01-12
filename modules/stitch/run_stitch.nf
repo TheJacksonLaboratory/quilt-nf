@@ -3,11 +3,9 @@ process RUN_STITCH {
   
   label "STITCH"
   
-  cpus 16
-  memory 50.GB
-  time '00:30:00'
+  memory 100.GB
+  time '01:00:00'
   
-  errorStrategy 'ignore'
 
   input:
   tuple file(bamlist), val(chr), file(posfile)
