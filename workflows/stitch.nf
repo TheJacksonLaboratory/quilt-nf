@@ -113,11 +113,10 @@ workflow STITCH {
   CREATE_POSFILE(chrs)
 
   
-  CREATE_BAMLIST.out.bam_list
-                .join(CREATE_POSFILE.out.posfile)
-                .view()
+  stitch_inputs = CREATE_BAMLIST.out.bam_list
+                  .join(CREATE_POSFILE.out.posfile)
   // 9) Run STITCH
-  // RUN_STITCH(CREATE_POSFILE.out.posfile)
+  RUN_STITCH(stitch_inputs)
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)

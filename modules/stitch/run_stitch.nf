@@ -8,7 +8,7 @@ process RUN_STITCH {
   time '00:30:00'
   
   input:
-  tuple val(chr), file(posfile)
+  tuple file(bamlist), val(chr), file(posfile)
 
   output:
   tuple val(chr), file("*.vcf"), emit: stitch_output 

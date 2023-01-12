@@ -6,17 +6,16 @@ library(parallel)
 
 # Set arguments
 args <- commandArgs(trailingOnly = TRUE)
-# args[1] = ${params.sample_folder}
+# args[1] = bamlist (from channel)
 # args[2] = mouse_posfile (from channel)
 # args[3] = nFounders
 # args[4] = chromosome number (from channel)
 # args[5] = generation number if known...hold off on this
 
 # Input files
-mouse_datadir <- file.path(args[1])
 
 # Path to original bamlist
-mouse_bamlist <- file.path(mouse_datadir, "bams/STITCH_bamlist.txt")
+mouse_bamlist <- args[1]
 temp_bamlist <- read.table(mouse_bamlist)
 # mouse_genfile <- paste0(mouse_datadir, "gen.txt")
 
