@@ -53,7 +53,13 @@ sample_names_file <- "sample_names.txt"
 temp_posfile <- read.table(args[2])
 
 # Remove duplicate positions
-temp_posfile <- temp_posfile[!duplicated(temp_posfile$V2),]
+1 <- temp_posfile[!duplicated(temp_posfile$V2),]
+
+# Remove biallelic multinucleotide variants
+SNPs_only <- c(unlist(lapply(strsplit(temp_posfile$V3, ""), function(x) length(x))) == 1)[]
+cat(paste0(length(SNPs_only[SNPs_only==F]), 
+           " multinucleotide variants removed from position file"))
+temp_posfile <- temp_posfile[which(SNPs_only),]
 
 # Write a temporary pos file to be called by STITCH
 write.table(x = temp_posfile, 
