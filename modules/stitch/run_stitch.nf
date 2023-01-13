@@ -12,7 +12,7 @@ process RUN_STITCH {
   tuple file(bamlist), val(chr), file(posfile)
 
   output:
-  tuple val(chr), file("*.vcf"), emit: stitch_output 
+  tuple val(chr), file("*.vcf.gz"), emit: stitch_output 
 
   script:
   log.info "----- Running STITCH on Chromosome ${chr} -----"
