@@ -4,7 +4,7 @@ process RUN_STITCH {
   label "STITCH"
   
   memory 100.GB
-  time '01:00:00'
+  time '10:00:00'
   
   publishDir "${params.sample_folder}/stitch_vcfs", pattern: "*.vcf.gz", mode:'copy'
   

@@ -53,7 +53,7 @@ sample_names_file <- "sample_names.txt"
 temp_posfile <- read.table(args[2])
 
 # Remove duplicate positions
-1 <- temp_posfile[!duplicated(temp_posfile$V2),]
+temp_posfile <- temp_posfile[!duplicated(temp_posfile$V2),]
 
 # Remove biallelic multinucleotide variants
 SNPs_only <- c(unlist(lapply(strsplit(temp_posfile$V3, ""), function(x) length(x))) == 1)[]
