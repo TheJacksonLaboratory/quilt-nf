@@ -27,6 +27,6 @@ do
         do
         singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk sample -s20 ${fastqDir}/${sample}.fa 2000000 > ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fa
         singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -F '#' ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fa > ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fastq
-        gzip ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fastq
+        gzip ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fastq --force
         done
 done
