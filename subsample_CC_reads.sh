@@ -20,13 +20,13 @@ do
     # find the sample name
     # echo $f |  cut -f 1 -d "." | cut -f 5 -d "/"
     sample=$(echo ${f} | cut -f 1 -d "." | cut -f 5 -d "/")
+    singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -a ${f} > ${fastqDir}/${sample}.fa
 
     # subsample CC reads
     for i in {1..20}
         do
-        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -a ${f} > ${fastqDir}/${sample}.fa
-        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk sample -s20 ${fastqDir}/${sample}.fa 2000000 > ${homeDir}/test/wgs/mouse/${sample}_${i}.fa
-        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -F '#' ${homeDir}/test/wgs/mouse/${sample}_${i}.fa > ${homeDir}/test/wgs/mouse/${sample}_${i}.fastq
-        gzip ${homeDir}/test/wgs/mouse/${sample}_${i}.fastq
+        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk sample -s20 ${fastqDir}/${sample}.fa 2000000 > ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fa
+        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -F '#' ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fa > ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fastq
+        gzip ${homeDir}/test/wgs/mouse/sub${i}_${sample}.fastq
         done
 done
