@@ -118,11 +118,11 @@ workflow STITCH {
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
 
-  // agg_stats = QUALITY_STATISTICS.out.quality_stats
+  agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
               .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
               .join(PICARD_COLLECTWGSMETRICS.out.txt)
 
   // may replace with multiqc
-  // AGGREGATE_STATS(agg_stats)
+  AGGREGATE_STATS(agg_stats)
   }
