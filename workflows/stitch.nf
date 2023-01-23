@@ -125,4 +125,5 @@ workflow STITCH {
 
   // may replace with multiqc
   AGGREGATE_STATS(agg_stats)
+  AGGREGATE_STATS.out.txt.collect().view()
   }
