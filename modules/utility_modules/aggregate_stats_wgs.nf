@@ -12,7 +12,7 @@ process AGGREGATE_STATS {
   tuple val(sampleID), file(filter_stats), file(picard_met), file(algn_met), file(cov_met)
 
   output:
-  file("*summary_stats.txt"), emit: txt
+  path '*summary_stats.txt', emit: txt
 
   script:
   log.info "----- Generating Summary Stats for: ${sampleID} -----"
