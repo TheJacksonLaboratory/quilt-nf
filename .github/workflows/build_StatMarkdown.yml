@@ -1,4 +1,4 @@
-name: Build STITCH container (env/STITCH.Dockerfile)
+name: Build Rmarkdown container (env/StatMarkdown.Dockerfile)
 
 on:
   push:
