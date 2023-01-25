@@ -1,11 +1,11 @@
 process RUN_STITCH {
   tag "$chr"
   
-  label "STITCH"
-  
   memory 100.GB
   time '10:00:00'
   
+  container 'docker://sjwidmay/stitch_nf:latest'
+
   publishDir "${params.sample_folder}/stitch_vcfs", pattern: "*.vcf.gz", mode:'copy'
   
   input:
