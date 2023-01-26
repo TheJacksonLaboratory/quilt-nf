@@ -4,3 +4,4 @@ channels:
   - r
 dependencies:
   - pandoc=2.12
+  - r=4.2.0
