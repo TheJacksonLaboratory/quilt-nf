@@ -1,0 +1,6 @@
+name: stat_markdown
+channels:
+  - defaults
+  - r
+dependencies:
+  - pandoc=2.12

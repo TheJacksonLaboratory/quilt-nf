@@ -4,10 +4,12 @@ on:
   push:
     paths:
     - 'env/StatMarkdown.Dockerfile'
+    - 'env/stat_markdown.yml'
     - '.github/workflows/build_StatMarkdown.yml'
   pull_request:
     paths:
     - 'env/StatMarkdown.Dockerfile'
+    - 'env/stat_markdown.yml'
     - '.github/workflows/build_StatMarkdown.yml'
 
 jobs:
