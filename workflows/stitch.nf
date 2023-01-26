@@ -33,7 +33,8 @@ include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
-include {WGS_STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
+include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
+
 // help if needed
 if (params.help){
     help()
@@ -127,5 +128,7 @@ workflow STITCH {
   AGGREGATE_STATS(agg_stats)
   align_stats = AGGREGATE_STATS.out.txt.collect()
 
-  WGS_STATS_MARKDOWN(align_stats)
-  }
+ 
+  STATS_MARKDOWN(align_stats)
+ 
+ }

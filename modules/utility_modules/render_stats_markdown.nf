@@ -1,5 +1,4 @@
-process WGS_STATS_MARKDOWN {
-
+process STATS_MARKDOWN {
   cpus = 1
   time = '00:30:00'
 
@@ -12,7 +11,7 @@ process WGS_STATS_MARKDOWN {
   val(txts)
 
   output:
-  tuple file('*.html'), file('*.Rmd') emit: markdown
+  tuple file('*.html'), file('*.Rmd'), emit: markdown
   
   script:
   log.info "----- Rendering Alignment Statistics Summary -----"
@@ -20,4 +19,5 @@ process WGS_STATS_MARKDOWN {
   """
   Rscript --vanilla ${projectDir}/bin/stitch/render_markdown.R ${projectDir}/bin/stitch/aggregate_stats_summary.Rmd
   """
+
 }
