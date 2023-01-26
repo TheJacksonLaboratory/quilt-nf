@@ -1,6 +1,8 @@
 name: stat_markdown
 channels:
   - defaults
+  - bioconda
+  - conda-forge
   - r
 dependencies:
   - pandoc=2.12
