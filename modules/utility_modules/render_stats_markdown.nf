@@ -9,7 +9,7 @@ process STATS_MARKDOWN {
   publishDir "${params.sample_folder}/alignment_stats", pattern:"*.Rmd", mode:'copy'
 
   input:
-  val(txts)
+  tuple val(txts), file(Rmd)
 
   output:
   tuple file('*.html'), file('*.Rmd'), emit: markdown
@@ -18,7 +18,8 @@ process STATS_MARKDOWN {
   log.info "----- Rendering Alignment Statistics Summary -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/stitch/render_markdown.R ${projectDir}/bin/stitch/aggregate_stats_summary.Rmd
+  cat ${Rmd} | sed 's+ALIGN_SUMMARIES+"c(${txts})"+g' > aggregate_stats_summary_working.Rmd
+  Rscript --vanilla ${projectDir}/bin/stitch/render_markdown.R aggregate_stats_summary_working.Rmd
   """
 
 }

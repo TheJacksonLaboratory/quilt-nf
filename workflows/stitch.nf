@@ -126,7 +126,10 @@ workflow STITCH {
 
   // may replace with multiqc
   AGGREGATE_STATS(agg_stats)
-  align_stats = AGGREGATE_STATS.out.txt.collect()
+  
+  markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
+  align_stats = AGGREGATE_STATS.out.txt.collect
+                               .combine(markdown_template)
 
   align_stats.view() 
   // STATS_MARKDOWN(align_stats)
