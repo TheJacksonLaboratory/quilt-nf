@@ -37,7 +37,7 @@ concatenateSummaries <- function(summary){
 # alignment_summary_path <- "../../data/DO_4WC_MiSeq/4WC_MiSeq/alignment_stats/"
 
 # find alignment summaries
-alignment_summaries <- list.files()
+alignment_summaries <- ALIGN_SUMMARIES
 
 
 
