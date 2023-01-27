@@ -3,7 +3,12 @@ channels:
   - defaults
   - bioconda
   - conda-forge
+  - biobuilds
   - r
 dependencies:
   - pandoc=2.12
   - r=4.2.0
+  - r-plotly
+  - r-rmarkdown
+  - r-knitr
+
