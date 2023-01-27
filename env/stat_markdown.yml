@@ -10,5 +10,4 @@ dependencies:
   - r=4.2.0
   - r-plotly
   - r-rmarkdown
-  - r-knitr
 
