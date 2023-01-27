@@ -19,7 +19,7 @@ summaryPlotTheme <- theme_bw() +
         axis.ticks.x = element_blank())
 concatenateSummaries <- function(summary){
   # Read in alignment summaries
-  metrics <- suppressMessages(vroom::vroom(paste0(alignment_summary_path,summary), col_names = F))
+  metrics <- suppressMessages(vroom::vroom(summary, col_names = F))
   colnames(metrics) <- c("metric","value")
   
   # Extract sample name
@@ -37,13 +37,21 @@ concatenateSummaries <- function(summary){
 # alignment_summary_path <- "../../data/DO_4WC_MiSeq/4WC_MiSeq/alignment_stats/"
 
 # find alignment summaries
-alignment_summaries <- ALIGN_SUMMARIES
-
-
-
+string <- read.table("summaries.txt")
+summaries <- as.matrix(t(string))
+rownames(summaries) <- NULL
+for(i in 1:nrow(summaries)){
+  input <- summaries[i,]
+  no_bracket <- gsub("\\[", "", input)
+  no_bracket <- gsub("\\]", "", no_bracket)
+  no_comma <- gsub(",", "", no_bracket)
+  summaries[i,] <- no_comma
+}
+summaries <- summaries[!duplicated(summaries[,1]),]
+colnames(summaries) <- NULL
 
 # Collect summary stats for all samples
-allSummaries <- purrr::map_dfr(alignment_summaries, concatenateSummaries)
+allSummaries <- purrr::map_dfr(summaries, concatenateSummaries)
 
 # Find alignment percentages among all metrics
 allSummaries$pct <- unlist(lapply(X = allSummaries$metric, function(x) strsplit(x, split = "_")[[1]][1]))

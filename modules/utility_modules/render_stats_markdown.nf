@@ -1,7 +1,6 @@
 process STATS_MARKDOWN {
-  cpus = 8
-  memory 400.GB
-  time = '02:30:00'
+  cpus = 16
+  time = '05:00:00'
 
   container 'docker://sjwidmay/stitch_nf:stats_markdown'
 
@@ -9,7 +8,7 @@ process STATS_MARKDOWN {
   publishDir "${params.sample_folder}/alignment_stats", pattern:"*.Rmd", mode:'copy'
 
   input:
-  tuple val(txts), file(Rmd)
+  val(txts)
 
   output:
   tuple file('*.html'), file('*.Rmd'), emit: markdown
@@ -18,7 +17,8 @@ process STATS_MARKDOWN {
   log.info "----- Rendering Alignment Statistics Summary -----"
 
   """
-  cat ${Rmd} | sed 's+ALIGN_SUMMARIES+"c(${txts})"+g' > aggregate_stats_summary_working.Rmd
+  echo ${txts} > summaries.txt
+  cat ${projectDir}/bin/stitch/aggregate_stats_summary.Rmd > aggregate_stats_summary_working.Rmd
   Rscript --vanilla ${projectDir}/bin/stitch/render_markdown.R aggregate_stats_summary_working.Rmd
   """
 
