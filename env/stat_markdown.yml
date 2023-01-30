@@ -7,8 +7,8 @@ channels:
   - r
 dependencies:
   - pandoc=2.12
-  - r=4.2.0
+  - libiconv
+  - r=3.6.0
   - r-plotly
-  - r-rmarkdown
-  - r-knitr
-
+  - r-knitr=1.22
+  - r-rmarkdown=1.12
