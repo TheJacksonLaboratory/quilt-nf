@@ -5,3 +5,4 @@ channels:
 dependencies:
   - pandoc
   - r=4.2.0
+  - xorg-libx11
