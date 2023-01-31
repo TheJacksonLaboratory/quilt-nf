@@ -1,14 +1,7 @@
 name: stat_markdown
 channels:
-  - defaults
-  - bioconda
   - conda-forge
-  - biobuilds
   - r
 dependencies:
-  - pandoc=2.12
-  - libiconv
-  - r=3.6.0
-  - r-plotly
-  - r-knitr=1.22
-  - r-rmarkdown=1.12
+  - pandoc
+  - r=4.2.0
