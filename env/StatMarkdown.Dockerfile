@@ -17,4 +17,4 @@ RUN R -e "install.packages('knitr', repos='http://cran.us.r-project.org', depend
 RUN R -e "install.packages('png', repos='http://cran.us.r-project.org', dependencies = TRUE)"
 RUN R -e "install.packages('rmarkdown', repos='http://cran.us.r-project.org', dependencies = TRUE)"
 RUN R -e "install.packages('cairo', repos='http://cran.us.r-project.org', dependencies = TRUE)"
-RUN R -e "install.packages('svglite', repos='http://cran.us.r-project.org', dependencies = TRUE)"
+RUN R -e "install.packages('ragg', repos='http://cran.us.r-project.org', dependencies = TRUE)"
