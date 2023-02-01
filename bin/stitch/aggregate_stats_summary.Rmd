@@ -6,12 +6,12 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, dev = "svglite")
+knitr::opts_chunk$set(echo = TRUE, dev = "png")
 library(vroom)
 library(purrr)
 library(dplyr)
 library(tidyr)
-library(plotly)
+# library(plotly)
 summaryPlotTheme <- theme_bw() + 
   theme(panel.grid = element_blank(),
         axis.title = element_text(colour = "black"),
@@ -83,7 +83,8 @@ total_number_of_reads <- otherMetrics %>%
        y = "Total number of HQ filtered reads",
        title = "Total number of HQ filtered reads")
   
-plotly::ggplotly(total_number_of_reads, tooltip = c("text","y"))
+total_number_of_reads
+#plotly::ggplotly(total_number_of_reads, tooltip = c("text","y"))
 
 ```
 
@@ -103,7 +104,8 @@ pf_reads_aligned <- otherMetrics %>%
        y = "PF_READS_ALIGNED",
        title = "Passing Filter Reads Aligned")
   
-plotly::ggplotly(pf_reads_aligned, tooltip = c("text","y"))
+pf_reads_aligned
+# plotly::ggplotly(pf_reads_aligned, tooltip = c("text","y"))
 
 ```
 
@@ -128,7 +130,8 @@ pct_reads_aligned <- low_coverage_modified_percentages %>%
          y = "Percent of Reads Aligned",
          title = "Percent of Passed-Filter Reads Aligned")
 
-plotly::ggplotly(pct_reads_aligned, tooltip = c("text","y"))
+pct_reads_aligned
+#plotly::ggplotly(pct_reads_aligned, tooltip = c("text","y"))
 ```
 
 ### Genome coverage statistics
@@ -153,8 +156,8 @@ estimated_coverage <- ggplot() +
   labs(x = "Sample",
        y = "Coverage",
        title = "Coverage estimates")
-  
-plotly::ggplotly(estimated_coverage, tooltip = c("text","MEDIAN_COVERAGE"))
+estimated_coverage
+# plotly::ggplotly(estimated_coverage, tooltip = c("text","MEDIAN_COVERAGE"))
 ```
 
 ```{r coverage across genome}
@@ -177,6 +180,6 @@ genome_covered <- ggplot(data = coverage_by_genome_pct,
                     name = "Coverage") + 
   labs(x = "Sample",
        y = "Percent of genome covered")
-
-plotly::ggplotly(genome_covered, tooltip = c("text","y"))
+genome_covered
+# plotly::ggplotly(genome_covered, tooltip = c("text","y"))
 ```
