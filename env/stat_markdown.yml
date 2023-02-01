@@ -1,8 +1,5 @@
 name: stat_markdown
 channels:
   - conda-forge
-  - r
 dependencies:
   - pandoc
-  - r=4.2.0
-  - xorg-libx11
