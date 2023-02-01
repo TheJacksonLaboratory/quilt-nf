@@ -7,7 +7,7 @@ RUN \
 && conda clean -a
 
 RUN apt-get --allow-releaseinfo-change update && apt-get install -y procps
-RUN apt install x11-apps
+RUN apt-get install libcurl4-openssl-dev libxml2-dev libssh-dev x11-apps -y
 
 RUN R -e "install.packages('vroom', repos='http://cran.us.r-project.org')"
 RUN R -e "install.packages('purrr', repos='http://cran.us.r-project.org')"
