@@ -33,6 +33,7 @@ include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
+include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 
 // help if needed
 if (params.help){
@@ -125,5 +126,10 @@ workflow STITCH {
 
   // may replace with multiqc
   AGGREGATE_STATS(agg_stats)
-  AGGREGATE_STATS.out.txt.collect().view()
-  }
+  
+  markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
+  align_stats = AGGREGATE_STATS.out.txt
+				.collect()
+  STATS_MARKDOWN(align_stats)
+ 
+ }
