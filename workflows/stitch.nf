@@ -130,7 +130,6 @@ workflow STITCH {
   markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
   align_stats = AGGREGATE_STATS.out.txt
 				.collect()
-  align_stats.view() 
   STATS_MARKDOWN(align_stats)
  
  }

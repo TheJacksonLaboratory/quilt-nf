@@ -1,5 +1,5 @@
 process STATS_MARKDOWN {
-  cpus = 16
+  memory 300.GB
   time = '05:00:00'
 
   container 'docker://sjwidmay/stitch_nf:stats_markdown'
