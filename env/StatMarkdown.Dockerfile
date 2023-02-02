@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.0.0
+FROM rocker/rstudio:4.1.0
 LABEL Sam Widmayer <sjwidmay@gmail.com>
 
 #FROM continuumio/miniconda
@@ -7,8 +7,26 @@ LABEL Sam Widmayer <sjwidmay@gmail.com>
 #   conda env update -n root -f stat_markdown.yml \
 #&& conda clean -a
 
-RUN apt-get --allow-releaseinfo-change update && apt-get install -y procps
-RUN apt-get install libcurl4-openssl-dev libxml2-dev libssh-dev x11-apps -y
+RUN  apt-get --allow-releaseinfo-change update \
+    && apt-get install -y procps \
+    ssh \
+    bash \
+    pkg-config \
+    libglpk-dev \
+    libjpeg62-dev \
+    libz-dev \
+    tk \
+    libxml2 \
+    libxml2-dev \
+    libbz2-dev \
+    liblzma-dev \
+    xterm \
+    x11-utils \
+    libcairo2-dev \
+    libblas-dev \
+    libssh2-1-dev \
+    libgit2-dev
+    
 RUN R -e "install.packages('vroom', repos='http://cran.us.r-project.org')"
 RUN R -e "install.packages('purrr', repos='http://cran.us.r-project.org')"
 RUN R -e "install.packages('dplyr', repos='http://cran.us.r-project.org')"
