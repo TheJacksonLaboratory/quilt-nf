@@ -1,5 +1,5 @@
 process STATS_MARKDOWN {
-  cpus = 16
+  memory 300.GB
   time = '05:00:00'
 
   container 'docker://sjwidmay/stitch_nf:stats_markdown'
@@ -19,7 +19,7 @@ process STATS_MARKDOWN {
   """
   echo ${txts} > summaries.txt
   cat ${projectDir}/bin/stitch/aggregate_stats_summary.Rmd > aggregate_stats_summary_working.Rmd
-  Rscript --vanilla ${projectDir}/bin/stitch/render_markdown.R aggregate_stats_summary_working.Rmd
+  Rscript ${projectDir}/bin/stitch/render_markdown.R aggregate_stats_summary_working.Rmd
   """
 
 }
