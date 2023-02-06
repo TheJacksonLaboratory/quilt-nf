@@ -118,6 +118,7 @@ workflow STITCH {
   
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
+  RUN_STITCH.out.stitch_output.view()
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
