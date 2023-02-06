@@ -119,7 +119,7 @@ workflow STITCH {
   
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
-  STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_output)
+  STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
   STITCH_VCF_TO_TXT.out.sample_genos.view()
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats

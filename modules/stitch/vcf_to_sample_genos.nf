@@ -8,11 +8,11 @@ process STITCH_VCF_TO_TXT {
   container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
 
   input:
-  tuple val(chr), file(stitch_vcf), file(intermediate_RData)
+  tuple val(chr), file(stitch_vcf)
 
 
   output:
-  tuple val(chr), file("stitch.*.txt"), file(intermediate_RData), emit: sample_genos
+  tuple val(chr), file("stitch.*.txt"), emit: sample_genos
 
 
   script:

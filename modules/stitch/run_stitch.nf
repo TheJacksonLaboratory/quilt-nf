@@ -7,13 +7,14 @@ process RUN_STITCH {
   container 'docker://sjwidmay/stitch_nf:latest'
 
   publishDir "${params.sample_folder}/stitch_vcfs", pattern: "*.vcf.gz", mode:'copy'
-  publishDir "${params.sample_folder}/stitch_vcfs", pattern: "EM.all.*.RData", mode:'copy'
+  publishDir "${params.sample_folder}/stitch_vcfs", pattern: "RData/EM.all.*.RData", mode:'copy'
   
   input:
   tuple file(bamlist), val(chr), file(posfile)
 
   output:
-  tuple val(chr), file("stitch.*.vcf.gz"), file("RData/EM.all.*.RData"), emit: stitch_output 
+  tuple val(chr), file("stitch.*.vcf.gz"), emit: stitch_vcf 
+  file("RData/EM.all.*.RData"), emit: stitch_founder_genos
 
   script:
   log.info "----- Running STITCH on Chromosome ${chr} -----"
