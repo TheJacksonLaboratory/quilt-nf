@@ -33,6 +33,7 @@ include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
+include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
 include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 
 // help if needed
@@ -118,7 +119,8 @@ workflow STITCH {
   
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
-  RUN_STITCH.out.stitch_output.view()
+  STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_output)
+  STITCH_VCF_TO_TXT.out.sample_genos.view()
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
