@@ -14,7 +14,7 @@ process RUN_STITCH {
 
   output:
   tuple val(chr), file("stitch.*.vcf.gz"), emit: stitch_vcf 
-  file("RData/EM.all.*.RData"), emit: stitch_founder_genos
+  tuple val(chr), file("RData/EM.all.*.RData"), emit: stitch_founder_genos
 
   script:
   log.info "----- Running STITCH on Chromosome ${chr} -----"
