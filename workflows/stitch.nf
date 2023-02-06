@@ -120,7 +120,9 @@ workflow STITCH {
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
   STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
-  STITCH_VCF_TO_TXT.out.sample_genos.view()
+  STITCH_VCF_TO_TXT.out.sample_genos
+              .join(RUN_STITCH.out.stitch_founder_genos)
+              .view()
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
