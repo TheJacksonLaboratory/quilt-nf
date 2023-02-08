@@ -34,6 +34,7 @@ include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_baml
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
 include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
+include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
 include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 
 // help if needed
@@ -120,9 +121,13 @@ workflow STITCH {
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
   STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
-  STITCH_VCF_TO_TXT.out.sample_genos
+  geno_files = STITCH_VCF_TO_TXT.out.sample_genos
               .join(RUN_STITCH.out.stitch_founder_genos)
-              .view()
+
+  STITCH_TO_QTL(geno_files)
+                .view()
+
+                
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
