@@ -125,7 +125,6 @@ workflow STITCH {
               .join(RUN_STITCH.out.stitch_founder_genos)
 
   STITCH_TO_QTL(geno_files)
-                .view()
 
                 
 

@@ -10,7 +10,7 @@ process STITCH_VCF_TO_TXT {
   publishDir "${params.sample_folder}/stitch_vcfs", pattern: "stitch.*.txt", mode:'copy'
 
   input:
-  tuple val(chr), file(stitch_vcf),
+  tuple val(chr), file(stitch_vcf)
 
 
   output:

@@ -19,6 +19,6 @@ process STITCH_TO_QTL {
   log.info "----- Converting STITCH Genotypes to R/qtl2 Input Files for Chromosome: ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/stitch/stitch2qtl2files.R ${chr} ${sample_genos} ${founder_genos} ${params.nFounders}
+  Rscript --vanilla ${projectDir}/bin/stitch/stitch2qtl2files.R ${chr} ${sample_genos} ${params.sample_folder}/stitch_vcfs/RData/EM.all.${chr}.RData ${params.nFounders}
   """
 }

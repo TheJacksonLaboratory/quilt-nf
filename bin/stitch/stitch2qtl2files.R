@@ -1,13 +1,10 @@
 #!/usr/bin/env Rscript
-library(tictoc)
 library(data.table)
 library(dplyr)
-library(tidyr)
-library(ggplot2)
 library(purrr)
 library(qtl2convert)
+library(mmconvert)
 
-tictoc::tic()
 # Function to encode vcf-style calls in the form of FinalReport files
 # Inputs:
 # 1) Vector of genotype calls from modified stitch vcf for a single sample
@@ -28,26 +25,49 @@ parseGenos <- function(genos, sample, ref){
                                           binary_geno == "0/0" ~ ALT,
                                           binary_geno %in% c("0/1","1/0") ~ "H",
                                           binary_geno == "./." ~ "-")) %>%
-    dplyr::mutate(marker = paste0("st",CHR,"_",POS)) %>%
+    dplyr::mutate(marker = paste0("st",CHR,"_",as.numeric(POS))) %>%
     dplyr::select(marker, CHR, POS, REF, ALT, call)
   colnames(calledGenos)[6] <- sample
   
   return(calledGenos)
 }
 
+# Function to convert allele dosages among founders from STITCH to
+# letter code genotypes
+# Inputs:
+# 1) Data frame with columns CHR, POS, REF, ALT, and founder name (typically A, B, C, D, etc)
+# founder name column has dosage values
 
-# args <- commandArgs(trailingOnly = TRUE)
-args <- c("15",
-          "/fastscratch/STITCH_outputDir/work/06/57518fb822aac8b90c5c64b3e65180/stitch.15.txt",
-          "/fastscratch/STITCH_outputDir/work/08/cb20d2280517dfb1367623e56bfb40/RData/EM.all.15.RData")
-# NOTE - need to feed this RData file from somewhere else
+founderDoseToAllele <- function(founder_dose){
+  parent <- colnames(founder_dose)[5]
+  colnames(founder_dose)[5] <- "dose"
+  founder_call<- founder_dose %>%
+    dplyr::mutate(call = dplyr::case_when(dose < 0.25 ~ as.character(REF),
+                                          dose > 0.75 ~ as.character(ALT),
+                                          TRUE ~ "H"))
+  colnames(founder_call)[6] <- parent
+  founder_call <- founder_call %>% dplyr::select(-dose)
+  return(founder_call)
+  
+}
+
+args <- commandArgs(trailingOnly = TRUE)
+#args <- c("15",
+#          "/fastscratch/STITCH_outputDir/work/06/57518fb822aac8b90c5c64b3e65180/stitch.15.txt",
+#          "/fastscratch/STITCH_outputDir/work/08/cb20d2280517dfb1367623e56bfb40/RData/EM.all.15.RData",
+#          "4")
 
 # load intermediate data with ancestral genotype calls (inferred founder genotypes)
 load(args[3])
 
+# encode estimated number of founders
+nFounders <- as.numeric(args[4])
+
 # create consensus genotype table
+# each founder column indicates the dosage of the alternate allele
+# therefore: 0 = REF/REF, 1 = ALT/ALT
 consensusGenos <- cbind(pos, t(eHapsCurrent_tc[, , 1]))
-colnames(consensusGenos) <- c(colnames(consensusGenos)[1:4], LETTERS[1:(ncol(consensusGenos)-4)])
+colnames(consensusGenos) <- c(colnames(consensusGenos)[1:4], LETTERS[1:nFounders])
 
 # round ancestral genotype priors and calculate which SNPs are segregating among founders
 simple_dosage <- consensusGenos %>%
@@ -62,10 +82,10 @@ simple_dosage <- consensusGenos %>%
 
 # filter the ancestral genotypes to those that segregate among founders
 segregating_positions <- simple_dosage %>%
-  dplyr::filter(seg > 0.25) %>%
+  dplyr::filter(seg > (1/nFounders)) %>%
   dplyr::select(POS)
 
-# CREATE ALLELE CODES (qtl2-style)
+# Create allele codes (qtl2-style)
 alleleCodes <- consensusGenos %>%
   dplyr::filter(POS %in% segregating_positions$POS) %>%
   dplyr::select(CHR, POS, REF, ALT) %>%
@@ -75,10 +95,41 @@ alleleCodes <- consensusGenos %>%
   dplyr::mutate(marker = paste0("st",chr,"_",POS)) %>%
   dplyr::select(marker, chr, `A` ,`B`)
 
+# Create founder consensus genos
+# genotype is calculated from dose of alt allele (quantitative), so need 
+# a way to call alleles
+
+# filter to segregating sites
+raw_founder_calls <- consensusGenos %>%
+  dplyr::filter(POS %in% segregating_positions$POS)
+
+# make a list of data frames with allele doses for each founder
+founder_calls_list <- lapply(seq_len(nFounders), function(x) raw_founder_calls[,c(1:4,x+4)])
+
+# call genotypes from doses
+consensusGenosLetters <- suppressMessages(purrr::map(.x = founder_calls_list, 
+                                                     .f = founderDoseToAllele) %>%
+                                            Reduce(left_join,.)) %>%
+  dplyr::mutate(marker = paste0("st",CHR,"_",POS)) %>%
+  dplyr::select(-REF, -ALT) %>%
+  dplyr::select(marker, CHR, POS, everything()) %>%
+  dplyr::rename(chr = CHR,
+                pos = POS)
+
+# recode genotypes using the allele codes
+recodedConsensusGenos <- qtl2convert::encode_geno(geno = consensusGenosLetters[c(((ncol(consensusGenosLetters)-nFounders)+1):ncol(consensusGenosLetters))], 
+                         allele_codes = alleleCodes[which(alleleCodes$marker %in% consensusGenosLetters$marker),c(3:4)])
+recodedConsensusGenos <- cbind(raw_founder_calls[,c(1:4)], data.frame(recodedConsensusGenos)) %>%
+  dplyr::select(-REF, -ALT) %>%
+  dplyr::rename(chr = CHR,
+                pos = POS) %>%
+  dplyr::mutate(marker = paste0("st",chr,"_",pos)) %>%
+  dplyr::select(-chr, -pos) %>%
+  dplyr::select(marker, everything())
+
 
 #### SAMPLE GENOTYPES
 # read in sample genotypes
-# sample_genos <- vroom::vroom(args[2], delim = "\t", n_max = 100000)
 sample_genos <- data.table::fread(args[2], 
                                   # nrows = 100000, 
                                   header = TRUE, 
@@ -117,14 +168,46 @@ qtl2SampleGenos <- qtl2convert::encode_geno(geno = parsedGenotypes[,-c(1:5)],
 qtl2SampleGenos <- cbind(parsedGenotypes$marker, data.frame(qtl2SampleGenos))
 colnames(qtl2SampleGenos)[1] <- "marker"
 
-# Export sample genotypes in qtl2 format
+
+
+# Writing qtl2-style files
+
+# Founder Genotypes
+qtl2convert::write2csv(recodedConsensusGenos,
+                       filename = paste0("foundergeno", args[1], ".csv"), 
+                       comment = paste0("stitch-imputed founder genotypes for chr ", args[1]),
+                       overwrite=TRUE)
+
+# Sample Genotypes
 qtl2convert::write2csv(qtl2SampleGenos, 
                        filename = paste0("geno", args[1], ".csv"), 
                        comment = paste0("stitch-imputed genotypes for chr ", args[1]),
                        overwrite=TRUE)
-# Export allele codes in qtl2 format
+
+# Allele Codes
 qtl2convert::write2csv(alleleCodes,
                        filename = paste0("allele_codes",args[1],".csv"), 
                        comment = paste0("Allele codes from STITCH; chromosome", args[1],".csv"),
                        overwrite=TRUE)
-tictoc::toc()
+
+# Physical Map
+pmap_pos <- as.numeric(unlist(lapply(alleleCodes$marker, function(x) strsplit(x, "_")[[1]][2])))
+pmap <- alleleCodes %>%
+  dplyr::select(marker, chr) %>%
+  dplyr::mutate(pos = pmap_pos/1000000)
+qtl2convert::write2csv(pmap,
+                       filename = paste0("pmap",args[1],".csv"), 
+                       comment = paste0("Physical map from STITCH; chromosome", args[1],".csv"),
+                       overwrite=TRUE)
+
+# Genetic Map
+gmap_raw <- mmconvert::mmconvert(positions = pmap %>% dplyr::select(chr, pos, marker), 
+                     input_type = "Mbp")
+gmap <- gmap_raw %>%
+  dplyr::select(marker, chr, cM_coxV3_ave) %>%
+  dplyr::rename(pos = cM_coxV3_ave)
+rownames(gmap) <- NULL 
+qtl2convert::write2csv(gmap,
+                       filename = paste0("gmap",args[1],".csv"), 
+                       comment = paste0("Genetic map from STITCH; chromosome", args[1],".csv"),
+                       overwrite=TRUE)
