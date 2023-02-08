@@ -6,6 +6,8 @@ process STITCH_VCF_TO_TXT {
   time '00:30:00'
 
   container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
+  
+  publishDir "${params.sample_folder}/stitch_vcfs", pattern: "stitch.*.txt", mode:'copy'
 
   input:
   tuple val(chr), file(stitch_vcf)

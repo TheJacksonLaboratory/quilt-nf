@@ -1,6 +1,8 @@
 process RUN_STITCH {
   tag "$chr"
   
+  // Chr Y doesn't work for some reason
+  errorStrategy 'ignore'
   memory 100.GB
   time '10:00:00'
   
