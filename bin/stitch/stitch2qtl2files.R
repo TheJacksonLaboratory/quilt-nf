@@ -51,11 +51,11 @@ founderDoseToAllele <- function(founder_dose){
   
 }
 
-args <- commandArgs(trailingOnly = TRUE)
-#args <- c("15",
-#          "/fastscratch/STITCH_outputDir/work/06/57518fb822aac8b90c5c64b3e65180/stitch.15.txt",
-#          "/fastscratch/STITCH_outputDir/work/08/cb20d2280517dfb1367623e56bfb40/RData/EM.all.15.RData",
-#          "4")
+# args <- commandArgs(trailingOnly = TRUE)
+args <- c("4",
+         "/fastscratch/STITCH_outputDir/work/e9/bea5d7d9b6bdb727de597c94631c31/stitch.4.txt",
+         "data/DO_4WC_MiSeq/DO_MiSeq/stitch_vcfs/RData/EM.all.4.RData",
+         "8")
 
 # load intermediate data with ancestral genotype calls (inferred founder genotypes)
 load(args[3])
@@ -70,15 +70,11 @@ consensusGenos <- cbind(pos, t(eHapsCurrent_tc[, , 1]))
 colnames(consensusGenos) <- c(colnames(consensusGenos)[1:4], LETTERS[1:nFounders])
 
 # round ancestral genotype priors and calculate which SNPs are segregating among founders
-simple_dosage <- consensusGenos %>%
-  dplyr::mutate(A = round(A, 1),
-                B = round(B, 1),
-                C = round(C, 1),
-                D = round(D, 1)) %>%
-  dplyr::group_by(POS) %>%
-  dplyr::summarise(min_dose = min(A, B, C, D),
-                   max_dose = max(A, B, C, D),
-                   seg = max_dose-min_dose)
+roundedConsensusGenos <- apply(consensusGenos[-c(1:4)], 2, function(x) round(x, digits = 1))
+seg <- apply(roundedConsensusGenos, 1, function(x) max(x)-min(x))
+
+simple_dosage <- cbind(consensusGenos[,c(1:4)], roundedConsensusGenos) %>%
+  dplyr::mutate(seg = seg)
 
 # filter the ancestral genotypes to those that segregate among founders
 segregating_positions <- simple_dosage %>%
@@ -163,7 +159,7 @@ parsedGenotypes <- suppressMessages(Reduce(dplyr::left_join, parsedGenotypes))
 colnames(parsedGenotypes)[1:3] <- c("marker","chr","pos")
 
 # Encode sample genotypes with respect to dynamic founder allele codes
-qtl2SampleGenos <- qtl2convert::encode_geno(geno = parsedGenotypes[,-c(1:5)],
+qtl2SampleGenos <- qtl2convert::encode_geno(geno = parsedGenotypes[1:1000,-c(1:5)],
                                             allele_codes = alleleCodes[which(alleleCodes$marker %in% parsedGenotypes$marker),c(3:4)])
 qtl2SampleGenos <- cbind(parsedGenotypes$marker, data.frame(qtl2SampleGenos))
 colnames(qtl2SampleGenos)[1] <- "marker"

@@ -1,6 +1,8 @@
 process STITCH_VCF_TO_TXT {
   tag "$chr"
 
+  
+  errorStrategy 'ignore'
   cpus 1
   memory 15.GB
   time '00:30:00'
