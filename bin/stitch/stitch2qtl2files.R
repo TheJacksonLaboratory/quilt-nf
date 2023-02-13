@@ -53,9 +53,9 @@ founderDoseToAllele <- function(founder_dose){
 
 args <- commandArgs(trailingOnly = TRUE)
 # args <- c("4",
-         "/fastscratch/STITCH_outputDir/work/e9/bea5d7d9b6bdb727de597c94631c31/stitch.4.txt",
-         "data/DO_4WC_MiSeq/DO_MiSeq/stitch_vcfs/RData/EM.all.4.RData",
-         "8")
+#         "/fastscratch/STITCH_outputDir/work/e9/bea5d7d9b6bdb727de597c94631c31/stitch.4.txt",
+#        "data/DO_4WC_MiSeq/DO_MiSeq/stitch_vcfs/RData/EM.all.4.RData",
+#       "8")
 
 # load intermediate data with ancestral genotype calls (inferred founder genotypes)
 load(args[3])
