@@ -159,7 +159,7 @@ parsedGenotypes <- suppressMessages(Reduce(dplyr::left_join, parsedGenotypes))
 colnames(parsedGenotypes)[1:3] <- c("marker","chr","pos")
 
 # Encode sample genotypes with respect to dynamic founder allele codes
-qtl2SampleGenos <- qtl2convert::encode_geno(geno = parsedGenotypes[1:1000,-c(1:5)],
+qtl2SampleGenos <- qtl2convert::encode_geno(geno = parsedGenotypes[,-c(1:5)],
                                             allele_codes = alleleCodes[which(alleleCodes$marker %in% parsedGenotypes$marker),c(3:4)])
 qtl2SampleGenos <- cbind(parsedGenotypes$marker, data.frame(qtl2SampleGenos))
 colnames(qtl2SampleGenos)[1] <- "marker"
