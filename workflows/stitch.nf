@@ -24,6 +24,7 @@ include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/conca
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
+include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
 include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
@@ -33,6 +34,9 @@ include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
+include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
+include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
+include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 
 // help if needed
 if (params.help){
@@ -85,6 +89,10 @@ workflow STITCH {
     }
   }
 
+  // Run trimmomatic
+  TRIMMOMATIC_PE(read_ch)
+  TRIMMOMATIC_PE.out.trimmomatic.view()
+
   // Calculate quality statistics for sequencing
   QUALITY_STATISTICS(read_ch)
 
@@ -117,6 +125,13 @@ workflow STITCH {
   
   // 9) Run STITCH
   RUN_STITCH(stitch_inputs)
+  STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
+  geno_files = STITCH_VCF_TO_TXT.out.sample_genos
+              .join(RUN_STITCH.out.stitch_founder_genos)
+
+  STITCH_TO_QTL(geno_files)
+
+                
 
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
@@ -125,5 +140,10 @@ workflow STITCH {
 
   // may replace with multiqc
   AGGREGATE_STATS(agg_stats)
-  AGGREGATE_STATS.out.txt.collect().view()
-  }
+  
+  markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
+  align_stats = AGGREGATE_STATS.out.txt
+				.collect()
+  STATS_MARKDOWN(align_stats)
+ 
+ }
