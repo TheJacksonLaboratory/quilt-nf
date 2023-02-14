@@ -1,0 +1,186 @@
+---
+title: "STITCH: Sample Alignment and Coverage Summary"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, dev = "png")
+library(vroom)
+library(purrr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(plotly)
+summaryPlotTheme <- theme_bw() + 
+  theme(panel.grid = element_blank(),
+        axis.title = element_text(colour = "black"),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+concatenateSummaries <- function(summary){
+  # Read in alignment summaries
+  metrics <- suppressMessages(vroom::vroom(summary, col_names = F))
+  colnames(metrics) <- c("metric","value")
+  
+  # Extract sample name
+  sampleName <- gsub(summary, pattern = "_summary_stats.txt", replacement = "")
+  
+  # Attach sample name to metric
+  metrics$sample <- sampleName
+  
+  return(metrics)
+}
+```
+
+```{r read in alignment summaries}
+# set the path to alignment summaries
+# alignment_summary_path <- "../../data/DO_4WC_MiSeq/4WC_MiSeq/alignment_stats/"
+
+# find alignment summaries
+string <- read.table("summaries.txt")
+summaries <- as.matrix(t(string))
+rownames(summaries) <- NULL
+for(i in 1:nrow(summaries)){
+  input <- summaries[i,]
+  no_bracket <- gsub("\\[", "", input)
+  no_bracket <- gsub("\\]", "", no_bracket)
+  no_comma <- gsub(",", "", no_bracket)
+  summaries[i,] <- no_comma
+}
+summaries <- summaries[!duplicated(summaries[,1]),]
+colnames(summaries) <- NULL
+
+# Collect summary stats for all samples
+allSummaries <- purrr::map_dfr(summaries, concatenateSummaries)
+
+# Find alignment percentages among all metrics
+allSummaries$pct <- unlist(lapply(X = allSummaries$metric, function(x) strsplit(x, split = "_")[[1]][1]))
+allSummaries$pct[which(allSummaries$pct != "PCT")] <- ""
+percentages <- allSummaries %>%
+  dplyr::filter(pct == "PCT")
+  
+# Remove metrics with percentages
+otherMetrics <- allSummaries %>%
+  dplyr::filter(pct != "PCT")
+
+# Find coverage metrics
+coverage <- otherMetrics[grep(x = otherMetrics$metric, pattern = "COVERAGE"),]
+```
+
+### Number of reads passing quality filters
+
+```{r plot HQ reads}
+# Plot aligned reads that passed filter
+total_number_of_reads <- otherMetrics %>%
+  dplyr::filter(metric == "Total number of HQ filtered reads") %>%
+  ggplot(., mapping = aes(x = reorder(sample, value), 
+                          y = value, 
+                          text = sample)) + 
+  theme_bw() + 
+  geom_point() +
+  summaryPlotTheme + 
+  labs(x = "Sample",
+       y = "Total number of HQ filtered reads",
+       title = "Total number of HQ filtered reads")
+  
+# total_number_of_reads
+plotly::ggplotly(total_number_of_reads, tooltip = c("text","y"))
+
+```
+
+### Read alignment summary statistics
+
+```{r plot aligned reads}
+# Plot aligned reads that passed filter
+pf_reads_aligned <- otherMetrics %>%
+  dplyr::filter(metric == "PF_READS_ALIGNED") %>%
+  ggplot(., mapping = aes(x = reorder(sample, value), 
+                          y = value, 
+                          text = sample)) + 
+  theme_bw() + 
+  geom_point() +
+  summaryPlotTheme + 
+  labs(x = "Sample",
+       y = "PF_READS_ALIGNED",
+       title = "Passing Filter Reads Aligned")
+  
+# pf_reads_aligned
+plotly::ggplotly(pf_reads_aligned, tooltip = c("text","y"))
+
+```
+
+```{r plot percent of reads aligned}
+low_coverage_modified_percentages <- percentages %>%
+  dplyr::mutate(new_metric = dplyr::if_else(metric %in% c("PCT_PF_READS_ALIGNED","PCT_1X","PCT_5X","PCT_10X"), 
+                                            true = metric, 
+                                            false = "PCT>10X")) %>%
+  dplyr::group_by(sample, new_metric) %>%
+  dplyr::summarise(value = sum(value), .groups = "drop")
+  
+
+pct_reads_aligned <- low_coverage_modified_percentages %>%
+  dplyr::filter(new_metric == "PCT_PF_READS_ALIGNED") %>% 
+  ggplot(., mapping = aes(x = reorder(sample,value), 
+                          y = value,
+                          text = sample)) + 
+  geom_col(fill = "white", colour = "black") + 
+  ylim(c(0,1)) + 
+  summaryPlotTheme +
+    labs(x = "Sample",
+         y = "Percent of Reads Aligned",
+         title = "Percent of Passed-Filter Reads Aligned")
+
+# pct_reads_aligned
+plotly::ggplotly(pct_reads_aligned, tooltip = c("text","y"))
+```
+
+### Genome coverage statistics
+
+```{r plot coverage estimates}
+# Plot estimated genome coverage per sample
+wideCoverage <- coverage %>%
+  dplyr::select(-pct) %>%
+  tidyr::pivot_wider(names_from = metric, values_from = value)
+
+estimated_coverage <- ggplot() + 
+  theme_bw() + 
+  geom_point(data = wideCoverage, mapping = aes(x = reorder(sample, MEDIAN_COVERAGE), 
+                                                y = MEAN_COVERAGE)) + 
+  geom_pointrange(data = wideCoverage, mapping = aes(x = reorder(sample, MEDIAN_COVERAGE), 
+                                                     y = MEDIAN_COVERAGE, 
+                                                     ymin = MEDIAN_COVERAGE-SD_COVERAGE,
+                                                     ymax = MEDIAN_COVERAGE+SD_COVERAGE,
+                                                     text = sample),
+                  shape = 8, size = 3) +
+  summaryPlotTheme + 
+  labs(x = "Sample",
+       y = "Coverage",
+       title = "Coverage estimates")
+# estimated_coverage
+plotly::ggplotly(estimated_coverage, tooltip = c("text","MEDIAN_COVERAGE"))
+```
+
+```{r coverage across genome}
+coverage_by_genome_pct <- low_coverage_modified_percentages %>%
+  dplyr::filter(new_metric != "PCT_PF_READS_ALIGNED") %>%
+  dplyr::mutate(new_metric = as.factor(gsub(stringr::str_sub(new_metric, start = 4), 
+                                  pattern = "_", replacement = "")))
+
+coverage_by_genome_pct$new_metric <- factor(coverage_by_genome_pct$new_metric, 
+                                            levels = c("1X","5X","10X",">10X"))
+options(scipen = 99999)
+genome_covered <- ggplot(data = coverage_by_genome_pct,
+                         mapping = aes(x = reorder(sample, value), 
+                                       y = value, 
+                                       fill = new_metric,
+                                       text = sample)) + 
+  geom_col() + 
+  summaryPlotTheme + 
+  scale_fill_manual(values = c("#9BE564","#D7F75B","#D19C1D","#7D451B"), 
+                    name = "Coverage") + 
+  labs(x = "Sample",
+       y = "Percent of genome covered")
+# genome_covered
+plotly::ggplotly(genome_covered, tooltip = c("text","y"))
+```

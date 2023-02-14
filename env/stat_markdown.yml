@@ -1,0 +1,5 @@
+name: stat_markdown
+channels:
+  - conda-forge
+dependencies:
+  - pandoc
