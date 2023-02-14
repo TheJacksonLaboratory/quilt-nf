@@ -91,10 +91,10 @@ workflow STITCH {
 
   // Run trimmomatic
   TRIMMOMATIC_PE(read_ch)
-  TRIMMOMATIC_PE.out.trimmomatic.view()
+  // TRIMMOMATIC_PE.out.trimmomatic.view()
 
   // Calculate quality statistics for sequencing
-  QUALITY_STATISTICS(read_ch)
+  QUALITY_STATISTICS(TRIMMOMATIC_PE.out.trimmomatic)
 
   // Generate read groups
   READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")
