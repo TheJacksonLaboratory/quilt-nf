@@ -1,19 +1,23 @@
+
 process MULTIQC {
 
   cpus 1
   memory 30.GB
   time '01:00:00'
 
-  container 'quay.io-biocontainers-multiqc-1.12--pyhdfd78af_0'
+  container 'docker://ewels/multiqc:latest'
+  
+  publishDir "${params.sample_folder}/multiqc", pattern:"*", mode:'copy'
+  publishDir "${params.sample_folder}/multiqc_data", pattern:"multiqc_data/*", mode:'copy'
 
   input:
-  tuple file(fastqc_html), file(fastqc_zip), file(fastqc_gz)
+  file('*')
 
   output:
-  tuple file("*_fastqc.html"), emit: multiqc_report
+  path('multiqc_report.html'), emit: multiqc_report
 
   script:
-  log.info "----- FASTQC Running on Sample: ${sampleID} -----"
+  log.info "----- Running MULTIQC on All Samples -----"
 
   """
   multiqc .

@@ -25,6 +25,8 @@ include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/conca
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
+include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
+include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
@@ -91,10 +93,16 @@ workflow STITCH {
 
   // Run trimmomatic
   TRIMMOMATIC_PE(read_ch)
-  // TRIMMOMATIC_PE.out.trimmomatic.view()
 
   // Calculate quality statistics for sequencing
   QUALITY_STATISTICS(TRIMMOMATIC_PE.out.trimmomatic)
+  
+  // Run fastqc on adapter trimmed reads
+  FASTQC(TRIMMOMATIC_PE.out.to_fastqc)
+
+  // Run multiqc
+  fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+  MULTIQC(fastqc_reports)
 
   // Generate read groups
   READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")

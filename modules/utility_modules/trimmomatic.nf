@@ -15,6 +15,7 @@ process TRIMMOMATIC_PE {
 
   output:
   tuple val(sampleID), file("*_paired"), emit: trimmomatic
+  tuple val(sampleID), file("*_paired"), emit: to_fastqc
 
   script:
   log.info "----- Trimmomatic Running on: ${sampleID} -----"
