@@ -129,16 +129,19 @@ workflow STITCH {
 
   // 8) Generate other required input files for STITCH
 
-  if(params.do_mice){
-    CREATE_POSFILE(chrs)
-    stitch_inputs = CREATE_BAMLIST.out.bam_list
-                                .combine(CREATE_POSFILE.out.posfile)
-    RUN_STITCH(stitch_inputs)
-  } else {
+  if (params.do_mice) {
+    
     CREATE_POSFILE_DO(chrs)
     stitch_inputs = CREATE_BAMLIST.out.bam_list
                                 .combine(CREATE_POSFILE_DO.out.ref_files)
     RUN_STITCH_DO(stitch_inputs)
+
+  } else {
+
+    CREATE_POSFILE(chrs)
+    stitch_inputs = CREATE_BAMLIST.out.bam_list
+                                .combine(CREATE_POSFILE.out.posfile)
+    RUN_STITCH(stitch_inputs)
   }
   
   STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
