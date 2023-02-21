@@ -46,7 +46,7 @@ Results Published to: ${params.pubdir}
 ______________________________________________________
 --workflow                      ${params.workflow}
 --gen_org                       ${params.gen_org}
---do_mice                       ${params.do}
+--do_mice                       ${params.do_mice}
 --read_type                     ${params.read_type}
 --sample_folder                 ${params.sample_folder}
 --pattern                       ${params.pattern}
