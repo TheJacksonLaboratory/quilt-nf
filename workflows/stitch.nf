@@ -130,11 +130,14 @@ workflow STITCH {
   // 8) Generate other required input files for STITCH
 
   if (params.do_mice) {
-    
+
     CREATE_POSFILE_DO(chrs)
     stitch_inputs = CREATE_BAMLIST.out.bam_list
                                 .combine(CREATE_POSFILE_DO.out.ref_files)
     RUN_STITCH_DO(stitch_inputs)
+    STITCH_VCF_TO_TXT(RUN_STITCH_DO.out.stitch_vcf)
+    geno_files = STITCH_VCF_TO_TXT.out.sample_genos
+              .join(RUN_STITCH_DO.out.stitch_founder_genos)
 
   } else {
 
@@ -142,16 +145,12 @@ workflow STITCH {
     stitch_inputs = CREATE_BAMLIST.out.bam_list
                                 .combine(CREATE_POSFILE.out.posfile)
     RUN_STITCH(stitch_inputs)
+    STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
+    geno_files = STITCH_VCF_TO_TXT.out.sample_genos
+              .join(RUN_STITCH.out.stitch_founder_genos)
   }
   
-  STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
-  geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-              .join(RUN_STITCH.out.stitch_founder_genos)
-
   STITCH_TO_QTL(geno_files)
-
-                
-
   agg_stats = QUALITY_STATISTICS.out.quality_stats
               .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
               .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
