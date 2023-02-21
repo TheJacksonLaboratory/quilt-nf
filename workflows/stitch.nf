@@ -35,7 +35,9 @@ include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_col
 include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
+include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
 include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
+include {RUN_STITCH_DO} from "${projectDir}/modules/stitch/run_stitch_DO"
 include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
 include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
 include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
@@ -126,13 +128,19 @@ workflow STITCH {
   CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
-  CREATE_POSFILE(chrs)
 
-  stitch_inputs = CREATE_BAMLIST.out.bam_list
+  if(params.DO){
+    CREATE_POSFILE(chrs)
+    stitch_inputs = CREATE_BAMLIST.out.bam_list
                                 .combine(CREATE_POSFILE.out.posfile)
+    RUN_STITCH(stitch_inputs)
+  } else {
+    CREATE_POSFILE_DO(chrs)
+    stitch_inputs = CREATE_BAMLIST.out.bam_list
+                                .combine(CREATE_POSFILE_DO.out.ref_files)
+    RUN_STITCH_DO(stitch_inputs)
+  }
   
-  // 9) Run STITCH
-  RUN_STITCH(stitch_inputs)
   STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
   geno_files = STITCH_VCF_TO_TXT.out.sample_genos
               .join(RUN_STITCH.out.stitch_founder_genos)
