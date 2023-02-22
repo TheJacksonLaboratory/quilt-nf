@@ -13,7 +13,6 @@ RUN  apt-get --allow-releaseinfo-change update \
     bash \
     pkg-config \
     libglpk-dev \
-    libjpeg62-dev \
     libz-dev \
     tk \
     libxml2 \
@@ -27,7 +26,7 @@ RUN  apt-get --allow-releaseinfo-change update \
     libssh2-1-dev \
     libgit2-dev
 
-RUN R -e "install.packages('parallel', repos='http://cran.us.r-project.org')"
+#RUN R -e "install.packages('parallel', repos='http://cran.us.r-project.org')"
 RUN R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')"
 RUN R -e "install.packages('RcppArmadillo', repos='http://cran.us.r-project.org')"
 RUN R -e "library('STITCH')"
