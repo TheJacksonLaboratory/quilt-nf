@@ -2,11 +2,11 @@ process RUN_STITCH_DO {
   tag "$chr"
   
   // Chr Y doesn't work for some reason
-  errorStrategy 'ignore'
+  // errorStrategy 'ignore'
   memory 100.GB
   time '10:00:00'
   
-  container 'docker://sjwidmay/stitch_nf:latest'
+  container 'docker://sjwidmay/stitch_nf:stitch'
 
   publishDir "${params.sample_folder}/stitch_vcfs", pattern: "*.vcf.gz", mode:'copy'
   publishDir "${params.sample_folder}/stitch_vcfs", pattern: "RData/EM.all.*.RData", mode:'copy'

@@ -77,7 +77,7 @@ if (params.concat_lanes){
 // if channel is empty give error message and exit
 read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder} Matching Pattern: ${params.pattern}"}
 
-chrs = Channel.of(1..19,'X','Y')
+chrs = Channel.of(1..19,'X')
 
 // main workflow
 workflow STITCH {
