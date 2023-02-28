@@ -18,7 +18,7 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_4WC_MiSeq/DO_MiSeq/' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/CC_data' \
 --gen_org mouse \
 --do_mice \
 --pubdir '/fastscratch/STITCH_outputDir' \

@@ -1,21 +1,13 @@
 #!/bin/bash
-#SBATCH -p compute
-#SBATCH -q batch
-#SBATCH -t 12:00:00
-#SBATCH --mem=100G
-#SBATCH --ntasks=1
-
 singularity run /projects/compsci/omics_share/meta/containers/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img
 
-# create a B6 vcf by changing B6/NJ alt alleles to ref
 bcftools view /projects/omics_share/mouse/GRCm39/genome/annotation/snps_indels/rel_2112_v8/mgp_REL2021_snps.vcf.gz \
 -m2 -M2 -v snps \
 -s C57BL_6NJ | \
 sed 's/1\/1/0\/0/g' | \
 sed 's/0\/1/0\/0/g' | \
 sed 's/1\/0/0\/0/g' | \
-sed 's/C57BL_6NJ/B/g' | \
-bcftools view -Oz -o /fastscratch/widmas/B6.vcf.gz
+sed 's/C57BL_6NJ/B/g' | bcftools view -Oz -o /fastscratch/widmas/B6.vcf.gz
 
 # index B6 vcf
 tabix -p vcf /fastscratch/widmas/B6.vcf.gz
