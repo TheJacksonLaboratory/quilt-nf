@@ -4,6 +4,7 @@ process CREATE_POSFILE_DO {
   cpus 1
   memory 50.GB
   time '01:00:00'
+  stageOutMode 'move'
 
   container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
 
