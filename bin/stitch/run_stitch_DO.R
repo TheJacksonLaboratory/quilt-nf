@@ -100,4 +100,5 @@ STITCH::STITCH(tempdir = tempdir(),
                K = mouse_K,
                plotHapSumDuringIterations = FALSE,
                plot_shuffle_haplotype_attempts = FALSE,
-               plotAfterImputation = FALSE)
+               plotAfterImputation = FALSE,
+               downsampleToCov = 25)
