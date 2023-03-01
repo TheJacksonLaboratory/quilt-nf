@@ -92,4 +92,6 @@ STITCH::STITCH(tempdir = tempdir(),
                sampleNames_file = sample_names_file,
                nGen = 20,
                K = mouse_K,
+               plotHapSumDuringIterations = FALSE,
+               plot_shuffle_haplotype_attempts = FALSE,
                plotAfterImputation = FALSE)

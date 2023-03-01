@@ -98,4 +98,6 @@ STITCH::STITCH(tempdir = tempdir(),
                reference_legend_file = args[7],
                nGen = 20,
                K = mouse_K,
+               plotHapSumDuringIterations = FALSE,
+               plot_shuffle_haplotype_attempts = FALSE,
                plotAfterImputation = FALSE)
