@@ -2,7 +2,7 @@ process PICARD_COLLECTWGSMETRICS {
   tag "$sampleID"
 
   cpus = 1
-  memory = 5.GB
+  memory = 10.GB
   time = '08:00:00'
 
   container 'broadinstitute/gatk:4.2.4.1'
@@ -16,7 +16,7 @@ process PICARD_COLLECTWGSMETRICS {
   tuple val(sampleID), file("*.txt"), emit: txt
 
   script:
-  log.info "----- Collect Alignment Sumary Metrics Running on: ${sampleID} -----"
+  log.info "----- Collect Alignment Summary Metrics Running on: ${sampleID} -----"
   String my_mem = (task.memory-1.GB).toString()
   my_mem =  my_mem[0..-4]
 

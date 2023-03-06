@@ -3,7 +3,7 @@ process RUN_STITCH_DO {
   
   // Chr Y doesn't work for some reason
   // errorStrategy 'ignore'
-  memory 200.GB
+  memory 400.GB
   time '10:00:00'
   
   container 'docker://sjwidmay/stitch_nf:stitch'
