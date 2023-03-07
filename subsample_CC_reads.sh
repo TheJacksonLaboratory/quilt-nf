@@ -12,7 +12,7 @@ fastqDir=${homeDir}/data/CC_data
 
 
 # Fire up the singularity container hopefully
-singularity pull docker://quay.io/biocontainers/seqtk:1.3--hed695b0_2
+singularity pull docker://sjwidmay/stitch_nf:bbtools
 
 # identify read pairs with one set of files
 files=${fastqDir}/GES15*R1*
@@ -21,26 +21,18 @@ do
     # find the sample name
     sample=$(echo ${f} | cut -f 1 -d "." | cut -f 10 -d "/" | cut -f 1-5 -d "_")
     echo ${sample}
-    singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -a ${fastqDir}/${sample}_R1.fastq.gz > ${fastqDir}/${sample}_R1.fa
-    singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -a ${fastqDir}/${sample}_R2.fastq.gz > ${fastqDir}/${sample}_R2.fa
 
     # subsample CC reads
     for i in {1..5}
         do
+        echo ${i}
         # generate seed - this is super important to distinguish actual subsamples
-        seed=$(echo $(( $RANDOM % 100 + 1 )))
+        # seed=$(echo $(( $RANDOM % 100 + 1 )))
 
         # sample from fasta
-        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk sample -s${seed} ${fastqDir}/${sample}_R1.fa 2000000 > ${fastqDir}/sub${i}_${sample}_R1.fa
-        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk sample -s${seed} ${fastqDir}/${sample}_R2.fa 2000000 > ${fastqDir}/sub${i}_${sample}_R2.fa
+        singularity exec ${homeDir}/stitch_nf_bbtools.sif reformat.sh in1=${fastqDir}/${sample}_R1.fastq.gz in2=${fastqDir}/${sample}_R2.fastq.gz out1=${fastqDir}/sub${i}_${sample}_R1.fastq.gz out2=${fastqDir}/sub${i}_${sample}_R2.fastq.gz samplereadstarget=5000000
 
         # convert back to fastq
-        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -F 'F' ${fastqDir}/sub${i}_${sample}_R1.fa > ${fastqDir}/sub${i}_${sample}_R1.fastq
-        singularity exec ${homeDir}/seqtk_1.3--hed695b0_2.sif seqtk seq -F 'F' ${fastqDir}/sub${i}_${sample}_R2.fa > ${fastqDir}/sub${i}_${sample}_R2.fastq
-        
-        # compress
-        gzip ${fastqDir}/sub${i}_${sample}_R1.fastq --force
-        gzip ${fastqDir}/sub${i}_${sample}_R2.fastq --force
         chmod 775 ${fastqDir}/sub${i}_${sample}_R1.fastq.gz
         chmod 775 ${fastqDir}/sub${i}_${sample}_R2.fastq.gz
         done
