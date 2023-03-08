@@ -2,9 +2,9 @@ process RUN_STITCH {
   tag "$chr"
   
   // Chr Y doesn't work for some reason
-  errorStrategy 'ignore'
-  memory 200.GB
-  time '10:00:00'
+  //errorStrategy 'ignore'
+  memory 400.GB
+  time '48:00:00'
   
   container 'docker://sjwidmay/stitch_nf:stitch'
 
