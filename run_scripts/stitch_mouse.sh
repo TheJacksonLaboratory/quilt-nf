@@ -18,10 +18,9 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/CC_data' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq' \
 --gen_org mouse \
---do_mice \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
---comment "This script will run haplotype inference using STITCH on DO plexWell data"
+--comment "This script will run haplotype inference using STITCH on DO NovaSeq ddRADseq data"
