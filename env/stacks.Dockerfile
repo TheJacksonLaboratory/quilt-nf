@@ -1,11 +1,11 @@
 FROM continuumio/miniconda
 LABEL Sam Widmayer <sjwidmay@gmail.com>
 
-ADD https://anaconda.org/bioconda/stacks/2.61/download/linux-64/stacks-2.61-hd03093a_1.tar.bz2 ./
-RUN tar xfvz stacks-2.61-hd03093a_1.tar.bz2 \
-        cd stacks-2.61-hd03093a_1 \
-        ./configure \
-        make
+RUN wget https://catchenlab.life.illinois.edu/stacks/source/stacks-2.64.tar.gz --no-check-certificate
+RUN tar xfvz stacks-2.64.tar.gz
+RUN cd stacks-2.64
+RUN ./configure
+RUN make
 
 #RUN conda install -c bioconda stacks
 #RUN conda install -c "bioconda/label/main" stacks-2.61
