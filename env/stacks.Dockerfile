@@ -3,7 +3,6 @@ LABEL Sam Widmayer <sjwidmay@gmail.com>
 
 RUN apt-get install -y automake \
     autoconf \
-    ssh \
     bash
 
 RUN wget https://catchenlab.life.illinois.edu/stacks/source/stacks-2.64.tar.gz --no-check-certificate
