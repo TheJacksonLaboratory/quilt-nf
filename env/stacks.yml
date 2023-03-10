@@ -1,0 +1,6 @@
+name: stacks
+channels:
+  - defaults
+  - bioconda
+dependencies:
+  - stacks-2.61
