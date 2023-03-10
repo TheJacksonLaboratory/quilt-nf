@@ -1,7 +1,9 @@
 FROM continuumio/miniconda
 LABEL Sam Widmayer <sjwidmay@gmail.com>
 
-RUN apt-get install -y automake \
+
+RUN  apt-get --allow-releaseinfo-change update \
+    && apt-get install -y automake \
     autoconf \
     libpcre3-dev \
     libssl-dev \
