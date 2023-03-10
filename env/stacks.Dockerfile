@@ -8,7 +8,7 @@ RUN apt-get install -y automake \
 RUN wget https://catchenlab.life.illinois.edu/stacks/source/stacks-2.64.tar.gz --no-check-certificate
 RUN tar xfvz stacks-2.64.tar.gz
 RUN cd stacks-2.64
-RUN sh configure
+RUN ./configure
 RUN make
 
 #RUN conda install -c bioconda stacks
