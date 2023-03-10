@@ -2,8 +2,8 @@ FROM continuumio/miniconda
 LABEL Sam Widmayer <sjwidmay@gmail.com>
 
 ADD https://anaconda.org/bioconda/stacks/2.61/download/linux-64/stacks-2.61-hd03093a_1.tar.bz2 ./
-RUN tar xfvz stacks-2.64.tar.gz \
-        cd stacks-2.64 \
+RUN tar xfvz stacks-2.61-hd03093a_1.tar.bz2 \
+        cd stacks-2.61-hd03093a_1 \
         ./configure \
         make
 
