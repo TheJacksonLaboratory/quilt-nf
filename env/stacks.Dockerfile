@@ -12,7 +12,9 @@ RUN  apt-get --allow-releaseinfo-change update \
 
 RUN wget https://catchenlab.life.illinois.edu/stacks/source/stacks-2.64.tar.gz --no-check-certificate
 RUN tar xfvz stacks-2.64.tar.gz
-RUN cd stacks-2.64 && chmod 775 configure && configure && make
+
+WORKDIR /stacks-2.64
+RUN chmod 775 ./configure && ./configure && make
 
 #RUN conda install -c bioconda stacks
 #RUN conda install -c "bioconda/label/main" stacks-2.61
