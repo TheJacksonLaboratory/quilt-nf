@@ -8,7 +8,8 @@ RUN  apt-get --allow-releaseinfo-change update \
     autoconf \
     libpcre3-dev \
     libssl-dev \
-    make
+    make \
+    zlib1g-dev
 
 RUN wget https://catchenlab.life.illinois.edu/stacks/source/stacks-2.64.tar.gz --no-check-certificate
 RUN tar xfvz stacks-2.64.tar.gz
