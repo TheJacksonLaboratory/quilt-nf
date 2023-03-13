@@ -16,8 +16,3 @@ RUN tar xfvz stacks-2.64.tar.gz
 
 WORKDIR /stacks-2.64
 RUN chmod 775 ./configure && ./configure && make
-
-#RUN conda install -c bioconda stacks
-#RUN conda install -c "bioconda/label/main" stacks-2.61
-RUN conda install -c bioconda seqtk
-RUN conda install -c "bioconda/label/cf201901" seqtk
