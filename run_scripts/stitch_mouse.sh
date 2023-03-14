@@ -20,6 +20,7 @@ nextflow main.nf \
 -profile sumner \
 --sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq' \
 --gen_org mouse \
+--seq_method ddRADseq \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
