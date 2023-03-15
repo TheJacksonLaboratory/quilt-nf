@@ -28,6 +28,6 @@ process BOWTIE2 {
   // }
 
   """
-  bowtie2  --threads ${N_THREADS} --no-unal --no-discordant --fr --end-to-end -x ${params.ref_fa_indices_bowtie} -1 ${fq_reads[0]} -2 ${fq_reads[1]} -S ${sampleID}.sam
+  bowtie2 --no-unal --no-discordant --fr --end-to-end -x ${params.ref_fa_indices_bowtie} -1 ${fq_reads[0]} -2 ${fq_reads[1]} -S ${sampleID}.sam
   """
 }

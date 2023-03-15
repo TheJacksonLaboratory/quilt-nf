@@ -31,9 +31,9 @@ include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
-include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
-include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
-include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
+//include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
+//include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
+//include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
@@ -41,7 +41,7 @@ include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
 include {RUN_STITCH_DO} from "${projectDir}/modules/stitch/run_stitch_DO"
 include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
 include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
-include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
+//include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 
 // help if needed
 if (params.help){
@@ -109,22 +109,22 @@ workflow STITCH {
 
   // Generate read groups
   READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")
-  bwa_mem_mapping = QUALITY_STATISTICS.out.trimmed_fastq
+  mapping = QUALITY_STATISTICS.out.trimmed_fastq
                     .join(READ_GROUPS.out.read_groups)
 
   // Alignment
   // BWA_MEM(bwa_mem_mapping)
-  BOWTIE2(bwa_mem_mapping)
+  BOWTIE2(mapping)
 
   // Sort SAM files
-  PICARD_SORTSAM(BWA_MEM.out.sam)
+  PICARD_SORTSAM(BOWTIE2.out.sam)
 
   // Mark duplicates 
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
 
   // gather alignment summary information
-  PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
-  PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
+  //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
+  //PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
   bams = PICARD_MARKDUPLICATES.out.dedup_bam
@@ -154,17 +154,17 @@ workflow STITCH {
   }
   
   STITCH_TO_QTL(geno_files)
-  agg_stats = QUALITY_STATISTICS.out.quality_stats
-              .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
-              .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
-              .join(PICARD_COLLECTWGSMETRICS.out.txt)
+  //agg_stats = QUALITY_STATISTICS.out.quality_stats
+  //            .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
+  //            .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
+  //           .join(PICARD_COLLECTWGSMETRICS.out.txt)
 
   // may replace with multiqc
-  AGGREGATE_STATS(agg_stats)
+  //AGGREGATE_STATS(agg_stats)
   
-  markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
-  align_stats = AGGREGATE_STATS.out.txt
+  //markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
+  //align_stats = AGGREGATE_STATS.out.txt
 				.collect()
-  STATS_MARKDOWN(align_stats)
+  //STATS_MARKDOWN(align_stats)
  
  }
