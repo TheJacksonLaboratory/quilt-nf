@@ -23,6 +23,7 @@ include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
+include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
@@ -111,14 +112,17 @@ workflow STITCH {
   bwa_mem_mapping = QUALITY_STATISTICS.out.trimmed_fastq
                     .join(READ_GROUPS.out.read_groups)
 
-  // BWA-mem alignment
-  BWA_MEM(bwa_mem_mapping)
+  // Alignment
+  // BWA_MEM(bwa_mem_mapping)
+  BOWTIE2(bwa_mem_mapping)
 
   // Sort SAM files
   PICARD_SORTSAM(BWA_MEM.out.sam)
 
-  // Mark duplicates and gather alignment summary information
+  // Mark duplicates 
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
+
+  // gather alignment summary information
   PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
   PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
@@ -128,7 +132,6 @@ workflow STITCH {
   CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
-
   if (params.do_mice) {
 
     CREATE_POSFILE_DO(chrs)
