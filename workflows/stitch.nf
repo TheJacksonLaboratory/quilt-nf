@@ -34,6 +34,8 @@ include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markdu
 //include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 //include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 //include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
+include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
+include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
@@ -122,13 +124,19 @@ workflow STITCH {
   // Mark duplicates 
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
 
+  // Calculate pileups
+  MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
+
+  // Filter bams to coverage level
+  PILEUPS_TO_BAM(MPILEUP.out.mpileup)
+
   // gather alignment summary information
   //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
   //PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
-  bams = PICARD_MARKDUPLICATES.out.dedup_bam
-                .collect()
+  bams = PILEUPS_TO_BAM.out.filtered_bam
+                       .collect()
   CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
