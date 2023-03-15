@@ -16,7 +16,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS{
   tuple val(sampleID), file("*.txt"), emit: txt
 
   script:
-  log.info "----- Collect Alignment Sumary Metrics Running on: ${sampleID} -----"
+  log.info "----- Collect Alignment Summary Metrics Running on: ${sampleID} -----"
   String my_mem = (task.memory-1.GB).toString()
   my_mem =  my_mem[0..-4]
 
