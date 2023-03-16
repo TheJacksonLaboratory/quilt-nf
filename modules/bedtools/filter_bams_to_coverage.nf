@@ -7,7 +7,7 @@ process PILEUPS_TO_BAM {
   container 'quay.io/biocontainers/bedtools:2.23.0--h5b5514e_6'
 
   input:
-  tuple val(sampleID), file(bam), file(mpileup)
+  tuple val(sampleID), file(bam), file(mpileup), file(coverage)
 
   output:
   tuple val(sampleID), file("*_covered.bam"), emit: filtered_bam

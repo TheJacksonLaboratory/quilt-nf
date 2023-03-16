@@ -6,13 +6,13 @@ process MPILEUP {
 
   container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
 
-  publishDir "${params.sample_folder}/sample_coverage", pattern:"*coverage*", mode:'copy'
+  publishDir "${params.sample_folder}/sample_coverage", pattern:"*_coverage.txt", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam)
 
   output:
-  tuple val(sampleID), file(bam), file("*.mpileup"), emit: mpileup
+  tuple val(sampleID), file(bam), file("*.mpileup"), file("*_coverage.txt"), emit: mpileup
 
   script:
   log.info "----- Create Pileups for Sample: ${sampleID} -----"
