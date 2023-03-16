@@ -12,7 +12,7 @@ process MPILEUP {
   tuple val(sampleID), file(bam)
 
   output:
-  tuple val(sampleID), file("*.bam"), file("*.mpileup"), emit: mpileup
+  tuple val(sampleID), file(bam), file("*.mpileup"), emit: mpileup
 
   script:
   log.info "----- Create Pileups for Sample: ${sampleID} -----"
