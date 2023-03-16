@@ -7,7 +7,7 @@ process PILEUPS_TO_BAM {
   container 'quay.io/biocontainers/bedtools:2.23.0--h5b5514e_6'
 
   input:
-  tuple val(sampleID), file(bam), file(mpileup), file(coverage)
+  tuple val(sampleID), file(bam), file(bed)
 
   output:
   tuple val(sampleID), file("*_covered.bam"), emit: filtered_bam
@@ -16,7 +16,6 @@ process PILEUPS_TO_BAM {
   log.info "----- Filtering Alignment from ${sampleID} to Pileup Sites -----"
 
   """
-  awk '\$4 > 5 {print \$1"\t"\$2"\t"\$2}' ${mpileup} > ${sampleID}.bed
   bedtools intersect -abam ${bam} -b ${sampleID}.bed > ${sampleID}_covered.bam
   """
 }
