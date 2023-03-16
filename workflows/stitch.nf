@@ -34,6 +34,7 @@ include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markdu
 //include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 //include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 //include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
+include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
 include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
@@ -127,8 +128,11 @@ workflow STITCH {
   // Calculate pileups
   MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
 
+  // Make pileups into regions of coverage with cushion
+  EXPAND_BED(MPILEUP.out.bed)
+
   // Filter bams to coverage level
-  PILEUPS_TO_BAM(MPILEUP.out.mpileup)
+  PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
 
   // gather alignment summary information
   //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
