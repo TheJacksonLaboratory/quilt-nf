@@ -109,7 +109,8 @@ workflow STITCH {
 
   // Run multiqc
   fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-  MULTIQC(fastqc_reports)
+  fastqc_reports.view()
+  //MULTIQC(fastqc_reports)
 
   // Generate read groups
   //READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")
