@@ -18,9 +18,11 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq' \
 --gen_org mouse \
+--seq_method lcGBS \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
---comment "This script will run haplotype inference using STITCH on DO NovaSeq ddRADseq data"
+--comment "This script will run haplotype inference using STITCH on DO NovaSeq seqWell data" \
+-resume

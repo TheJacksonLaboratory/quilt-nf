@@ -20,7 +20,28 @@ process TRIMMOMATIC_PE {
   script:
   log.info "----- Trimmomatic Running on: ${sampleID} -----"
 
+  if (params.seq_method == 'lcGBS')
   """
-  trimmomatic ${params.read_type} ${fq_reads[0]} ${fq_reads[1]} ${fq_reads[0]}_paired ${fq_reads[0]}_unpaired ${fq_reads[1]}_paired ${fq_reads[1]}_unpaired LEADING:3 TRAILING:3 MINLEN:36
+  trimmomatic ${params.read_type} \
+              ${fq_reads[0]} \
+              ${fq_reads[1]} \
+              ${fq_reads[0]}_paired \
+              ${fq_reads[0]}_unpaired \
+              ${fq_reads[1]}_paired \
+              ${fq_reads[1]}_unpaired \
+              ILLUMINACLIP:NexteraPE-PE.fa:2:30:10:2:True \
+              LEADING:3 TRAILING:3 MINLEN:36
+  """
+  else
+  """
+  trimmomatic ${params.read_type} \
+              ${fq_reads[0]} \
+              ${fq_reads[1]} \
+              ${fq_reads[0]}_paired \
+              ${fq_reads[0]}_unpaired \
+              ${fq_reads[1]}_paired \
+              ${fq_reads[1]}_unpaired \
+              ILLUMINACLIP:TruSeq2-PE.fa:2:30:10:2:True \
+              LEADING:3 TRAILING:3 MINLEN:36
   """
 }
