@@ -22,28 +22,29 @@ include {param_log} from "${projectDir}/bin/log/stitch.nf"
 include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
-include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
-include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
-include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
-include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
+//include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
+include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
-include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
-include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
-include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
+
+//include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
+//include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
+//include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
+//include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
+//include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 //include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 //include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 //include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
-include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
-include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
-include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
-include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
-include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
-include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
-include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
-include {RUN_STITCH_DO} from "${projectDir}/modules/stitch/run_stitch_DO"
-include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
-include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
+//include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
+//include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
+//include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
+//include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
+//include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
+//include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
+//include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
+//include {RUN_STITCH_DO} from "${projectDir}/modules/stitch/run_stitch_DO"
+//include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
+//include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
 //include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 
 // help if needed
@@ -98,74 +99,74 @@ workflow STITCH {
   }
 
   // Run trimmomatic
-  TRIMMOMATIC_PE(read_ch)
+  //TRIMMOMATIC_PE(read_ch)
 
   // Calculate quality statistics for sequencing
-  QUALITY_STATISTICS(TRIMMOMATIC_PE.out.trimmomatic)
+  QUALITY_STATISTICS(read_ch)
   
   // Run fastqc on adapter trimmed reads
-  FASTQC(TRIMMOMATIC_PE.out.to_fastqc)
+  FASTQC(QUALITY_STATISTICS.out.to_fastqc)
 
   // Run multiqc
   fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
   MULTIQC(fastqc_reports)
 
   // Generate read groups
-  READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")
-  mapping = QUALITY_STATISTICS.out.trimmed_fastq
-                    .join(READ_GROUPS.out.read_groups)
+  //READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")
+  //mapping = QUALITY_STATISTICS.out.trimmed_fastq
+  //                  .join(READ_GROUPS.out.read_groups)
 
   // Alignment
   // BWA_MEM(bwa_mem_mapping)
-  BOWTIE2(mapping)
+  //BOWTIE2(mapping)
 
   // Sort SAM files
-  PICARD_SORTSAM(BOWTIE2.out.sam)
+  //PICARD_SORTSAM(BOWTIE2.out.sam)
 
   // Mark duplicates 
-  PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
+  //PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
 
   // Calculate pileups
-  MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
+  //MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // Make pileups into regions of coverage with cushion
-  EXPAND_BED(MPILEUP.out.bed)
+  //EXPAND_BED(MPILEUP.out.bed)
 
   // Filter bams to coverage level
-  PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
+  //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
 
   // gather alignment summary information
   //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
   //PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
-  bams = PILEUPS_TO_BAM.out.filtered_bam
-                       .collect()
-  CREATE_BAMLIST(bams)
+  //bams = PILEUPS_TO_BAM.out.filtered_bam
+  //                     .collect()
+  //CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
-  if (params.do_mice) {
+  //if (params.do_mice) {
 
-    CREATE_POSFILE_DO(chrs)
-    stitch_inputs = CREATE_BAMLIST.out.bam_list
-                                .combine(CREATE_POSFILE_DO.out.ref_files)
-    RUN_STITCH_DO(stitch_inputs)
-    STITCH_VCF_TO_TXT(RUN_STITCH_DO.out.stitch_vcf)
-    geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-              .join(RUN_STITCH_DO.out.stitch_founder_genos)
+  //  CREATE_POSFILE_DO(chrs)
+  //  stitch_inputs = CREATE_BAMLIST.out.bam_list
+  //                              .combine(CREATE_POSFILE_DO.out.ref_files)
+  //  RUN_STITCH_DO(stitch_inputs)
+  //  STITCH_VCF_TO_TXT(RUN_STITCH_DO.out.stitch_vcf)
+  //  geno_files = STITCH_VCF_TO_TXT.out.sample_genos
+  //            .join(RUN_STITCH_DO.out.stitch_founder_genos)
 
-  } else {
+  //} else {
 
-    CREATE_POSFILE(chrs)
-    stitch_inputs = CREATE_BAMLIST.out.bam_list
-                                .combine(CREATE_POSFILE.out.posfile)
-    RUN_STITCH(stitch_inputs)
-    STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
-    geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-              .join(RUN_STITCH.out.stitch_founder_genos)
-  }
+  //  CREATE_POSFILE(chrs)
+  //  stitch_inputs = CREATE_BAMLIST.out.bam_list
+  //                              .combine(CREATE_POSFILE.out.posfile)
+  //  RUN_STITCH(stitch_inputs)
+  //  STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
+  //  geno_files = STITCH_VCF_TO_TXT.out.sample_genos
+  //            .join(RUN_STITCH.out.stitch_founder_genos)
+  //}
   
-  STITCH_TO_QTL(geno_files)
+  //STITCH_TO_QTL(geno_files)
   //agg_stats = QUALITY_STATISTICS.out.quality_stats
   //            .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
   //            .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
