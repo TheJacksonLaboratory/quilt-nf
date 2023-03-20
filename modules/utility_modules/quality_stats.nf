@@ -15,7 +15,7 @@ process QUALITY_STATISTICS {
 
   output:
   tuple val(sampleID), file("*_stat"), emit: quality_stats
-  tuple val(sampleID), file("*filtered_trimmed"), emit: trimmed_fastq
+  tuple val(sampleID), file("*filtered_trimmed"), emit: to_fastqc
 
   script:
   log.info "----- Quality Stats Running on: ${sampleID} -----"
