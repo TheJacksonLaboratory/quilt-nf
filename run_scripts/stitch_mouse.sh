@@ -24,4 +24,5 @@ nextflow main.nf \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
---comment "This script will run haplotype inference using STITCH on DO NovaSeq seqWell data"
+--comment "This script will run haplotype inference using STITCH on DO NovaSeq seqWell data" \
+-resume

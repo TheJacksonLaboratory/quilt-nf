@@ -21,4 +21,4 @@ regions$end <- regions$V2 + 10000
 regions <- regions[,c(1,3,4)]
 
 # write the final .bed file
-write.table(regions, file = paste0(sample,"_interval.bed"), row.names = F, col.names = F)
+write.table(regions, file = paste0(sample,"_interval.bed"), row.names = F, col.names = F, quote = F, sep = '\t')
