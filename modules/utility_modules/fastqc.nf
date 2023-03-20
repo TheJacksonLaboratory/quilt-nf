@@ -9,7 +9,7 @@ process FASTQC {
   container 'docker://biocontainers/fastqc:v0.11.9_cv8'
 
   input:
-  tuple val(sampleID), file(fq_reads)
+  tuple val(sampleID), file(fq_reads), file(fastp_reports)
 
   output:
   tuple file("*_fastqc.html"), file("*_fastqc.zip"), emit: to_multiqc
