@@ -10,7 +10,7 @@ process READ_GROUPS {
   publishDir "${params.pubdir}/${ params.organize_by=='sample' ? sampleID : 'read_groups' }", pattern: "*read_group.txt", mode:'copy', enabled: params.keep_intermediate
 
   input:
-  tuple val(sampleID), file(fq_reads)
+  tuple val(sampleID), file(fq_reads), file(report)
   val(picard)
 
   output:
