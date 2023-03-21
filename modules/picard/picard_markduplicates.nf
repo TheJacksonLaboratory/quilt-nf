@@ -29,14 +29,14 @@ process PICARD_MARKDUPLICATES {
   my_mem =  my_mem[0..-4]
 
   """
-  picard -Xmx${my_mem}G MarkDuplicates \
-  I=${bam[0]} \
-  O=${sampleID}.sorted.marked4_dedup.bam \
-  M=${sampleID}.sorted.metrics.txt \
-  REMOVE_DUPLICATES=false \
-  CREATE_INDEX=true \
-  VALIDATION_STRINGENCY=LENIENT \
-  TMP_DIR=${params.tmpdir} \
+  picard -Xmx${my_mem}G MarkDuplicates \\
+  I=${bam[0]} \\
+  O=${sampleID}.sorted.marked4_dedup.bam \\
+  M=${sampleID}.sorted.metrics.txt \\
+  REMOVE_DUPLICATES=false \\
+  CREATE_INDEX=true \\
+  VALIDATION_STRINGENCY=LENIENT \\
+  TMP_DIR=${params.tmpdir} \\
   > ${sampleID}.picard.log 2>&1  
   """
 }

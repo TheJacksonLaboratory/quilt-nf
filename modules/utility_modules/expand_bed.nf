@@ -1,11 +1,12 @@
 process EXPAND_BED {
-  tag "$chr"
 
   cpus 1
   memory 15.GB
   time '00:20:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
+
+  publishDir "${params.sample_folder}/coverage_regions", pattern:"*_interval.bed", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam), file(bed)

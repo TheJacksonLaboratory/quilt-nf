@@ -8,13 +8,13 @@ process FASTP {
 
   container 'docker://sjwidmay/fastp_nf:fastp'
 
-  publishDir "${params.sample_folder}/fastp", pattern:"*.html", mode:'copy'
+  publishDir "${params.sample_folder}/fastp", pattern:"*_fastp_report.html", mode:'copy'
 
   input:
   tuple val(sampleID), file(fq_reads)
 
   output:
-  tuple val(sampleID), file("*filtered_trimmed*"), file("*.html"), emit: fastp_filtered
+  tuple val(sampleID), file("*filtered_trimmed*"), file("*_fastp_report.html"), emit: fastp_filtered
 
   script:
   log.info "----- FASTP Running on: ${sampleID} -----"
@@ -36,6 +36,8 @@ process FASTP {
 	--detect_adapter_for_pe \\
 	-g \\
 	-c \\
-	-p
+  -D \\
+	-p \\
+  --html ${sampleID}_fastp_report.html
   """
 }

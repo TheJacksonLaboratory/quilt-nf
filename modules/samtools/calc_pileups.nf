@@ -28,6 +28,6 @@ process MPILEUP {
 
   """
   samtools mpileup -f ${params.ref_fa} ${bam} > ${sampleID}.mpileup
-  awk '\$4 > 2 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
+  awk '\$4 > 5 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
   """
 }

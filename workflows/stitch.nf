@@ -22,21 +22,22 @@ include {param_log} from "${projectDir}/bin/log/stitch.nf"
 include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
-//include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
-//include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {FASTP} from "${projectDir}/modules/utility_modules/fastp"
-//include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
-//include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
+include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
+include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
+include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
+include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
+include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
+include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
+
+//include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
+//include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 //include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
-//include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
-//include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 //include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 //include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 //include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
-//include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
-//include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 //include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 //include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
@@ -102,8 +103,8 @@ workflow STITCH {
   //TRIMMOMATIC_PE(read_ch)
 
   // Calculate quality statistics for sequencing
-  //QUALITY_STATISTICS(read_ch)
   FASTP(read_ch)
+  //QUALITY_STATISTICS(read_ch)
   
   // Run fastqc on adapter trimmed reads
   FASTQC(FASTP.out.fastp_filtered)
@@ -113,25 +114,25 @@ workflow STITCH {
   MULTIQC(fastqc_reports)
 
   // Generate read groups
-  //READ_GROUPS(QUALITY_STATISTICS.out.trimmed_fastq, "gatk")
-  //mapping = QUALITY_STATISTICS.out.trimmed_fastq
-  //                  .join(READ_GROUPS.out.read_groups)
+  READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
+  mapping = FASTP.out.fastp_filtered
+                 .join(READ_GROUPS.out.read_groups)
 
   // Alignment
-  // BWA_MEM(bwa_mem_mapping)
+  BWA_MEM(mapping)
   // BOWTIE2(mapping)
 
   // Sort SAM files
-  //PICARD_SORTSAM(BOWTIE2.out.sam)
+  PICARD_SORTSAM(BWA_MEM.out.sam)
 
   // Mark duplicates 
-  //PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
+  PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
 
   // Calculate pileups
-  //MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
+  MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // Make pileups into regions of coverage with cushion
-  //EXPAND_BED(MPILEUP.out.bed)
+  EXPAND_BED(MPILEUP.out.bed)
 
   // Filter bams to coverage level
   //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
