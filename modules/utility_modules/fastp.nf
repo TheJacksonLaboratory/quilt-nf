@@ -29,6 +29,13 @@ process FASTP {
   //}
 
   """
-  /fastp -i ${fq_reads[0]} -I ${fq_reads[1]} -o ${sampleID}_R1_filtered_trimmed.fq -O ${sampleID}_R2_filtered_trimmed.fq --detect_adapter_for_pe -g -D -c -p
+  /fastp -i ${fq_reads[0]} \\
+	-I ${fq_reads[1]} \\
+	-o ${sampleID}_R1_filtered_trimmed.fq \\
+	-O ${sampleID}_R2_filtered_trimmed.fq \\
+	--detect_adapter_for_pe \\
+	-g \\
+	-c \\
+	-p
   """
 }
