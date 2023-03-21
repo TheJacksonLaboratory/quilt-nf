@@ -23,10 +23,10 @@ include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
 //include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
-include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
+//include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
-
+include {FASTP} from "${projectDir}/modules/utility_modules/fastp"
 //include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 //include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 //include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
@@ -102,10 +102,11 @@ workflow STITCH {
   //TRIMMOMATIC_PE(read_ch)
 
   // Calculate quality statistics for sequencing
-  QUALITY_STATISTICS(read_ch)
+  //QUALITY_STATISTICS(read_ch)
+  FASTP(read_ch)
   
   // Run fastqc on adapter trimmed reads
-  FASTQC(QUALITY_STATISTICS.out.to_fastqc)
+  FASTQC(FASTP.out.fastp_filtered)
 
   // Run multiqc
   fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
@@ -118,7 +119,7 @@ workflow STITCH {
 
   // Alignment
   // BWA_MEM(bwa_mem_mapping)
-  //BOWTIE2(mapping)
+  // BOWTIE2(mapping)
 
   // Sort SAM files
   //PICARD_SORTSAM(BOWTIE2.out.sam)

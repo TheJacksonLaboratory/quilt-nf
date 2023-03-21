@@ -1,0 +1,41 @@
+process FASTP {
+
+  tag "$sampleID"
+
+  cpus 1
+  memory 30.GB
+  time '24:00:00'
+
+  container 'docker://sjwidmay/fastp_nf:fastp'
+
+  publishDir "${params.sample_folder}/fastp", pattern:"*.html", mode:'copy'
+
+  input:
+  tuple val(sampleID), file(fq_reads)
+
+  output:
+  tuple val(sampleID), file("*filtered_trimmed*"), file("*.html"), emit: fastp_filtered
+
+  script:
+  log.info "----- FASTP Running on: ${sampleID} -----"
+
+  //if (params.read_type == "SE"){
+  //  mode_HQ="-S -M"
+  //  inputfq="${fq_reads[0]}"
+  //}
+  //if (params.read_type == "PE"){
+  //  mode_HQ="-M"
+  //  inputfq="${fq_reads[0]} ${fq_reads[1]}"
+  //}
+
+  """
+  /fastp -i ${fq_reads[0]} \\
+	-I ${fq_reads[1]} \\
+	-o ${sampleID}_R1_filtered_trimmed.fq \\
+	-O ${sampleID}_R2_filtered_trimmed.fq \\
+	--detect_adapter_for_pe \\
+	-g \\
+	-c \\
+	-p
+  """
+}
