@@ -6,6 +6,8 @@ process PILEUPS_TO_BAM {
 
   container 'quay.io/biocontainers/bedtools:2.23.0--h5b5514e_6'
 
+  publishDir "${params.sample_folder}/bams", pattern: "*_covered.bam", mode:'copy'
+
   input:
   tuple val(sampleID), file(bam), file(bed)
 
@@ -16,6 +18,6 @@ process PILEUPS_TO_BAM {
   log.info "----- Filtering Alignment from ${sampleID} to Pileup Sites -----"
 
   """
-  bedtools intersect -abam ${bam} -b ${sampleID}.bed > ${sampleID}_covered.bam
+  bedtools intersect -abam ${bam} -b ${sampleID}_interval.bed > ${sampleID}_covered.bam
   """
 }

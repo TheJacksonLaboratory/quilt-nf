@@ -20,5 +20,8 @@ regions$start <- regions$V2 - 10000
 regions$end <- regions$V2 + 10000
 regions <- regions[,c(1,3,4)]
 
+# filter to true chromosomes
+regions <- regions[which(regions[,1] %in% c(as.character(1:19),"X","Y")),]
+
 # write the final .bed file
 write.table(regions, file = paste0(sample,"_interval.bed"), row.names = F, col.names = F, quote = F, sep = '\t')

@@ -31,8 +31,8 @@ temp_bamlist <- read.table(mouse_bamlist)
 # use simulated or altered data
 sample_names <- gsub(unlist(lapply(strsplit(temp_bamlist[,1], 
                                             split = "/"), 
-                                   function(x) x[[7]])),
-                     pattern = "_dedup.bam", replacement = "")
+                                   function(x) x[grep(x, pattern = ".bam")])),
+                     pattern = ".bam", replacement = "")
 
 # Export sample name file
 write.table(x = sample_names, 

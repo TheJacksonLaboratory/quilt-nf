@@ -5,11 +5,11 @@ library(STITCH)
 library(parallel)
 
 # Set arguments
-args <- commandArgs(trailingOnly = TRUE)
-# args <- c("/fastscratch/STITCH_outputDir/work/cc/73ed7fed40b46912004bb84482aa15/STITCH_bamlist.txt",
-#           "/fastscratch/STITCH_outputDir/work/cc/73ed7fed40b46912004bb84482aa15/STITCH_15_pos.txt",
-#           "4",
-#           "15")
+# args <- commandArgs(trailingOnly = TRUE)
+args <- c("STITCH_bamlist.txt",
+          "STITCH_19_pos.txt",
+          "8",
+          "19")
 # args[1] = bamlist (from channel)
 # args[2] = mouse_posfile (from channel)
 # args[3] = nFounders
@@ -28,8 +28,8 @@ temp_bamlist <- read.table(mouse_bamlist)
 # use simulated or altered data
 sample_names <- gsub(unlist(lapply(strsplit(temp_bamlist[,1], 
                                             split = "/"), 
-                                   function(x) x[[7]])),
-                     pattern = "_dedup.bam", replacement = "")
+                                   function(x) x[grep(x, pattern = ".bam")])),
+                     pattern = ".bam", replacement = "")
 
 # Export sample name file
 write.table(x = sample_names, 
