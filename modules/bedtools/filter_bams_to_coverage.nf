@@ -6,8 +6,6 @@ process PILEUPS_TO_BAM {
 
   container 'quay.io/biocontainers/bedtools:2.23.0--h5b5514e_6'
 
-  publishDir "${params.sample_folder}/bams", pattern: "*_covered.bam", mode:'copy'
-
   input:
   tuple val(sampleID), file(bam), file(bed)
 

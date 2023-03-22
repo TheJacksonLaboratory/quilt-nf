@@ -11,9 +11,6 @@ process PICARD_MARKDUPLICATES {
   publishDir "${params.sample_folder}/bams"
   publishDir "${params.sample_folder}/bams", pattern: "*.bam", mode:'copy'
   publishDir "${params.sample_folder}/bams", pattern: "*.bai", mode:'copy'
-  publishDir "${params.pubdir}/${ params.organize_by=='sample' ? sampleID+'/bam' : 'picard' }", pattern: "*.bam", mode:'copy', enabled: params.gen_org=='mouse' ? true : params.keep_intermediate
-  publishDir "${params.pubdir}/${ params.organize_by=='sample' ? sampleID+'/bam' : 'picard' }", pattern: "*.bai", mode:'copy', enabled: params.gen_org=='mouse' ? true : params.keep_intermediate
-  publishDir "${params.pubdir}/${ params.organize_by=='sample' ? sampleID+'/stats' : 'picard' }", pattern: "*.txt", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam)

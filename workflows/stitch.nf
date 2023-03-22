@@ -31,6 +31,9 @@ include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
 include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
+include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
+include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
+include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 
 //include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
 //include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
@@ -38,8 +41,6 @@ include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 //include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 //include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
-include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
-include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 //include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 //include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
 //include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
@@ -136,13 +137,13 @@ workflow STITCH {
 
   // Filter bams to coverage level
   PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
-
+  INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
   // gather alignment summary information
   //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
   //PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // 7) Collect .bam filenames in its own list
-  bams = PILEUPS_TO_BAM.out.filtered_bam
+  bams = INDEX_FILTERED_BAM.out.covered_bam
                        .collect()
   CREATE_BAMLIST(bams)
 
