@@ -34,19 +34,19 @@ include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
-
-//include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
-//include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
-//include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
-//include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
-//include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
-//include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
 include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
 include {RUN_STITCH_DO} from "${projectDir}/modules/stitch/run_stitch_DO"
 include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
 include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
+include {GENO_PROBS} from "${projectDir}/modules/stitch/genoprobs"
+//include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
+//include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
+//include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
+//include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
+//include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
+//include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 //include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 
 // help if needed
@@ -169,7 +169,12 @@ workflow STITCH {
               .join(RUN_STITCH.out.stitch_founder_genos)
   }
   
+  // convert vcfs to qtl2-style files
   STITCH_TO_QTL(geno_files)
+
+  // reconstruct haplotypes
+  GENO_PROBS(STITCH_TO_QTL.out.qtl2files)
+  
   //agg_stats = QUALITY_STATISTICS.out.quality_stats
   //            .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
   //            .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
@@ -180,7 +185,7 @@ workflow STITCH {
   
   //markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
   //align_stats = AGGREGATE_STATS.out.txt
-				.collect()
+	//			.collect()
   //STATS_MARKDOWN(align_stats)
  
  }

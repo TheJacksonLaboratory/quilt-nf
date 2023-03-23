@@ -12,6 +12,7 @@ ______________________________________________________
 --workflow                      ${params.workflow}
 --gen_org                       ${params.gen_org}
 --do_mice                       ${params.do_mice}
+--covar_file                    ${params.covar_file}
 --seq_method                    ${params.seq_method}
 --read_type                     ${params.read_type}
 --sample_folder                 ${params.sample_folder}
