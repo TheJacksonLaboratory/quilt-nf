@@ -3,7 +3,7 @@ process FASTQC {
   tag "$sampleID"
 
   cpus 1
-  memory 30.GB
+  memory 5.GB
   time '01:00:00'
 
   container 'docker://biocontainers/fastqc:v0.11.9_cv8'

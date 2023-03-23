@@ -2,7 +2,7 @@ process PICARD_MARKDUPLICATES {
   tag "$sampleID"
 
   cpus 1
-  memory 16.GB
+  memory 20.GB
   time '12:00:00'
 
   container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'

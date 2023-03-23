@@ -5,11 +5,11 @@ library(STITCH)
 library(parallel)
 
 # Set arguments
-# args <- commandArgs(trailingOnly = TRUE)
-args <- c("STITCH_bamlist.txt",
-          "STITCH_19_pos.txt",
-          "8",
-          "19")
+args <- commandArgs(trailingOnly = TRUE)
+#args <- c("STITCH_bamlist.txt",
+#          "STITCH_19_pos.txt",
+#          "8",
+#          "19")
 # args[1] = bamlist (from channel)
 # args[2] = mouse_posfile (from channel)
 # args[3] = nFounders

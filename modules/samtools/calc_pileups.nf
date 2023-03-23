@@ -1,8 +1,8 @@
 process MPILEUP {
 
   cpus 1
-  memory 200.GB
-  time '1:00:00'
+  memory 10.GB
+  time '2:00:00'
   errorStrategy 'retry' 
   maxRetries 3
 

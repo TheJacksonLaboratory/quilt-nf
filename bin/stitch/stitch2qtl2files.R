@@ -2,6 +2,7 @@
 library(data.table)
 library(dplyr)
 library(purrr)
+library(qtl2)
 library(qtl2convert)
 library(mmconvert)
 
@@ -10,7 +11,6 @@ library(mmconvert)
 # 1) Vector of genotype calls from modified stitch vcf for a single sample
 # 2) Sample name corresponding to those genotype calls
 # 3) Reference and alternate allele genotypes for each quasimarker (chr+pos)
-
 parseGenos <- function(genos, sample, ref){
   
   # find sample name in genotype and remove it
@@ -21,12 +21,12 @@ parseGenos <- function(genos, sample, ref){
   # call qtl2-style genotypes from numeric genotype encoding
   binary_geno_df <- data.frame(binary_geno)
   calledGenos <- cbind(binary_geno_df,ref) %>%
-    dplyr::mutate(call = dplyr::case_when(binary_geno == "1/1" ~ REF,
-                                          binary_geno == "0/0" ~ ALT,
-                                          binary_geno %in% c("0/1","1/0") ~ "H",
-                                          binary_geno == "./." ~ "-")) %>%
+    dplyr::mutate(call = dplyr::case_when(binary_geno == "1/1" ~ paste0(REF,REF),
+                                          binary_geno == "0/0" ~ paste0(ALT,ALT),
+                                          binary_geno %in% c("0/1","1/0") ~ paste0(REF,ALT), TRUE ~ "NA")) %>%
     dplyr::mutate(marker = paste0("st",CHR,"_",as.numeric(POS))) %>%
     dplyr::select(marker, CHR, POS, REF, ALT, call)
+  calledGenos$call[calledGenos$call == "NA"] <- NA
   colnames(calledGenos)[6] <- sample
   
   return(calledGenos)
@@ -52,10 +52,10 @@ founderDoseToAllele <- function(founder_dose){
 }
 
 args <- commandArgs(trailingOnly = TRUE)
-# args <- c("4",
-#         "/fastscratch/STITCH_outputDir/work/e9/bea5d7d9b6bdb727de597c94631c31/stitch.4.txt",
-#        "data/DO_4WC_MiSeq/DO_MiSeq/stitch_vcfs/RData/EM.all.4.RData",
-#       "8")
+# args <- c("17",
+#           "/fastscratch/STITCH_outputDir/work/62/8c80c56fe94ad5b6c15a749f18a4e3/stitch.17.txt",
+#           "data/DO_seqwell_NovaSeq/stitch_vcfs/RData/EM.all.17.RData",
+#           "8")
 
 # load intermediate data with ancestral genotype calls (inferred founder genotypes)
 load(args[3])
@@ -151,6 +151,7 @@ referenceInfo <- as.data.frame(as.matrix(sample_genos[,c(1:4)]))
 referenceInfoList <- lapply(seq_len(length(genos_listcols)), function(x) referenceInfo)
 
 # Supply ref and alt allele calls and encode genotypes in a similar style as FinalReports
+options(scipen = 999999999)
 parsedGenotypes <- purrr::pmap(.l = list(genos_listcols,
                                     samples,
                                     referenceInfoList),
@@ -163,7 +164,12 @@ qtl2SampleGenos <- qtl2convert::encode_geno(geno = parsedGenotypes[,-c(1:5)],
                                             allele_codes = alleleCodes[which(alleleCodes$marker %in% parsedGenotypes$marker),c(3:4)])
 qtl2SampleGenos <- cbind(parsedGenotypes$marker, data.frame(qtl2SampleGenos))
 colnames(qtl2SampleGenos)[1] <- "marker"
-
+# for formatting:
+# geno <- rbind(c("C", "G", "C",  "GG", "CG"),
+#               c("A", "A", "AT", "TA", "TT"),
+#               c("T", "G", NA,   "GT", "TT"))
+# codes <- rbind(c("C", "G"), c("A", "T"), c("T", "G"))
+# encode_geno(geno, codes)
 
 
 # Writing qtl2-style files
