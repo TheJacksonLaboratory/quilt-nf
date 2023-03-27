@@ -3,7 +3,6 @@ library(data.table)
 library(dplyr)
 library(purrr)
 library(qtl2)
-library(qtl2fst)
 
 # test_dir
 # test_dir <- "/fastscratch/STITCH_outputDir/work/eb/88cc9c53b47f2a073c1485e9f83bcd/"
