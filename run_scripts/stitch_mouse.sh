@@ -18,12 +18,12 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq_nobamfiltering/' \
 --gen_org mouse \
 --seq_method lcGBS \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
---covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq/DO_covar.csv' \
+--covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
 --comment "This script will run haplotype inference using STITCH on DO NovaSeq seqWell data" \
 -resume

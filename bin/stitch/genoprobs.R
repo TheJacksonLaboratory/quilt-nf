@@ -9,8 +9,8 @@ library(qtl2)
 # setwd(test_dir)
 
 # take arguments
-args <- commandArgs(trailingOnly = TRUE)
-# args <- c("4", "geno4.csv","allele_codes4.csv","pmap4.csv","gmap4.csv","foundergeno4.csv","/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv")
+# args <- commandArgs(trailingOnly = TRUE)
+  args <- c("6", "geno6.csv","allele_codes6.csv","pmap6.csv","gmap6.csv","foundergeno6.csv","/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv")
 
 # what chromosome?
 chr <- args[1]
@@ -96,7 +96,7 @@ for(chr in seq_along(cross$founder_geno)) {
 pr <- qtl2::calc_genoprob(cross = cross, 
                           map = cross$pmap, 
                           error_prob = 0.002, 
-                          cores = (parallel::detectCores()/2))
+                          cores = (parallel::detectCores()/2), quiet = F)
 # Calculate allele probs
 apr <- qtl2::genoprob_to_alleleprob(probs = pr, 
                                     cores = (parallel::detectCores()/2))

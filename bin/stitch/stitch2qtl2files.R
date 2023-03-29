@@ -21,8 +21,8 @@ parseGenos <- function(genos, sample, ref){
   # call qtl2-style genotypes from numeric genotype encoding
   binary_geno_df <- data.frame(binary_geno)
   calledGenos <- cbind(binary_geno_df,ref) %>%
-    dplyr::mutate(call = dplyr::case_when(binary_geno == "1/1" ~ paste0(REF,REF),
-                                          binary_geno == "0/0" ~ paste0(ALT,ALT),
+    dplyr::mutate(call = dplyr::case_when(binary_geno == "0/0" ~ paste0(REF,REF),
+                                          binary_geno == "1/1" ~ paste0(ALT,ALT),
                                           binary_geno %in% c("0/1","1/0") ~ paste0(REF,ALT), TRUE ~ "NA")) %>%
     dplyr::mutate(marker = paste0("st",CHR,"_",as.numeric(POS))) %>%
     dplyr::select(marker, CHR, POS, REF, ALT, call)

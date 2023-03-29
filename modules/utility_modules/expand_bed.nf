@@ -1,8 +1,8 @@
 process EXPAND_BED {
 
   cpus 1
-  memory 15.GB
-  time '00:20:00'
+  memory 100.GB
+  time '01:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
 

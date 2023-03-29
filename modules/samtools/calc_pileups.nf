@@ -1,8 +1,8 @@
 process MPILEUP {
 
   cpus 1
-  memory 10.GB
-  time '2:00:00'
+  memory 300.GB
+  time '5:00:00'
   errorStrategy 'retry' 
   maxRetries 3
 
@@ -21,6 +21,6 @@ process MPILEUP {
 
   """
   samtools mpileup -f ${params.ref_fa} ${bam} > ${sampleID}.mpileup
-  awk '\$4 > 5 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
+  awk '\$4 > 0 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
   """
 }
