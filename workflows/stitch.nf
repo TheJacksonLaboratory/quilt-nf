@@ -141,6 +141,7 @@ workflow STITCH {
   chrom_channel.view()
 
   GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
+  GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0).view()
 
   // Filter bams to coverage level
   //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)

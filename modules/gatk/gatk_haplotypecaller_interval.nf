@@ -8,11 +8,13 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
 
   container 'broadinstitute/gatk:4.2.4.1'
 
+  publishDir "${params.sample_folder}/gvcfs", pattern: "*.g.vcf", mode:'copy'
+
   input:
   tuple val(sampleID), file(bam), file(bai), val(chrom)
 
   output:
-  tuple val(sampleID), file("*.vcf"), emit: vcf
+  tuple val(chrom), val(sampleID), file("*.vcf"), emit: vcf
   tuple val(sampleID), file("*.idx"), emit: idx
 
   script:
@@ -24,8 +26,10 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   gatk --java-options "-Xmx${my_mem}G" HaplotypeCaller  \
   -R ${params.ref_fa} \
   -I ${bam} \
-  -O ${sampleID}_HaplotypeCaller_${chrom}.vcf \
+  -O ${sampleID}_HaplotypeCaller_${chrom}.g.vcf \
   -L ${chrom} \
-  -stand-call-conf 30
+  -ERC GVCF \
+  -stand-call-conf 30 \
+  --max-num-haplotypes-in-population ${params.nFounders}
   """
 }
