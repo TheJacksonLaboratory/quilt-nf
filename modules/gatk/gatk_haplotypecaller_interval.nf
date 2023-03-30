@@ -14,7 +14,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   tuple val(sampleID), file(bam), file(bai), val(chrom)
 
   output:
-  tuple val(chrom), val(sampleID), file("*.vcf"), emit: vcf
+  tuple val(chrom), val(sampleID), file("*.g.vcf"), emit: vcf
   tuple val(sampleID), file("*.idx"), emit: idx
 
   script:

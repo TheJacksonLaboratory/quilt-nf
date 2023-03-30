@@ -30,6 +30,7 @@ include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
+include {GATK_COMBINE_CHR_GVCF} from "${projectDir}/modules/gatk/gatk_combine_chr_gvcf.nf"
 //include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
@@ -141,7 +142,10 @@ workflow STITCH {
   chrom_channel.view()
 
   GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
-  GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0).view()
+  chr_gvcfs <- GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
+  
+  GATK_COMBINE_CHR_GVCF(chr_gvcfs)
+
 
   // Filter bams to coverage level
   //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
