@@ -3,7 +3,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   tag "$sampleID"
 
   cpus = 1
-  memory = 15.GB
+  memory = 100.GB
   time = '05:30:00'
 
   container 'broadinstitute/gatk:4.2.4.1'
