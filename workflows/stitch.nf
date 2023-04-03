@@ -42,6 +42,7 @@ include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_ha
 //include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
 include {GATK_VCF_TO_TXT} from "${projectDir}/modules/gatk/gatk_to_sample_genos"
 //include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
+include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
 //include {GENO_PROBS} from "${projectDir}/modules/stitch/genoprobs"
 //include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
 //include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
@@ -150,6 +151,7 @@ workflow STITCH {
   //PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)
+
 
   // 7) Collect .bam filenames in its own list
   //bams = INDEX_FILTERED_BAM.out.covered_bam

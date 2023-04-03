@@ -16,7 +16,7 @@ process GATK_VCF_TO_TXT {
 
 
   output:
-  tuple val(chrom), file("*_gatk.txt"), file("founders_chr*.txt"), emit: sample_gneos
+  tuple val(chrom), file("*_gatk.txt"), file("founders_chr*.txt"), emit: sample_genos
 
 
   script:
