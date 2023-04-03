@@ -152,7 +152,8 @@ workflow STITCH {
 
   GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)
 
-
+  GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
+  
   // 7) Collect .bam filenames in its own list
   //bams = INDEX_FILTERED_BAM.out.covered_bam
   //                     .collect()
