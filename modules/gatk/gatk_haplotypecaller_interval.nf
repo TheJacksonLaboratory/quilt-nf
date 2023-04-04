@@ -2,8 +2,10 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
 // Note about this module
   tag "$sampleID"
 
-  cpus = 1
-  memory = 100.GB
+  cpus = 4
+  memory {100.GB * task.attempt}
+  errorStrategy 'retry' 
+  maxRetries 4
   time = '05:30:00'
 
   container 'broadinstitute/gatk:4.2.4.1'

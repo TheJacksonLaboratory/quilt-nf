@@ -44,6 +44,7 @@ include {GATK_VCF_TO_TXT} from "${projectDir}/modules/gatk/gatk_to_sample_genos"
 //include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
 include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
 include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
+include {GENO_PROBS} from "${projectDir}/modules/gatk/genoprobs"
 //include {GENO_PROBS} from "${projectDir}/modules/stitch/genoprobs"
 //include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
 //include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
@@ -156,8 +157,8 @@ workflow STITCH {
   GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
   sample_qtl2files = GATK_TO_QTL.out.qtl2files.groupTuple(by: 1)
   WRITE_QTL2_FILES(sample_qtl2files)
+  GENO_PROBS(sample_qtl2files)
 
-  
   // 7) Collect .bam filenames in its own list
   //bams = INDEX_FILTERED_BAM.out.covered_bam
   //                     .collect()
