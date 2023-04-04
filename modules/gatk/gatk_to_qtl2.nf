@@ -18,6 +18,6 @@ process GATK_TO_QTL {
   log.info "----- Converting GATK Genotypes to R/qtl2 Input Files -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/stitch/gatk2qtl2files.R ${chr} ${sample_genos} ${founder_genos} ${params.nFounders} ${sampleID}
+  Rscript --vanilla ${projectDir}/bin/gatk/gatk2qtl2files.R ${chr} ${sample_genos} ${founder_genos} ${params.nFounders}
   """
 }
