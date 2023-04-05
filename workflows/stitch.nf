@@ -157,7 +157,7 @@ workflow STITCH {
   GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
   sample_qtl2files = GATK_TO_QTL.out.qtl2files.groupTuple(by: 1)
   WRITE_QTL2_FILES(sample_qtl2files)
-  GENO_PROBS(sample_qtl2files)
+  GENO_PROBS(WRITE_QTL2_FILES.out.writeout)
 
   // 7) Collect .bam filenames in its own list
   //bams = INDEX_FILTERED_BAM.out.covered_bam
