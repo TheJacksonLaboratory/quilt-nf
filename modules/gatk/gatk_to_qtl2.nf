@@ -8,7 +8,7 @@ process GATK_TO_QTL {
 
   //errorStrategy 'ignore' 
 
-  publishDir "${params.sample_folder}/qtl2files", pattern: "*.csv", mode:'copy'
+  publishDir "${params.sample_folder}/qtl2files/${sampleID}", pattern: "*.csv", mode:'copy'
 
   input:
   tuple val(chr), val(sampleID), file(sample_genos), file(founder_genos)

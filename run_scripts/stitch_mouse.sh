@@ -18,12 +18,12 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_4WC_MiSeq/DO_MiSeq/' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq_full/' \
 --gen_org mouse \
 --seq_method lcGBS \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
 --covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
---comment "This script will run haplotype inference using GATK on DO MiSeq seqWell data" \
+--comment "This script will run haplotype inference using GATK on DO lcGBS data" \
 -resume
