@@ -20,7 +20,7 @@ process GENO_PROBS {
   log.info "----- Reconstructing Sample Haplotypes for ${sampleID} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/stitch/genoprobs.R ${sampleID} ${params.covar_file}
+  Rscript --vanilla ${projectDir}/bin/gatk/genoprobs.R ${sampleID} ${params.covar_file}
   mv *36_state_probs.RData ${sampleID}_36_state_probs.RData
   mv *8_state_probs.RData ${sampleID}_8_state_probs.RData
   """
