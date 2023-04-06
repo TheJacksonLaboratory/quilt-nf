@@ -8,7 +8,7 @@ process PICARD_MARKDUPLICATES {
   container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
 
   // save if mouse and wes or save if keep intermediate
-  publishDir "${params.sample_folder}/bams"
+  //publishDir "${params.sample_folder}/bams"
   publishDir "${params.sample_folder}/bams", pattern: "*.bam", mode:'copy'
   publishDir "${params.sample_folder}/bams", pattern: "*.bai", mode:'copy'
 

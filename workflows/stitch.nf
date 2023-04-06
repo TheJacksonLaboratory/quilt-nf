@@ -29,18 +29,23 @@ include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
-include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
-include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
-include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
-include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
-include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
-include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
-include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
-include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
-include {RUN_STITCH_DO} from "${projectDir}/modules/stitch/run_stitch_DO"
-include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
-include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
-include {GENO_PROBS} from "${projectDir}/modules/stitch/genoprobs"
+include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
+//include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
+//include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
+//include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
+//include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
+//include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
+//include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
+//include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
+//include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
+//include {RUN_STITCH_DO} from "${projectDir}/modules/stitch/run_stitch_DO"
+//include {STITCH_VCF_TO_TXT} from "${projectDir}/modules/stitch/vcf_to_sample_genos"
+include {GATK_VCF_TO_TXT} from "${projectDir}/modules/gatk/gatk_to_sample_genos"
+//include {STITCH_TO_QTL} from "${projectDir}/modules/stitch/stitch_to_qtl2files"
+include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
+include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
+include {GENO_PROBS} from "${projectDir}/modules/gatk/genoprobs"
+//include {GENO_PROBS} from "${projectDir}/modules/stitch/genoprobs"
 //include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
 //include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 //include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
@@ -130,50 +135,62 @@ workflow STITCH {
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
 
   // Calculate pileups
-  MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
+  //MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
 
   // Make pileups into regions of coverage with cushion
-  EXPAND_BED(MPILEUP.out.bed)
+  //EXPAND_BED(MPILEUP.out.bed)
+  data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
+
+  chrom_channel = data.combine(chrs)
+
+  GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
 
   // Filter bams to coverage level
-  PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
-  INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
+  //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
+  //INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
   // gather alignment summary information
   //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
   //PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
+  GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)
+
+  GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
+  sample_qtl2files = GATK_TO_QTL.out.qtl2files.groupTuple(by: 1)
+  WRITE_QTL2_FILES(sample_qtl2files)
+  GENO_PROBS(WRITE_QTL2_FILES.out.writeout)
+
   // 7) Collect .bam filenames in its own list
-  bams = INDEX_FILTERED_BAM.out.covered_bam
-                       .collect()
-  CREATE_BAMLIST(bams)
+  //bams = INDEX_FILTERED_BAM.out.covered_bam
+  //                     .collect()
+  //CREATE_BAMLIST(bams)
 
   // 8) Generate other required input files for STITCH
-  if (params.do_mice) {
+  //if (params.do_mice) {
 
-    CREATE_POSFILE_DO(chrs)
-   stitch_inputs = CREATE_BAMLIST.out.bam_list
-                                .combine(CREATE_POSFILE_DO.out.ref_files)
-    RUN_STITCH_DO(stitch_inputs)
-    STITCH_VCF_TO_TXT(RUN_STITCH_DO.out.stitch_vcf)
-    geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-              .join(RUN_STITCH_DO.out.stitch_founder_genos)
+    //CREATE_POSFILE_DO(chrs)
+    //stitch_inputs = CREATE_BAMLIST.out.bam_list
+    //                            .combine(CREATE_POSFILE_DO.out.ref_files)
+    //RUN_STITCH_DO(stitch_inputs)
+    //STITCH_VCF_TO_TXT(RUN_STITCH_DO.out.stitch_vcf)
+    //geno_files = STITCH_VCF_TO_TXT.out.sample_genos
+    //          .join(RUN_STITCH_DO.out.stitch_founder_genos)
 
-  } else {
+  //} else {
 
-    CREATE_POSFILE(chrs)
-    stitch_inputs = CREATE_BAMLIST.out.bam_list
-                                .combine(CREATE_POSFILE.out.posfile)
-    RUN_STITCH(stitch_inputs)
-    STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
-    geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-              .join(RUN_STITCH.out.stitch_founder_genos)
-  }
+    //CREATE_POSFILE(chrs)
+    //stitch_inputs = CREATE_BAMLIST.out.bam_list
+    //                            .combine(CREATE_POSFILE.out.posfile)
+    //RUN_STITCH(stitch_inputs)
+    //STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
+    //geno_files = STITCH_VCF_TO_TXT.out.sample_genos
+    //          .join(RUN_STITCH.out.stitch_founder_genos)
+  //}
   
   // convert vcfs to qtl2-style files
-  STITCH_TO_QTL(geno_files)
+  //STITCH_TO_QTL(geno_files)
 
   // reconstruct haplotypes
-  GENO_PROBS(STITCH_TO_QTL.out.qtl2files)
+  //GENO_PROBS(STITCH_TO_QTL.out.qtl2files)
   
   //agg_stats = QUALITY_STATISTICS.out.quality_stats
   //            .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
