@@ -133,33 +133,40 @@ workflow STITCH {
 
   // Mark duplicates 
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
-
-  // Calculate pileups
-  //MPILEUP(PICARD_MARKDUPLICATES.out.dedup_bam)
-
-  // Make pileups into regions of coverage with cushion
-  //EXPAND_BED(MPILEUP.out.bed)
   data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
 
+  // pair up each chromosome with sample bams
   chrom_channel = data.combine(chrs)
 
-  GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
+  // Calculate pileups
+  //MPILEUP(data)
+  //EXPAND_BED(MPILEUP.out.bed)
 
   // Filter bams to coverage level
   //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
   //INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
-  // gather alignment summary information
-  //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
-  //PICARD_COLLECTWGSMETRICS(PICARD_MARKDUPLICATES.out.dedup_bam)
 
+  // call variants for each chromosome within each sample
+  GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
+
+  // make output vcf into txt
   GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)
 
+  // parse txt file into qtl2-style files
   GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
+
+  // pull together all the chromosomes for each sample
   sample_qtl2files = GATK_TO_QTL.out.qtl2files.groupTuple(by: 1)
+
+  // make the qtl files and write them to each folder
   WRITE_QTL2_FILES(sample_qtl2files)
+
+  // calculate genotype probabilities and make the fst database in each sample folder
   GENO_PROBS(WRITE_QTL2_FILES.out.writeout)
 
-  // 7) Collect .bam filenames in its own list
+
+  // STITCH things
+  // Collect .bam filenames in its own list
   //bams = INDEX_FILTERED_BAM.out.covered_bam
   //                     .collect()
   //CREATE_BAMLIST(bams)
