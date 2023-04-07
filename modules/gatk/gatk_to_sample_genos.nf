@@ -23,7 +23,8 @@ process GATK_VCF_TO_TXT {
   log.info "----- Converting GATK Output VCF to Text File for ${sampleID} Chromosome ${chrom} -----"
 
   """
-  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' ${vcf} > ${sampleID}_${chrom}_gatk.txt
+  bcftools view --regions ${chrom} -m2 -M2 -v snps ${vcf} > ${sampleID}_chr${chrom}.vcf.gz
+  bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' ${sampleID}_chr${chrom}.vcf.gz > ${sampleID}_${chrom}_gatk.txt
   bcftools view --regions ${chrom} -m2 -M2 -v snps ${params.DO_vcf} > founders_chr${chrom}.vcf.gz
   bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%GT]\n' founders_chr${chrom}.vcf.gz > founders_chr${chrom}.txt
   """
