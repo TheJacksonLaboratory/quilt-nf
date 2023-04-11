@@ -1,7 +1,7 @@
 process GATK_TO_QTL {
 
   cpus 1
-  memory 30.GB
+  memory 31.GB
   time '01:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'

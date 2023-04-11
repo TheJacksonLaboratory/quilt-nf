@@ -9,7 +9,7 @@ process GATK_VCF_TO_TXT {
 
   container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
   
-  publishDir "${params.sample_folder}/stitch_vcfs", pattern: "*_gatk.txt", mode:'copy'
+  publishDir "${params.sample_folder}/stitch_vcfs", pattern: "*.txt", mode:'copy'
 
   input:
   tuple val(chrom), val(sampleID), file(vcf)
