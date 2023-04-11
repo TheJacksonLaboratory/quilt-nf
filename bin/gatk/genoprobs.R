@@ -85,7 +85,7 @@ print("Calculating genoprobs...")
 fpr <- qtl2fst::calc_genoprob_fst(cross = cross,
                          fbase = "pr", 
                          fdir = ostem, 
-                         error_prob = 0.002,
+                         error_prob = 0.1,
                          overwrite = T,
                          quiet = F, 
                          cores = (parallel::detectCores()/2))

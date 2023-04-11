@@ -3,7 +3,7 @@ process GENO_PROBS {
   tag "$sampleID"
 
   cpus 8
-  memory 500.GB
+  memory 499.GB
   time '24:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
