@@ -30,6 +30,7 @@ include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
+include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs/nf"
 //include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
@@ -148,21 +149,23 @@ workflow STITCH {
 
   // call variants for each chromosome within each sample
   GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
+  chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
+  COMBINE_GVCF(chr_gvcfs)
 
   // make output vcf into txt
-  GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)
+  //GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)
 
   // parse txt file into qtl2-style files
-  GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
+  //GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
 
   // pull together all the chromosomes for each sample
-  sample_qtl2files = GATK_TO_QTL.out.qtl2files.groupTuple(by: 1)
+  //sample_qtl2files = GATK_TO_QTL.out.qtl2files.groupTuple(by: 1)
 
   // make the qtl files and write them to each folder
-  WRITE_QTL2_FILES(sample_qtl2files)
+  //WRITE_QTL2_FILES(sample_qtl2files)
 
   // calculate genotype probabilities and make the fst database in each sample folder
-  GENO_PROBS(WRITE_QTL2_FILES.out.writeout)
+  //GENO_PROBS(WRITE_QTL2_FILES.out.writeout)
 
 
   // STITCH things
