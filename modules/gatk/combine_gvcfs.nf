@@ -9,7 +9,7 @@ process COMBINE_GVCF {
   container 'broadinstitute/gatk:4.2.4.1'
 
   input:
-  tuple val(chrom), val(sampleID), file(gvcf)
+  tuple val(chrom), val(sampleID), file(gvcf), file(gvcf_index)
 
   output:
   tuple val(chrom), file("*combine_gvcfs.sh"), emit: chr_vcf
