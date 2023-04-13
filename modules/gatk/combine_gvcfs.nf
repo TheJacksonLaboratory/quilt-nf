@@ -3,7 +3,7 @@ process COMBINE_GVCF {
   tag "$chrom"
 
   cpus = 4
-  memory 101.GB
+  memory 100.GB
   time = '01:30:00'
 
   container 'broadinstitute/gatk:4.2.4.1'
@@ -12,7 +12,7 @@ process COMBINE_GVCF {
   tuple val(chrom), val(sampleID), file(gvcf)
 
   output:
-  tuple val(chrom), file("*.txt"), emit: chr_vcf
+  tuple val(chrom), file("*combine_gvcfs.sh"), emit: chr_vcf
   //tuple val(sampleID), file("*.idx"), emit: idx
 
   script:
@@ -20,13 +20,11 @@ process COMBINE_GVCF {
   log.info "----- Combining Chromosome ${chrom} GVCFs -----"
 
   """
-  
-  ls ${gvcf} > gvcf.list.txt 
-  
-  sed 's/^/-V /' gvcf.list > gvcf.list.2
-  sed '1,'"\$(( \$(wc -l < gvcf.list.2) - 1 ))" 's/\$/ \\\/g' gvcf.list.2 > gvcf.list.final
-  cat ${projectDir}/bin/gatk/combineGVCF_template.sh && echo && cat gvcf.list.final > chr${chrom}_combine_gvcfs.sh
+  ls ${gvcf} > gvcf.list.txt
+  sed 's/^/-V /' gvcf.list.txt > gvcf.list.V.txt
+  nsamples_but_last=\$((\$(wc -l < gvcf.list.V.txt) - 1))
+  sed "1,\${nsamples_but_last}s/\$/ \\\\\\/" gvcf.list.V.txt > gvcf.list.final.txt
+  cat ${projectDir}/bin/gatk/combineGVCF_template.sh gvcf.list.final.txt > chr${chrom}_combine_gvcfs.sh
   bash chr${chrom}_combine_gvcfs.sh ${params.ref_fa} chr${chrom}_combined.g.vcf.gz
-
   """
 }
