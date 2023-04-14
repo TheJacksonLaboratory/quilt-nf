@@ -3,8 +3,8 @@ process COMBINE_GVCF {
   tag "$chrom"
 
   cpus = 4
-  memory 100.GB
-  time = '01:30:00'
+  memory 300.GB
+  time = '10:00:00'
 
   container 'broadinstitute/gatk:4.2.4.1'
 
@@ -12,7 +12,7 @@ process COMBINE_GVCF {
   tuple val(chrom), val(sampleID), file(gvcf), file(gvcf_index)
 
   output:
-  tuple val(chrom), file("*combine_gvcfs.sh"), emit: chr_vcf
+  tuple val(chrom), file("*_combined.g.vcf.gz"), emit: chr_vcf
   //tuple val(sampleID), file("*.idx"), emit: idx
 
   script:
