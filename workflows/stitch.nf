@@ -31,6 +31,7 @@ include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
 include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
+include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combined_gvcfs.nf"
 //include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
@@ -149,8 +150,13 @@ workflow STITCH {
 
   // call variants for each chromosome within each sample
   GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
+
+  // combine sample gvcfs by chromosome
   chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
   COMBINE_GVCF(chr_gvcfs)
+
+  // genotype combined gvcfs
+  GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
 
   // make output vcf into txt
   //GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)

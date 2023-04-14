@@ -12,8 +12,7 @@ process COMBINE_GVCF {
   tuple val(chrom), val(sampleID), file(gvcf), file(gvcf_index)
 
   output:
-  tuple val(chrom), file("*_combined.g.vcf.gz"), emit: chr_vcf
-  //tuple val(sampleID), file("*.idx"), emit: idx
+  tuple val(chrom), val(sampleID), file("*_combined.g.vcf.gz"), file("*_combined.g.vcf.gz.tbi"), emit: chr_vcf
 
   script:
 
