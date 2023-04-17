@@ -164,11 +164,11 @@ workflow STITCH {
   // parse txt file into qtl2-style files
   GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
 
-  // make the qtl files and write them to each folder
-  //WRITE_QTL2_FILES(sample_qtl2files)
+  // collect the qtl files and write them to each folder
+  qtl2files = GATK_TO_QTL.out.qtl2files.collect().view()
 
   // calculate genotype probabilities and make the fst database in each sample folder
-  //GENO_PROBS(WRITE_QTL2_FILES.out.writeout)
+  GENO_PROBS(qtl2files)
 
 
   // STITCH things
