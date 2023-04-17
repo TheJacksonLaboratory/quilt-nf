@@ -12,11 +12,11 @@ process GENOTYPE_COMBINED_GVCF {
   tuple val(chrom), val(sampleID), file(combined_gvcf), file(combined_gvcf_index)
 
   output:
-  tuple val(chrom), val(sampleID), file("*_genotyped.vcf.gz"), emit: vcf
+  tuple val(chrom), val(sampleID), file("*_genotyped.vcf.gz"), file("*_genotyped.vcf.gz.tbi"), emit: vcf
 
   script:
 
-  log.info "----- GATK Haplotype Caller Running on Chromosome ${chrom} for sample: ${sampleID} -----"
+  log.info "----- GATK Haplotype Caller Running on Chromosome ${chrom} -----"
   String my_mem = (task.memory-1.GB).toString()
   my_mem =  my_mem[0..-4]
   """

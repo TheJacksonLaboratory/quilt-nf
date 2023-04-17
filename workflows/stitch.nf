@@ -159,13 +159,10 @@ workflow STITCH {
   GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
 
   // make output vcf into txt
-  //GATK_VCF_TO_TXT(GATK_HAPLOTYPECALLER_INTERVAL.out.vcf)
+  GATK_VCF_TO_TXT(GENOTYPE_COMBINED_GVCF.out.vcf)
 
   // parse txt file into qtl2-style files
-  //GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
-
-  // pull together all the chromosomes for each sample
-  //sample_qtl2files = GATK_TO_QTL.out.qtl2files.groupTuple(by: 1)
+  GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
 
   // make the qtl files and write them to each folder
   //WRITE_QTL2_FILES(sample_qtl2files)
