@@ -1,7 +1,5 @@
 process GENO_PROBS {
 
-  tag "$sampleID"
-
   cpus 8
   memory 500.GB
   time '24:00:00'
@@ -9,9 +7,9 @@ process GENO_PROBS {
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
 
   input:
-  tuple val(chr), file(sample_geno), file(gmap), file(pmap), file(foundergeno), file(allele_codes)  
+  val(chr)  
   output:
-  tuple file("lcgbs_36_state_probs.RData"), file("lcgbs_8_state_probs.RData"), emit: geno_probs_out
+  val(chr)  
 
   script:
   log.info "----- Reconstructing Sample Haplotypes -----"

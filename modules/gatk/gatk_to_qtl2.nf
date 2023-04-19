@@ -16,7 +16,7 @@ process GATK_TO_QTL {
   tuple val(chr), val(sampleID), file(sample_genos), file(founder_genos)
 
   output:
-  tuple val(chr), file("geno*"), file("gmap*"), file("pmap*"), file("foundergeno*"), file("allele_codes*"), emit: qtl2files
+  val(chr), emit: qtl2files
 
   script:
   log.info "----- Converting GATK Genotypes to R/qtl2 Input Files for Chromosome ${chr} -----"

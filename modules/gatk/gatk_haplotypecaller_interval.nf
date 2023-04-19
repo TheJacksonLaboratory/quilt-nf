@@ -32,6 +32,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   -L ${chrom} \
   -ERC GVCF \
   -stand-call-conf 30 \
-  --max-num-haplotypes-in-population ${params.nFounders}
+  --max-num-haplotypes-in-population ${params.nFounders} \
+  --heterozygosity 0.01
   """
 }
