@@ -29,14 +29,17 @@ colnames(reference_genos) <- c("CHR","POS","REF","ALT",LETTERS[1:8])
 
 # attach founder genotypes for calling at the same time
 founders_samples <- dplyr::left_join(sample_genos, reference_genos)
-null_founders <- which(apply(founders_samples[,(ncol(founders_samples)-8):(ncol(founders_samples))],1,function(x) TRUE %in% is.na(x)))
+null_founders <- 
+which(apply(founders_samples[,(ncol(founders_samples)-8):(ncol(founders_samples))],1,function(x) 
+TRUE %in% is.na(x)))
 null_sites <- founders_samples[null_founders,]$POS
 founders_samples <- founders_samples[which(!founders_samples$POS %in% null_sites),]
 nrow(founders_samples)
 
 # Identify samples
 samples <- founders_samples[,5:ncol(founders_samples)]
-samples <- as.character(apply(samples, 2, function(x) strsplit(unique(as.matrix(x)), "=")[[1]][1]))
+samples <- as.character(apply(samples, 2, function(x) strsplit(unique(as.matrix(x)), 
+"=")[[1]][1]))
 
 # Reset the column names
 colnames(founders_samples) <- c(colnames(founders_samples)[1:4], samples)
@@ -76,7 +79,8 @@ parseGenos <- function(genos, sample, ref){
   calledGenos <- cbind(binary_geno_df,ref) %>%
     dplyr::mutate(call = dplyr::case_when(binary_geno == "0/0" ~ paste0(REF,REF),
                                           binary_geno == "1/1" ~ paste0(ALT,ALT),
-                                          binary_geno %in% c("0/1","1/0") ~ paste0(REF,ALT), TRUE ~ "NA")) %>%
+                                          binary_geno %in% c("0/1","1/0") ~ paste0(REF,ALT), 
+TRUE ~ "NA")) %>%
     dplyr::mutate(marker = paste0("gatk",CHR,"_",as.numeric(POS))) %>%
     dplyr::select(marker, CHR, POS, REF, ALT, call)
   calledGenos$call[calledGenos$call == "NA"] <- NA
@@ -130,12 +134,14 @@ colnames(qtl2FounderGenos) <- colnames(processedFounderGenos)
 # encode_geno(geno, codes)
 
 # Restrict genotypes to sites where founders are not hets
-qtl2FounderGenos <- qtl2FounderGenos[which(apply(qtl2FounderGenos, 1, function(x) length(grep("H", x = x))) == 0),]
+qtl2FounderGenos <- qtl2FounderGenos[which(apply(qtl2FounderGenos, 1, function(x) 
+length(grep("H", x = x))) == 0),]
 num_alleles <- apply(qtl2FounderGenos[,-1], 1, function(x) length(summary(as.factor(x))))
 seg <- which(num_alleles != 1)
 qtl2FounderGenos <- qtl2FounderGenos[seg,]
 
-qtl2SampleGenos <- qtl2SampleGenos[which(qtl2SampleGenos$marker %in% qtl2FounderGenos$marker),]
+qtl2SampleGenos <- qtl2SampleGenos[which(qtl2SampleGenos$marker %in% 
+qtl2FounderGenos$marker),]
 rownames(qtl2SampleGenos) <- NULL
 alleleCodes <- alleleCodes[which(alleleCodes$marker %in% qtl2FounderGenos$marker),]
 rownames(alleleCodes) <- NULL
@@ -179,7 +185,8 @@ qtl2convert::write2csv(alleleCodes,
                        overwrite=TRUE)
 
 # Physical Map
-pmap_pos <- as.numeric(unlist(lapply(alleleCodes$marker, function(x) strsplit(x, "_")[[1]][2])))
+pmap_pos <- as.numeric(unlist(lapply(alleleCodes$marker, function(x) strsplit(x, 
+"_")[[1]][2])))
 pmap <- alleleCodes %>%
   dplyr::select(marker, chr) %>%
   dplyr::mutate(pos = pmap_pos/1000000)
