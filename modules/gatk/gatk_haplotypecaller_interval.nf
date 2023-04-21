@@ -16,7 +16,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   tuple val(sampleID), file(bam), file(bai), val(chrom)
 
   output:
-  tuple val(chrom), val(sampleID), file("*_genotyped.vcf.gz"), emit: vcf
+  tuple val(chrom), val(sampleID), file("*g.vcf.gz"), file("*g.vcf.gz.tbi"), emit: vcf
   // tuple val(sampleID), file("*.idx"), emit: idx
 
   script:
@@ -32,11 +32,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   -L ${chrom} \
   -ERC GVCF \
   -stand-call-conf 30 \
-  --max-num-haplotypes-in-population ${params.nFounders}
-
-  gatk --java-options "-Xmx${my_mem}G" GenotypeGVCFs  \
-  -R ${params.ref_fa} \
-  -V ${sampleID}_HaplotypeCaller_${chrom}.g.vcf.gz \
-  -O ${sampleID}_chr${chrom}_genotyped.vcf.gz \
+  --max-num-haplotypes-in-population ${params.nFounders} \
+  --heterozygosity 0.01
   """
 }

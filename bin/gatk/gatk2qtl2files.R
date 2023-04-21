@@ -7,10 +7,9 @@ library(qtl2convert)
 library(mmconvert)
 
 args <- commandArgs(trailingOnly = TRUE)
-# setwd("/fastscratch/STITCH_outputDir/work/97/4bdb6a468db2c6ae6f050e6e800a4b")
-# args <- c("18",
-#           "/fastscratch/STITCH_outputDir/work/a4/d8d9fa7dcde2d63d00abd1e2b5fdb3/plexWell-F31_GT23-02337_GTTGACAG-TTCCTATG_S189_L004_18_gatk.txt",
-#           "/fastscratch/STITCH_outputDir/work/a4/d8d9fa7dcde2d63d00abd1e2b5fdb3/founders_chr18.txt",
+# args <- c("10",
+#           "data/DO_seqwell_NovaSeq_full/stitch_vcfs/samples_chr10_gatk.txt",
+#           "data/DO_seqwell_NovaSeq_full/stitch_vcfs/founders_chr10.txt",
 #           "8")
 
 #### SAMPLE GENOTYPES
@@ -30,13 +29,17 @@ colnames(reference_genos) <- c("CHR","POS","REF","ALT",LETTERS[1:8])
 
 # attach founder genotypes for calling at the same time
 founders_samples <- dplyr::left_join(sample_genos, reference_genos)
-null_founders <- which(apply(founders_samples[,(ncol(founders_samples)-8):(ncol(founders_samples))],1,function(x) TRUE %in% is.na(x)))
+null_founders <- 
+which(apply(founders_samples[,(ncol(founders_samples)-8):(ncol(founders_samples))],1,function(x) 
+TRUE %in% is.na(x)))
 null_sites <- founders_samples[null_founders,]$POS
 founders_samples <- founders_samples[which(!founders_samples$POS %in% null_sites),]
+nrow(founders_samples)
 
 # Identify samples
 samples <- founders_samples[,5:ncol(founders_samples)]
-samples <- as.character(apply(samples, 2, function(x) strsplit(unique(as.matrix(x)), "=")[[1]][1]))
+samples <- as.character(apply(samples, 2, function(x) strsplit(unique(as.matrix(x)), 
+"=")[[1]][1]))
 
 # Reset the column names
 colnames(founders_samples) <- c(colnames(founders_samples)[1:4], samples)
@@ -76,7 +79,8 @@ parseGenos <- function(genos, sample, ref){
   calledGenos <- cbind(binary_geno_df,ref) %>%
     dplyr::mutate(call = dplyr::case_when(binary_geno == "0/0" ~ paste0(REF,REF),
                                           binary_geno == "1/1" ~ paste0(ALT,ALT),
-                                          binary_geno %in% c("0/1","1/0") ~ paste0(REF,ALT), TRUE ~ "NA")) %>%
+                                          binary_geno %in% c("0/1","1/0") ~ paste0(REF,ALT), 
+TRUE ~ "NA")) %>%
     dplyr::mutate(marker = paste0("gatk",CHR,"_",as.numeric(POS))) %>%
     dplyr::select(marker, CHR, POS, REF, ALT, call)
   calledGenos$call[calledGenos$call == "NA"] <- NA
@@ -93,6 +97,7 @@ parsedGenotypes <- purrr::pmap(.l = list(genos_listcols,
                                .f = parseGenos)
 parsedGenotypes <- suppressMessages(Reduce(dplyr::left_join, parsedGenotypes))
 colnames(parsedGenotypes)[1:3] <- c("marker","chr","pos")
+
 
 # Make allele codes
 alleleCodes <- parsedGenotypes %>%
@@ -129,14 +134,34 @@ colnames(qtl2FounderGenos) <- colnames(processedFounderGenos)
 # encode_geno(geno, codes)
 
 # Restrict genotypes to sites where founders are not hets
-qtl2FounderGenos <- qtl2FounderGenos[which(apply(qtl2FounderGenos, 1, function(x) length(grep("H", x = x))) == 0),]
+qtl2FounderGenos <- qtl2FounderGenos[which(apply(qtl2FounderGenos, 1, function(x) 
+length(grep("H", x = x))) == 0),]
 num_alleles <- apply(qtl2FounderGenos[,-1], 1, function(x) length(summary(as.factor(x))))
 seg <- which(num_alleles != 1)
 qtl2FounderGenos <- qtl2FounderGenos[seg,]
 
-qtl2SampleGenos <- qtl2SampleGenos[which(qtl2SampleGenos$marker %in% qtl2FounderGenos$marker),]
+qtl2SampleGenos <- qtl2SampleGenos[which(qtl2SampleGenos$marker %in% 
+qtl2FounderGenos$marker),]
+rownames(qtl2SampleGenos) <- NULL
 alleleCodes <- alleleCodes[which(alleleCodes$marker %in% qtl2FounderGenos$marker),]
+rownames(alleleCodes) <- NULL
 
+# count the number of missing genotypes across all samples
+allele_counts <- apply(qtl2SampleGenos[,2:ncol(qtl2SampleGenos)], 1, 
+                       function(x){
+                        a_call  <- data.frame(table(as.character(x))) %>% 
+                           `colnames<-`(c("call","freq"))
+                        a_call[which(a_call$call == "-"),]$freq})
+
+# determine cutoff for filtering genotypes
+missing_genotypes <- unlist(allele_counts)
+cutoff <- quantile(missing_genotypes, probs = seq(0,1,0.05))[2]
+cutoff
+good_sites <- which(missing_genotypes < cutoff)
+
+alleleCodes <- alleleCodes[good_sites,]
+qtl2SampleGenos <- qtl2SampleGenos[good_sites,]
+qtl2FounderGenos <- qtl2FounderGenos[good_sites,]
 
 
 # Writing qtl2-style files
@@ -160,7 +185,8 @@ qtl2convert::write2csv(alleleCodes,
                        overwrite=TRUE)
 
 # Physical Map
-pmap_pos <- as.numeric(unlist(lapply(alleleCodes$marker, function(x) strsplit(x, "_")[[1]][2])))
+pmap_pos <- as.numeric(unlist(lapply(alleleCodes$marker, function(x) strsplit(x, 
+"_")[[1]][2])))
 pmap <- alleleCodes %>%
   dplyr::select(marker, chr) %>%
   dplyr::mutate(pos = pmap_pos/1000000)
