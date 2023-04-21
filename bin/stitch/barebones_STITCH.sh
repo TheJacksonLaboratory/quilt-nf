@@ -1,4 +1,5 @@
 #!/bin/bash
+#SBATCH -J standalone_stitch_SJW
 #SBATCH -p compute
 #SBATCH -q batch
 #SBATCH -t 72:00:00

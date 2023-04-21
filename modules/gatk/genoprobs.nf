@@ -1,7 +1,7 @@
 process GENO_PROBS {
 
   cpus 8
-  memory 500.GB
+  memory 501.GB
   time '24:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'

@@ -3,8 +3,8 @@ process GATK_TO_QTL {
   tag "$chr"  
 
   cpus 8
-  memory 300.GB
-  time '03:00:00'
+  memory 299.GB
+  time '06:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
 
@@ -16,7 +16,8 @@ process GATK_TO_QTL {
   tuple val(chr), val(sampleID), file(sample_genos), file(founder_genos)
 
   output:
-  val(chr), emit: qtl2files
+  val(chr), emit: chrs
+  tuple file("geno*.csv"), file("allele_codes*.csv"), file("pmap*.csv"), file("gmap*.csv"), file("foundergeno*.csv"), emit: qtl2files	
 
   script:
   log.info "----- Converting GATK Genotypes to R/qtl2 Input Files for Chromosome ${chr} -----"
