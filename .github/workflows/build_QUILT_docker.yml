@@ -1,0 +1,31 @@
+name: Build QUILT container (env/QUILT.Dockerfile)
+
+on:
+  push:
+    paths:
+    - 'env/QUILT.Dockerfile'
+    - 'env/QUILT.yml'
+    - '.github/workflows/build_QUILT_docker.yml'
+  pull_request:
+    paths:
+    - 'env/QUILT.Dockerfile'
+    - 'env/QUILT.yml'
+    - '.github/workflows/build_QUILT_docker.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    # Build Tools
+    - name: Build and Publish
+      uses: elgohr/Publish-Docker-Github-Action@v5
+      with:
+        name: sjwidmay/stitch_nf
+        username: ${{ secrets.SJW_DOCKER_USER }}
+        password: ${{ secrets.SJW_DOCKER_PASS }}
+        snapshot: true
+        dockerfile: QUILT.Dockerfile
+        workdir: "env"
+        tags: "QUILT"
