@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J standalone_stitch_SJW
+#SBATCH -J standalone_QUILT_SJW
 #SBATCH -p compute
 #SBATCH -q batch
 #SBATCH -t 72:00:00
@@ -31,28 +31,28 @@ containerDir=${pipeDir}/singularity_cache
 # create bamlist
 ls ${bamDir}/*sorted.marked4_dedup.bam > bamlist.txt
 
-# create pos file for STITCH
+# create pos file for QUILT
 echo "Creating position file"
 singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view ${DO_vcf} --regions ${chr} -m2 -M2 -v snps | \
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' > STITCH_${chr}_pos.txt
-head STITCH_${chr}_pos.txt
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' > QUILT_${chr}_pos.txt
+head QUILT_${chr}_pos.txt
 
-# create haplegendsample files for STITCH
+# create haplegendsample files for QUILT
 echo "Creating haplegendsample files"
 singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view ${DO_vcf} --regions ${chr} -m2 -M2 -v snps | \
 singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools convert --haplegendsample merged_${chr}
 
-# run STITCH
-echo "Running STITCH"
-singularity exec ${containerDir}/sjwidmay-stitch_nf-stitch.img Rscript --vanilla ${pipeDir}/bin/stitch/run_stitch_DO.R \
+# run QUILT
+echo "Running QUILT"
+singularity exec ${containerDir}/sjwidmay-stitch_nf-stitch.img Rscript --vanilla ${pipeDir}/bin/stitch/run_quilt_DO.R \
         bamlist.txt \
-        STITCH_${chr}_pos.txt \
+        QUILT_${chr}_pos.txt \
         ${nFounders} \
         ${chr} \
         merged_${chr}.hap.gz \
         merged_${chr}.samples \
         merged_${chr}.legend.gz
 
-echo "Making allele probabilities from STITCH vcf"
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img tabix -p vcf stitch.${chr}.vcf.gz
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%HD]\n' stitch.${chr}.vcf.gz > stitch.alleleprobs.${chr}.txt
+echo "Making allele probabilities from QUILT vcf"
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img tabix -p vcf quilt.${chr}.vcf.gz
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%SAMPLE=%HD]\n' quilt.${chr}.vcf.gz > quilt.alleleprobs.${chr}.txt
