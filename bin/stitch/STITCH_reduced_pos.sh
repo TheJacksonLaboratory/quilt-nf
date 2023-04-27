@@ -36,25 +36,25 @@ ls ${bamDir}/*sorted.marked4_dedup.bam > bamlist.txt
 
 # create pos file for STITCH
 echo "Creating position file"
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view ${DO_vcf} --regions ${chr} -m2 -M2 -v snps | \
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' > STITCH_${chr}_pos.txt
-head STITCH_${chr}_pos.txt
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view --genotype ^het --samples A,B,C,D,E,F,G,H --regions ${chr} -m2 -M2 -v snps --min-ac 2 ${DO_vcf} | \
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' > red_STITCH_${chr}_pos.txt
+head red_STITCH_${chr}_pos.txt
 
 # create haplegendsample files for STITCH
 echo "Creating haplegendsample files"
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view ${DO_vcf} --regions ${chr} -m2 -M2 -v snps | \
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools convert --haplegendsample merged_${chr}
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view --genotype ^het --samples A,B,C,D,E,F,G,H --regions ${chr} -m2 -M2 -v snps --min-ac 2 ${DO_vcf}  | \
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools convert --haplegendsample red_merged_${chr}
 
 # run STITCH
 echo "Running STITCH"
 singularity exec ${containerDir}/sjwidmay-stitch_nf-stitch.img Rscript --vanilla ${pipeDir}/bin/stitch/run_stitch_DO.R \
         bamlist.txt \
-        STITCH_${chr}_pos.txt \
+        red_STITCH_${chr}_pos.txt \
         ${nFounders} \
         ${chr} \
-        merged_${chr}.hap.gz \
-        merged_${chr}.samples \
-        merged_${chr}.legend.gz \
+        red_merged_${chr}.hap.gz \
+        red_merged_${chr}.samples \
+        red_merged_${chr}.legend.gz \
         stitch_chr${chr}_${run_name}.vcf.gz
 
 echo "Making allele probabilities from STITCH vcf"
