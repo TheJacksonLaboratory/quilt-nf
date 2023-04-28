@@ -8,7 +8,7 @@ process GENOTYPE_COMBINED_GVCF {
 
   container 'broadinstitute/gatk:4.2.4.1'
 
-  publishDir "${params.sample_folder}/gvcfs", pattern: "*.g.vcf.gz", mode:'copy'
+  publishDir "${params.sample_folder}/gvcfs", pattern: "*_genotyped.vcf.gz", mode:'copy'
 
   input:
   tuple val(chrom), val(sampleID), file(combined_gvcf), file(combined_gvcf_index)
