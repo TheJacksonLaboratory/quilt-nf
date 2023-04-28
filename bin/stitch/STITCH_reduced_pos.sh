@@ -2,8 +2,8 @@
 #SBATCH -J standalone_stitch_SJW
 #SBATCH -p compute
 #SBATCH -q batch
-#SBATCH -t 20:00:00
-#SBATCH --mem=500G
+#SBATCH -t 1:00:00
+#SBATCH --mem=100G
 #SBATCH --ntasks=1
 
 # chromosome
@@ -47,7 +47,7 @@ singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2
 
 # run STITCH
 echo "Running STITCH"
-singularity exec ${containerDir}/sjwidmay-stitch_nf-stitch.img Rscript --vanilla ${pipeDir}/bin/stitch/run_stitch_DO.R \
+singularity exec ${containerDir}/sjwidmay-stitch_nf-stitch.img Rscript --vanilla ${pipeDir}/bin/stitch/run_stitch_DO_SHORT.R \
         bamlist.txt \
         red_STITCH_${chr}_pos.txt \
         ${nFounders} \

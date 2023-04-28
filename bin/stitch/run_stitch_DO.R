@@ -17,7 +17,7 @@ args <- commandArgs(trailingOnly = TRUE)
 # args[5] = reference haplotype file (if DO)
 # args[6] = reference sample file (if DO)
 # args[7] = reference legend file (if DO)
-# args[8] = generation number if known...hold off on this
+# args[8] = output file name
 
 # Input files
 
@@ -66,7 +66,7 @@ temp_posfile <- temp_posfile[which(SNPs_only),]
 
 # Write a temporary pos file to be called by STITCH
 write.table(x = temp_posfile, 
-            file = "temp_pos.txt",
+            file = paste0("temp_pos_",args[4],".txt"),
             quote = F, 
             row.names = F, 
             col.names = F,
@@ -74,7 +74,7 @@ write.table(x = temp_posfile,
 
 
 # Define new pos file
-dup_removed_posfile <- "temp_pos.txt"
+dup_removed_posfile <- paste0("temp_pos_",args[4],".txt")
 
 # Set number of founders
 # This should be a param in nextflow
@@ -98,9 +98,12 @@ STITCH::STITCH(tempdir = tempdir(),
                reference_legend_file = args[7],
                nGen = 41,
                K = mouse_K,
+               # shuffleHaplotypeIterations = c(5,10,15,20,25,30,40,50,60),
+               niterations = 40,
                initial_min_hapProb = 1/mouse_K,
-               shuffle_bin_radius = 15000,
+               shuffle_bin_radius = 5000,
                plotHapSumDuringIterations = TRUE,
                plot_shuffle_haplotype_attempts = TRUE,
                plotAfterImputation = TRUE,
-               output_haplotype_dosages = TRUE)
+               output_haplotype_dosages = TRUE,
+               output_filename = args[8])
