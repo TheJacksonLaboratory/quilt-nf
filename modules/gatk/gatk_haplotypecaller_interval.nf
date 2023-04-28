@@ -34,5 +34,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   -stand-call-conf 30 \
   --max-num-haplotypes-in-population ${params.nFounders} \
   --heterozygosity 0.01
+  --annotation Coverage
+  --annotation DepthPerSampleHC
   """
 }

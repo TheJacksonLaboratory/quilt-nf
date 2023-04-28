@@ -1,6 +1,5 @@
 process GATK_TO_QTL {
 
-<<<<<<< HEAD
   tag "$chr"  
 
   cpus 8

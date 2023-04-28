@@ -18,11 +18,10 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq/' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/4WC_ddRADseq_NovaSeq/' \
 --gen_org mouse \
 --pubdir '/fastscratch/STITCH_outputDir' \
 -w '/fastscratch/STITCH_outputDir/work' \
---nFounders 8 \
---covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
---comment "This script will run haplotype inference on DO lcWGS data" \
+--nFounders 4 \
+--comment "This script will run haplotype inference on 4WC lcWGS data" \
 -resume
