@@ -4,7 +4,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
 
   cpus = 4
   memory {100.GB * task.attempt}
-  errorStrategy 'retry' 
+  // errorStrategy 'retry' 
   maxRetries 4
   time = '05:30:00'
 
@@ -33,8 +33,8 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
   -ERC GVCF \
   -stand-call-conf 30 \
   --max-num-haplotypes-in-population ${params.nFounders} \
-  --heterozygosity 0.01
-  --annotation Coverage
+  --heterozygosity 0.01 \
+  --annotation Coverage \
   --annotation DepthPerSampleHC
   """
 }

@@ -162,16 +162,16 @@ workflow STITCH {
   GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
 
   // make output vcf into txt
-  GATK_VCF_TO_TXT(GENOTYPE_COMBINED_GVCF.out.vcf)
+  //GATK_VCF_TO_TXT(GENOTYPE_COMBINED_GVCF.out.vcf)
 
   // parse txt file into qtl2-style files
-  GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
+  //GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
 
   // collect the qtl files and write them to each folder
-  qtl2files = GATK_TO_QTL.out.chrs.collect()
+  //qtl2files = GATK_TO_QTL.out.chrs.collect()
 
   // calculate genotype probabilities and make the fst database in each sample folder
-  GENO_PROBS(qtl2files)
+  //GENO_PROBS(qtl2files)
 
 
   // STITCH things
