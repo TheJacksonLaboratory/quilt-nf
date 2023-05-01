@@ -16,7 +16,9 @@ chr_gvcfs=${gvcfDir}/chr*
 for g in ${chr_gvcfs}
 do
     chrom=$(echo ${g} | cut -f 1 -d "." | cut -f 11 -d "/")
-    singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view --genotype ^het -m2 -M2 -v snps ${g} | \
+    
+    echo ${chrom}
+    singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view -m2 -M2 -v snps ${g} | \
     singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query --print-header -f '%CHROM\t%POS\t%REF\t%ALT\t%DP[\t%AD]\n' | \
-    sed 's/[[# 0-9]*]//g' > ${chrom}_per_variant_depth_stats.txt
+    sed 's/[[# 0-9]*]//g' > ${gvcfDir}/${chrom}_per_variant_depth_stats.txt
 done
