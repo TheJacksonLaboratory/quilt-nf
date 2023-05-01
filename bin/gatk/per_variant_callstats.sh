@@ -21,4 +21,9 @@ do
     singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view -m2 -M2 -v snps ${g} | \
     singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query --print-header -f '%CHROM\t%POS\t%REF\t%ALT\t%DP[\t%AD]\n' | \
     sed 's/[[# 0-9]*]//g' > ${gvcfDir}/${chrom}_per_variant_depth_stats.txt
+
+    singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view -m2 -M2 -v snps ${g} | \
+    singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools filter -i N_MISSING=0 | \
+    singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query --print-header -f '%CHROM\t%POS\t%REF\t%ALT\t%DP[\t%AD]\n' | \
+    sed 's/[[# 0-9]*]//g' > ${gvcfDir}/${chrom}_per_nomissing_variant_depth_stats.txt
 done
