@@ -20,7 +20,7 @@ run_name=$3
 pipeDir=/projects/compsci/vmp/USERS/widmas/stitch-nf
 
 # project directory; where the original sequence lives
-projectDir=${pipeDir}/data/DO_ddRADseq_NovaSeq
+projectDir=${pipeDir}/data/DO_seqwell_NovaSeq_full
 
 # where the bams live as they are spit out from the pipeline
 bamDir=${projectDir}/bams
@@ -36,13 +36,13 @@ ls ${bamDir}/*sorted.marked4_dedup.bam > bamlist.txt
 
 # create pos file for STITCH
 echo "Creating position file"
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view ${DO_vcf} --regions ${chr} -m2 -M2 -v snps | \
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view --genotype ^het --samples A,B,C,D,E,F,G,H --regions ${chr} -m2 -M2 -v snps --min-ac 2 ${DO_vcf} | \
 singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' > STITCH_${chr}_pos.txt
 head STITCH_${chr}_pos.txt
 
 # create haplegendsample files for STITCH
 echo "Creating haplegendsample files"
-singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view ${DO_vcf} --regions ${chr} -m2 -M2 -v snps | \
+singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools view --genotype ^het --samples A,B,C,D,E,F,G,H --regions ${chr} -m2 -M2 -v snps --min-ac 2 ${DO_vcf} | \
 singularity exec ${containerDir}/quay.io-biocontainers-bcftools-1.15--h0ea216a_2.img bcftools convert --haplegendsample merged_${chr}
 
 # run STITCH
