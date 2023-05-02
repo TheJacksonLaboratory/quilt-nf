@@ -20,7 +20,7 @@ run_name=$3
 pipeDir=/projects/compsci/vmp/USERS/widmas/stitch-nf
 
 # project directory; where the original sequence lives
-projectDir=${pipeDir}/data/DO_ddRADseq_NovaSeq
+projectDir=${pipeDir}/data/DO_seqwell_NovaSeq_full
 
 # where the bams live as they are spit out from the pipeline
 bamDir=${projectDir}/bams
