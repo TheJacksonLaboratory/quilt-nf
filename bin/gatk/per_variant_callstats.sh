@@ -7,7 +7,7 @@
 #SBATCH --ntasks=1
 
 homeDir=/projects/compsci/vmp/USERS/widmas/stitch-nf
-gvcfDir=${homeDir}/data/4WC_ddRADseq_NovaSeq/gvcfs
+gvcfDir=${homeDir}/$1
 containerDir=${homeDir}/singularity_cache
 
 chr_gvcfs=${gvcfDir}/chr*

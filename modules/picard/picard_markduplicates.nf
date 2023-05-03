@@ -30,7 +30,7 @@ process PICARD_MARKDUPLICATES {
   I=${bam[0]} \\
   O=${sampleID}.sorted.marked4_dedup.bam \\
   M=${sampleID}.sorted.metrics.txt \\
-  REMOVE_DUPLICATES=false \\
+  REMOVE_DUPLICATES=true \\
   CREATE_INDEX=true \\
   VALIDATION_STRINGENCY=LENIENT \\
   TMP_DIR=${params.tmpdir} \\
