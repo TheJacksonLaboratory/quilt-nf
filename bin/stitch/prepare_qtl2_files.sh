@@ -17,28 +17,28 @@
 
 ##### VARIABLES #####
 
-BASE_DIR=/projects/compsci/vmp/lcgbs_ssif
+BASE_DIR=/projects/compsci/vmp/USERS/widmas/stitch-nf
 
 # Founder VCF.
-FOUNDER_FILE=/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/4Founders.deepVar.vcf.gz
+FOUNDER_FILE=/fastscratch/widmas/sanger_chr1_do_snps.vcf.gz
 
 # Sample VCF (from QUILT).
-SAMPLE_VCF=${BASE_DIR}/results/quilt/quilt_do_seqwell.1.vcf.gz
+SAMPLE_VCF=/fastscratch/widmas/quilt_seqwell/quilt.1.vcf.gz
 
 # Sample metadat file.
-META_FILE=${BASE_DIR}/data/4WC_covar.csv
+META_FILE=/projects/compsci/vmp/USERS/widmas/lcGBS_wf/data/DO_covar.csv
 
 # SNP annotation file.
-SNP_FILE=/fastscratch/dgatti/chr1_gen_map.txt
+SNP_FILE=/fastscratch/widmas/chr1_gen_map.txt
 
 # qtl2 output directory
-QTL2_DIR=/fastscratch/dgatti/qtl2_do_seqwell
+QTL2_DIR=/fastscratch/widmas/qtl2_do_seqwell
 
 # R script to create files.
-R_SCRIPT=${BASE_DIR}/scripts/prepare_do_qtl2_files.R
+R_SCRIPT=${BASE_DIR}/bin/stitch/prepare_do_qtl2_files.R
 
 # R container for R script
-R=~/containers/bioconductor.sif
+R=/projects/compsci/vmp/lcgbs_ssif/singularity/bioconductor.sif
 
 
 ##### MAIN #####
