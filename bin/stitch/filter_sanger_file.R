@@ -13,7 +13,7 @@ library(VariantAnnotation)
 
 ##### VARIABLES #####
 
-base_dir = '/fastscratch/dgatti'
+base_dir = '/fastscratch/widmas'
 
 #sanger_file = file.path(base_dir, 'sanger_chr1_do_snps.vcf.gz')
 sanger_file = args[1]

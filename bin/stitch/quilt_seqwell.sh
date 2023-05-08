@@ -1,5 +1,6 @@
 #!/bin/bash
-#SBATCH --qos batch
+#SBATCH -p compute
+#SBATCH -q batch
 #SBATCH --nodes 1
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 30
@@ -18,7 +19,7 @@
 
 BASE_DIR=/projects/compsci/vmp/lcgbs_ssif
 
-SCRATCH_DIR=/fastscratch/dgatti
+SCRATCH_DIR=/fastscratch/widmas
 
 BAM_SRC_DIR=/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq_full/bams
 

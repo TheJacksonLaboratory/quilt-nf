@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --qos dev
-#SBATCH --partition dev
+#SBATCH -q batch
+#SBATCH -p compute
 #SBATCH --nodes 1
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 1
 #SBATCH --mem 32G
-#SBATCH --time 0-1:00
+#SBATCH --time 01:00:00
 ################################################################################
 # Filter the Sanger VCF to include only the DO founders and high-quality, 
 # biallelic SNPs on Chr 1.
@@ -18,7 +18,7 @@
 
 ##### VARIABLES #####
 
-BASE_DIR=/fastscratch/dgatti
+BASE_DIR=/fastscratch/widmas
 
 # Full Sanger VCF with all samples. GRCm39.
 SANGER_DIR=/projects/omics_share/mouse/GRCm39/genome/annotation/snps_indels/rel_2112_v8
@@ -28,17 +28,17 @@ SANGER_FILE=${SANGER_DIR}/mgp_REL2021_snps.vcf.gz
 REF_FASTA=/projects/omics_share/mouse/GRCm39/genome/sequence/ensembl/v105/Mus_musculus.GRCm39.dna.primary_assembly.fa
 
 # Script directory for R scripts.
-SCRIPT_DIR=/projects/compsci/vmp/lcgbs_ssif/scripts
+SCRIPT_DIR=/projects/compsci/vmp/USERS/widmas/stitch-nf/bin/stitch
 
 # Output directory and filename.
-OUT_DIR=/fastscratch/dgatti
+OUT_DIR=/fastscratch/widmas
 OUT_FILE=${OUT_DIR}/sanger_hq_do_snps.vcf
 
 # bcftools container
-BCFTOOLS=~/containers/samtools_1.10.sif
+BCFTOOLS=/projects/compsci/vmp/lcgbs_ssif/singularity/samtools_1.10.sif
 
 # Bioconductor container
-BIOCONDUCTOR=~/containers/bioconductor.sif
+BIOCONDUCTOR=/projects/compsci/vmp/lcgbs_ssif/singularity/bioconductor.sif
 
 
 ##### MAIN #####
