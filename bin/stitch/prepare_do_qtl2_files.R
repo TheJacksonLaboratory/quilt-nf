@@ -181,21 +181,21 @@ write.csv(gmap, file = file.path(qtl2_dir, 'gmap.csv'),
           quote = FALSE, row.names = FALSE)
 
 # Read in sample metadata.
-meta = read_xlsx(meta_file)
-nc2 = which(nchar(meta$Name) == 2)
-meta$Name[nc2] = paste0(substr(meta$Name[nc2], 1, 1), '0', substr(meta$Name[nc2], 2, 2))
-meta = subset(meta, Name %in% colnames(sample_gt))
+meta = read.csv(meta_file)
+#nc2 = which(nchar(meta$Name) == 2)
+#meta$Name[nc2] = paste0(substr(meta$Name[nc2], 1, 1), '0', substr(meta$Name[nc2], 2, 2))
+meta = subset(meta, SampleID %in% colnames(sample_gt))
 
 # Write out covariates.
-covar = data.frame(id  = meta$Name,
-                   sex = substr(meta$Name, 1, 1),
+covar = data.frame(id  = meta$SampleID,
+                   sex = substr(meta$SampleID, 1, 1),
                    gen = meta$Generation)
 covar$sex = c('female', 'male')[match(covar$sex, c('F', 'M'))]
 write.csv(covar, file = file.path(qtl2_dir, 'covar.csv'),
           quote = FALSE, row.names = FALSE)
 
 # Write out phenotypes.
-pheno = data.frame(id  = meta$Name,
+pheno = data.frame(id  = meta$SampleID,
                    val = rep(1, nrow(meta)))
 write.csv(pheno, file = file.path(qtl2_dir, 'pheno.csv'),
            quote = FALSE, row.names = FALSE) 
