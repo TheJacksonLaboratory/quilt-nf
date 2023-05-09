@@ -143,6 +143,10 @@ workflow STITCH {
   // pair up each chromosome with sample bams
   chrom_channel = data.combine(chrs)
 
+  // Collect .bam filenames in its own list
+  bams = chrom_channel.collect()
+  bams.view()
+  // CREATE_BAMLIST(bams)
   // Calculate pileups
   //MPILEUP(data)
   //EXPAND_BED(MPILEUP.out.bed)
@@ -152,14 +156,14 @@ workflow STITCH {
   //INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
 
   // call variants for each chromosome within each sample
-  GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
+  //GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
 
   // combine sample gvcfs by chromosome
-  chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
-  COMBINE_GVCF(chr_gvcfs)
+  //chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
+  //COMBINE_GVCF(chr_gvcfs)
 
   // genotype combined gvcfs
-  GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
+  //GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
 
   // make output vcf into txt
   //GATK_VCF_TO_TXT(GENOTYPE_COMBINED_GVCF.out.vcf)
@@ -174,11 +178,8 @@ workflow STITCH {
   //GENO_PROBS(qtl2files)
 
 
-  // STITCH things
-  // Collect .bam filenames in its own list
-  //bams = INDEX_FILTERED_BAM.out.covered_bam
-  //                     .collect()
-  //CREATE_BAMLIST(bams)
+  // QUILT things
+
 
   // 8) Generate other required input files for STITCH
   //if (params.do_mice) {
