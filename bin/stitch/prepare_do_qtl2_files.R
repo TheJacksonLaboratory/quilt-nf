@@ -24,29 +24,33 @@ library(qtl2)
 args = commandArgs(trailingOnly = TRUE)
 
 # Founder genotypes and marker positions.
-founder_file = '/fastscratch/dgatti/sanger_chr1_do_snps.vcf.gz'
+#founder_file = '/fastscratch/dgatti/sanger_chr1_do_snps.vcf.gz'
 founder_file = args[1]
 
 # Sample genotypes from QUILT.
-sample_file  = '/projects/compsci/vmp/lcgbs_ssif/results/quilt/quilt_do_seqwell.1.vcf.gz'
+#sample_file  = '/projects/compsci/vmp/lcgbs_ssif/results/quilt/quilt_do_seqwell.1.vcf.gz'
 sample_file = args[2]
 
 # Sample metadata file.
-meta_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_tails.xlsx'
+#meta_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_tails.xlsx'
 meta_file = args[3]
 
 # Marker map.
-marker_file = '/fastscratch/dgatti/chr1_gen_map.txt'
+#marker_file = '/fastscratch/dgatti/chr1_gen_map.txt'
 marker_file = args[4]
 
 # qtl2 output directory.
-qtl2_dir = '/fastscratch/dgatti/qtl2_do_seqwell'
+#qtl2_dir = '/fastscratch/dgatti/qtl2_do_seqwell'
 qtl2_dir = args[5]
+
+print(args)
+
 
 ##### MAIN #####
 
 dir.create(qtl2_dir, showWarnings = FALSE)
 
+print("Read in founder genotypes")
 # Read in founder genotypes.
 founder_vcf = readVcf(founder_file, 'grcm39')
 founder_vcf = genotypeCodesToNucleotides(founder_vcf)
@@ -54,12 +58,14 @@ founder_gt  = geno(founder_vcf)$GT
 founder_gt  = sub('\\|', '', founder_gt)
 rownames(founder_gt) = sub('\\|', '/', rownames(founder_gt))
 
+print("Getting founder marker positions")
 # Get the marker positions for the founders.
 founder_rr = rowRanges(founder_vcf)
 names(founder_rr) = sub('\\|', '/', names(founder_rr))
 
 rm(founder_vcf)
 
+print("Reading in sample genotypes")
 # Read in sample genotypes.
 sample_vcf = readVcf(sample_file, 'grcm39')
 sample_vcf = genotypeCodesToNucleotides(sample_vcf)
@@ -69,11 +75,13 @@ sample_gt  = sub('\\|', '', sample_gt)
 sample_pos = regexpr('[FM][0-9][0-9]', colnames(sample_gt))
 colnames(sample_gt) = substr(colnames(sample_gt), sample_pos, sample_pos + 2)
 
+print("Getting sample marker positions")
 # Get the marker positions for the samples.
 sample_rr = rowRanges(sample_vcf)
 
 rm(sample_vcf)
 
+print("Retain SNPs in founder file")
 # Retain the SNPs in the founder file.
 # We may need to revisit this step later, but I'm being conservative.
 common_snps = intersect(rownames(founder_gt), rownames(sample_gt))
@@ -95,6 +103,8 @@ gt_num[gt_num == 'GC'] = 'CG'
 gt_num[gt_num == 'TC'] = 'CT'
 gt_num[gt_num == 'TG'] = 'GT'
 
+
+print("Convert genotypes to numerics")
 # Convert genotypes to numbers.
 # Note that the SNP names will be messed up by the data.frame.
 gt_num = data.frame(gt_num, stringsAsFactors = TRUE)
@@ -114,6 +124,8 @@ keep = rownames(sample_gt)[keep]
 # How many SNPs do we keep?
 length(keep)
 
+
+print("Filtering founder and sample SNPs")
 # Filter the founder and sample SNPs.
 founder_gt = founder_gt[keep,]
 sample_gt  = sample_gt[keep,]
@@ -130,6 +142,8 @@ all_gt = base::merge(founder_gt, sample_gt, by = 'row.names',
 rownames(all_gt) = all_gt$Row.names
 all_gt = as.matrix(all_gt[,-1])
 
+
+print("Get allele codes for each SNP")
 # Get the allele codes for each SNP.
 ref = as.character(founder_rr$REF)
 alt = as.character(unlist(founder_rr$ALT))

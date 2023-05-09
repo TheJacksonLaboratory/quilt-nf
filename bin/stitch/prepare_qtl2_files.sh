@@ -49,5 +49,5 @@ module load singularity
 mkdir -p ${QTL2_DIR} 
 
 # Run R script in container.
-singularity exec ${R} R_script ${R_SCRIPT} ${FOUNDER_FILE} ${SAMPLE_FILE} ${META_FILE} ${SNP_FILE} ${QTL2_DIR}
+singularity exec ${R} Rscript ${R_SCRIPT} ${FOUNDER_FILE} ${SAMPLE_VCF} ${META_FILE} ${SNP_FILE} ${QTL2_DIR}
 
