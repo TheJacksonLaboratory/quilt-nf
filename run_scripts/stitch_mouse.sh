@@ -21,6 +21,7 @@ nextflow main.nf \
 --sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq/' \
 --gen_org mouse \
 --pubdir '/projects/compsci/vmp/lcgbs_ssif/results/quilt' \
+--run_name $1 \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
 --covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
