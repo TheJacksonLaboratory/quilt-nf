@@ -20,7 +20,7 @@ nextflow main.nf \
 -profile sumner \
 --sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq/' \
 --gen_org mouse \
---pubdir '/fastscratch/STITCH_outputDir' \
+--pubdir '/projects/compsci/vmp/lcgbs_ssif/results/quilt' \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
 --covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
