@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --mail-user=samuel.widmayer@jax.org
-#SBATCH --job-name=STITCH-NF
+#SBATCH --job-name=STITCH-NF-DO
 #SBATCH --mail-type=END,FAIL
 #SBATCH -p compute
 #SBATCH -q batch
