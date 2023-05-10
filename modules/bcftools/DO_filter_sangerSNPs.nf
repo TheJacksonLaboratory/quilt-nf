@@ -1,4 +1,4 @@
-process DO_FILTER_SANGER_SNPs {
+process DO_FILTER_SANGER_SNPS {
   tag "$chr"
 
   cpus 1

@@ -29,9 +29,14 @@ include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
-include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
-include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
-include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combined_gvcfs.nf"
+include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
+include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
+include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
+
+
+//include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
+//include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
+//include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combined_gvcfs.nf"
 //include {GATK_VCF_TO_TXT} from "${projectDir}/modules/gatk/gatk_to_sample_genos"
 //include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
 //include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
@@ -43,7 +48,6 @@ include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combi
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 //include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
-include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 //include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 //include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
 //include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
@@ -145,9 +149,12 @@ workflow STITCH {
 
   // Collect .bam filenames in its own list
   bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
-  bams.view()
   CREATE_BAMLIST(bams)
   
+  // Meanwhile, make reference files for DO animals
+  DO_FILTER_SANGER_SNPS(chrs)
+  MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
+
   // Calculate pileups
   //MPILEUP(data)
   //EXPAND_BED(MPILEUP.out.bed)
