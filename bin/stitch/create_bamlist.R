@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-string <- read.table("STITCH_bamlist.txt")
+string <- read.table("bamlist.txt")
 bamlist <- as.matrix(t(string))
 rownames(bamlist) <- NULL
 for(i in 1:nrow(bamlist)){
@@ -12,4 +12,4 @@ for(i in 1:nrow(bamlist)){
 bamlist[,1] <- bamlist[,1][grep(bamlist[,1], pattern = ".bam")]
 bamlist <- bamlist[!duplicated(bamlist[,1]),]
 colnames(bamlist) <- NULL
-write.table(bamlist, file = "STITCH_bamlist.txt", quote = F, row.names = F, col.names = F)
+write.table(bamlist, file = "bamlist.txt", quote = F, row.names = F, col.names = F)

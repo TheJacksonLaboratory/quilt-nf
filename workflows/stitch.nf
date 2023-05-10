@@ -43,7 +43,7 @@ include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combi
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 //include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
-//include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
+include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 //include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 //include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
 //include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
@@ -144,9 +144,10 @@ workflow STITCH {
   chrom_channel = data.combine(chrs)
 
   // Collect .bam filenames in its own list
-  bams = chrom_channel.collect()
+  bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
   bams.view()
-  // CREATE_BAMLIST(bams)
+  CREATE_BAMLIST(bams)
+  
   // Calculate pileups
   //MPILEUP(data)
   //EXPAND_BED(MPILEUP.out.bed)

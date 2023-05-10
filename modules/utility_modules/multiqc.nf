@@ -7,19 +7,19 @@ process MULTIQC {
 
   container 'docker://ewels/multiqc:latest'
   
-  publishDir "${params.sample_folder}/multiqc", pattern:"*", mode:'copy'
-  publishDir "${params.sample_folder}/multiqc_data", pattern:"multiqc_data/*", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/multiqc", pattern:"*", mode:'copy'
 
   input:
   file('*')
 
   output:
-  path('multiqc_report.html'), emit: multiqc_report
+  path('*_multiqc_report.html'), emit: multiqc_report
 
   script:
   log.info "----- Running MULTIQC on All Samples -----"
 
   """
   multiqc .
+  mv multiqc_report.html ${params.run_name}_multiqc_report.html
   """
 }

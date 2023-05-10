@@ -10,7 +10,7 @@ process GATK_HAPLOTYPECALLER_INTERVAL {
 
   container 'broadinstitute/gatk:4.2.4.1'
 
-  publishDir "${params.sample_folder}/gvcfs", pattern: "*.g.vcf.gz", mode:'copy'
+  //publishDir "${params.sample_folder}/gvcfs", pattern: "*.g.vcf.gz", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam), file(bai), val(chrom)
