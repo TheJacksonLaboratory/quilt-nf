@@ -11,7 +11,7 @@ process MAKE_QUILT_REFERENCE_FILES {
   tuple val(chr), file(vcf_bgz), file(vcf_bgz_index), file(tab_B6)
 
   output:
-  tuple val(chr), file("*_do_snps.vcf.gz"), file("*_do_snps.vcf.gz.tbi"), emit: haplegendsample
+  tuple val(chr), file("*_do_snps.vcf.gz"), file("*_do_snps.vcf.gz.csi"), file("*.hap.gz"), file("*.legend.gz"), file("*.samples"), emit: haplegendsample
 
   script:
   log.info "----- Filtering DO Sanger SNPs for Chromosome ${chr} -----"
@@ -37,11 +37,13 @@ process MAKE_QUILT_REFERENCE_FILES {
 
 
   # Make the final file phased since all of the SNPs are homozygous.
-  zcat sanger_merged.vcf.gz | sed '/^##/! s/\//\|/g' > sanger_chr${chr}_do_snps.vcf
+  zcat sanger_merged.vcf.gz | sed '/^##/! s/\\//\\|/g' > sanger_chr${chr}_do_snps.vcf
+  bcftools view sanger_chr${chr}_do_snps.vcf | head -n100
+  
   bgzip sanger_chr${chr}_do_snps.vcf
 
   # Index the Sanger VCF.
-  bcftools index sanger_chr${chr}_do_snps.vcf
+  bcftools index sanger_chr${chr}_do_snps.vcf.gz
 
   # make haplegendsample files
   bcftools convert sanger_chr${chr}_do_snps.vcf.gz --haplegendsample sanger_chr${chr}_do

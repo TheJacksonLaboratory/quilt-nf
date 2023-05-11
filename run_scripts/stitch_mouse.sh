@@ -18,7 +18,7 @@ module load nextflow
 nextflow main.nf \
 --workflow stitch \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq/' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq_full' \
 --gen_org mouse \
 --pubdir '/projects/compsci/vmp/lcgbs_ssif/results/quilt' \
 --run_name $1 \

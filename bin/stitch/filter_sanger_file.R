@@ -13,7 +13,7 @@ library(VariantAnnotation)
 
 ##### VARIABLES #####
 
-base_dir = '/fastscratch/widmas'
+# base_dir = '/fastscratch/widmas'
 
 #sanger_file = file.path(base_dir, 'sanger_chr1_do_snps.vcf.gz')
 sanger_file = args[1]
@@ -24,6 +24,7 @@ sanger_file = args[1]
 vcf = readVcf(sanger_file, 'grcm39')
 
 # How many SNPs do we have?
+print("How many SNPs?")
 dim(vcf)
 
 # Verify that the samples are the DO founders. 
@@ -37,6 +38,7 @@ table(info(vcf)$INDEL)
 gt = geno(vcf)$GT
 
 # What are the unique calls?
+print("What are unique calls?")
 unique(as.vector(gt))
 
 # Are there any duplicated SNP positions?
@@ -77,6 +79,6 @@ df  = data.frame(ID    = names(rr),
                  POS   = start(rr),
                  AA    = paste0(rr$REF, rr$REF))
 
-write.table(df, file = file.path(base_dir, 'C57BL_6J.tab'), 
+write.table(df, file = 'C57BL_6J.tab', 
             quote = FALSE, row.names = FALSE, col.names = TRUE)
 
