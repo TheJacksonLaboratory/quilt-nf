@@ -32,7 +32,7 @@ include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markdu
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
 include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
-
+include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
 
 //include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
 //include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
@@ -154,7 +154,8 @@ workflow STITCH {
   // Meanwhile, make reference files for DO animals
   DO_FILTER_SANGER_SNPS(chrs)
   MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
-
+  MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
+  
   // Calculate pileups
   //MPILEUP(data)
   //EXPAND_BED(MPILEUP.out.bed)
