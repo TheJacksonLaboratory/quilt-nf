@@ -11,7 +11,7 @@ process MAKE_QUILT_REFERENCE_FILES {
   tuple val(chr), file(vcf_bgz), file(vcf_bgz_index), file(tab_B6)
 
   output:
-  tuple val(chr), file("*_do_snps.vcf.gz"), file("*_do_snps.vcf.gz.tbi"), emit: full_sanger_vcf
+  tuple val(chr), file("*_do_snps.vcf.gz"), file("*_do_snps.vcf.gz.tbi"), emit: haplegendsample
 
   script:
   log.info "----- Filtering DO Sanger SNPs for Chromosome ${chr} -----"
