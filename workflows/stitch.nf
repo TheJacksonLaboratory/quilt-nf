@@ -34,6 +34,7 @@ include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_baml
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
 include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
 include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
+include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 
 //include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
 //include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
@@ -161,13 +162,15 @@ workflow STITCH {
   MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(MAKE_QUILT_REFERENCE_FILES.out.haplegendsample)
   
-  //RUN_QUILT(quilt_inputs)
+  RUN_QUILT(quilt_inputs)
 
 
 
-  // Calculate pileups
-  //MPILEUP(data)
-  //EXPAND_BED(MPILEUP.out.bed)
+
+
+
+
+
 
   // Filter bams to coverage level
   //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
