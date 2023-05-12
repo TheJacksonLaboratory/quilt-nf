@@ -29,6 +29,7 @@ include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
+include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
 include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
@@ -44,7 +45,7 @@ include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_hapl
 
 
 //keep this in in case I need to revive some of the processe
-//include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
+
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 //include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
@@ -143,6 +144,9 @@ workflow STITCH {
   // Mark duplicates 
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
   data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
+
+  // Calculate pileups
+  MPILEUP(data)
 
   // pair up each chromosome with sample bams
   chrom_channel = data.combine(chrs)

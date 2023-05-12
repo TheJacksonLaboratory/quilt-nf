@@ -11,7 +11,7 @@ process MPILEUP {
   // publishDir "${params.sample_folder}/sample_coverage", pattern:"*_coverage.txt", mode:'copy'
 
   input:
-  tuple val(sampleID), file(bam)
+  tuple val(sampleID), file(bam), file(bai)
 
   output:
   tuple val(sampleID), file(bam), file("*.bed"), emit: bed
