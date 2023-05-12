@@ -8,7 +8,7 @@ process SAMPLE_COVERAGE {
 
   container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
 
-  // publishDir "${params.sample_folder}/sample_coverage", pattern:"*_coverage.txt", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_depth.out", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam), file(bai)
