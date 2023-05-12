@@ -1,4 +1,4 @@
-process MPILEUP {
+process SAMPLE_COVERAGE {
 
   cpus 1
   memory 300.GB
@@ -14,13 +14,15 @@ process MPILEUP {
   tuple val(sampleID), file(bam), file(bai)
 
   output:
-  tuple val(sampleID), file(bam), file("*.bed"), emit: bed
+  tuple val(sampleID), file(bam), file("*_depth.out"), emit: depth_out
 
   script:
   log.info "----- Create Pileups for Sample: ${sampleID} -----"
 
   """
-  samtools mpileup -f ${params.ref_fa} ${bam} > ${sampleID}.mpileup
-  awk '\$4 > 0 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
+  samtools depth ${bam} -o ${sampleID}_depth.out
+
+  # samtools mpileup -f ${params.ref_fa} ${bam} > ${sampleID}.mpileup
+  # awk '\$4 > 0 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
   """
 }
