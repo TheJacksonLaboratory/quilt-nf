@@ -15,5 +15,5 @@ ENZYME_LIST=/projects/compsci/vmp/lcgbs_ssif/data/enzyme_test_digest.txt
 DIGEST_SCRIPT=/projects/compsci/vmp/USERS/widmas/stitch-nf/bin/stitch/digest_reference.sh 
 
 while read line; do
-  sbatch ${DIGEST_SCRIPT} "$line" PstI
+  sbatch ${DIGEST_SCRIPT} $line PstI
 done < ${ENZYME_LIST}
