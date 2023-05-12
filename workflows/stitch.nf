@@ -103,7 +103,7 @@ read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder}
 chrs = Channel.of(1..19)
 
 // main workflow
-workflow STITCH {
+workflow QUILT {
 
   // Step 0: Concatenate Fastq files if required. 
   if (params.concat_lanes){
