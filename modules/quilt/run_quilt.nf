@@ -3,7 +3,7 @@ process RUN_QUILT {
   
   // Chr Y doesn't work for some reason
   // errorStrategy 'ignore'
-  memory 100.GB
+  memory 101.GB
   time '48:00:00'
   
   container 'docker://sjwidmay/stitch_nf:QUILT'
@@ -20,6 +20,6 @@ publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'
   log.info "----- Running QUILT on Chromosome ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/stitch/run_quilt_short_DO.R ${bamlist} ${chr} ${hapfile} ${samples} ${legendfile}
+  Rscript --vanilla ${projectDir}/bin/quilt/run_quilt_short_DO.R ${bamlist} ${chr} ${hapfile} ${samples} ${legendfile}
   """
 }
