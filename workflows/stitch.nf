@@ -37,6 +37,7 @@ include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_hapl
 include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
+include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 
 //include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
 //include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
@@ -166,13 +167,14 @@ workflow QUILT {
   MAKE_QUILT_MAP(MAKE_QUILT_REFERENCE_FILES.out.filtered_ref_variants)
 
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(MAKE_QUILT_REFERENCE_FILES.out.haplegendsample)
-  
   RUN_QUILT(quilt_inputs)
 
-  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.join(MAKE_QUILT_MAP.out.quilt_map)
-  
+  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.join(MAKE_QUILT_MAP.out.quilt_map)  
   QUILT_TO_QTL2(quilt_for_qtl2)
-  QUILT_TO_QTL2.out.qtl2files.view()
+
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  GENOPROBS.out.geno_probs_out.view()
+  
 
 
 
