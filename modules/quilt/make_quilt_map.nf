@@ -11,7 +11,7 @@ process MAKE_QUILT_MAP {
   tuple val(chr), file(filtered_vcf), file(filtered_vcf_ind)
 
   output:
-  tuple val(chr), file("*_gen_map.txt"), emit: quilt_map
+  tuple val(chr), file(filtered_vcf), file(filtered_vcf_ind), file("*_gen_map.txt"), emit: quilt_map
   
   script:
   log.info "----- Making QUILT Genetic Map File for Chromosome ${chr} -----"

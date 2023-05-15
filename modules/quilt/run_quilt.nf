@@ -11,7 +11,7 @@ process RUN_QUILT {
 publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
   
   input:
-  tuple file(bamlist), val(chr), file(sanger_vcf), file(sanger_vcf_index) ,file(hapfile), file(legendfile), file(samples)
+  tuple file(bamlist), val(chr), file(hapfile), file(legendfile), file(samples)
 
   output:
   tuple val(chr), file("quilt.*.vcf.gz"), file("quilt.*.vcf.gz.tbi"), emit: quilt_vcf
