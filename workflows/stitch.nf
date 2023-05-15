@@ -34,6 +34,7 @@ include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_baml
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
 include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
 include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
+include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 
 //include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
@@ -160,6 +161,9 @@ workflow QUILT {
   DO_FILTER_SANGER_SNPS(chrs)
   MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
   MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
+
+  MAKE_QUILT_MAP(MAKE_QUILT_REFERENCE_FILES.out.filtered_ref_variants)
+
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(MAKE_QUILT_REFERENCE_FILES.out.haplegendsample)
   
   RUN_QUILT(quilt_inputs)
