@@ -20,6 +20,6 @@ publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'
   log.info "----- Running QUILT on Chromosome ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/quilt/run_quilt_short_DO.R ${bamlist} ${chr} ${hapfile} ${samples} ${legendfile}
+  Rscript --vanilla ${projectDir}/bin/quilt/run_quilt_DO.R ${bamlist} ${chr} ${hapfile} ${samples} ${legendfile}
   """
 }

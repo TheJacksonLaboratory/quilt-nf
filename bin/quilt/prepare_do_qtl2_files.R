@@ -161,9 +161,9 @@ sample_gt = all_gt[,-(1:8)]
 # TBD: How to filter SNPs with the same SDP.
 
 # Right now, but the chromosome in half....
-keep = 1:floor(nrow(sample_gt) / 2)
-all_gt = all_gt[keep,]
-sample_gt = all_gt[,-(1:8)]
+# keep = 1:floor(nrow(sample_gt) / 2)
+# all_gt = all_gt[keep,]
+# sample_gt = all_gt[,-(1:8)]
 
 # Write out the founders.
 # NOTE: Don't forget to change the order to the standard order!

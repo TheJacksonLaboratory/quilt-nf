@@ -173,7 +173,6 @@ workflow QUILT {
   QUILT_TO_QTL2(quilt_for_qtl2)
 
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
-  GENOPROBS.out.geno_probs_out.view()
   
 
 

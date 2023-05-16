@@ -12,7 +12,7 @@ library(qtl2)
 args <- commandArgs(trailingOnly = TRUE)
 
 # what chromosome?
-chr <- args[1]
+chrom <- args[1]
 # chr <- "12"
 
 # sample genotypes
@@ -28,7 +28,7 @@ pmap <- args[4]
 # pmap <- "chr12_pmap.csv"
 
 # genetic map
-pmap <- args[5]
+gmap <- args[5]
 # gmap <- "chr12_gmap.csv"
 
 # sample metadata
@@ -68,7 +68,7 @@ metadata <- args[6]
 # write.csv(updated_DO_metadata, file = paste0("chr",chr,"_crossinfo.csv"), quote = F, row.names = F)
 
 # Write control file
-qtl2::write_control_file(output_file = paste0("chr",chr,"_control_file.json"),
+qtl2::write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
                          crosstype="do",
                          founder_geno_file=founder_genos, 
                          founder_geno_transposed=TRUE,
@@ -85,7 +85,7 @@ qtl2::write_control_file(output_file = paste0("chr",chr,"_control_file.json"),
                          overwrite = T)
 
 # Load in the cross object
-cross <- qtl2::read_cross2(paste0("chr",chr,"_control_file.json"))
+cross <- qtl2::read_cross2(paste0("chr",chrom,"_control_file.json"))
 
 # Drop null markers
 cross <- qtl2::drop_nullmarkers(cross)
@@ -117,8 +117,9 @@ apr <- qtl2::genoprob_to_alleleprob(probs = pr,
                                     cores = (parallel::detectCores()/2))
 
 # Save objects
-save(pr, file = paste0("chr_",chr,"_36_state_probs.RData"))
-save(apr, file = paste0("chr_",chr,"_8_state_probs.RData"))
+save(cross, file = paste0("chr_",chrom,"_cross.RData"))
+save(pr, file = paste0("chr_",chrom,"_36_state_probs.RData"))
+save(apr, file = paste0("chr_",chrom,"_8_state_probs.RData"))
 
 
 

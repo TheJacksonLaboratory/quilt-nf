@@ -2,7 +2,7 @@ process GENOPROBS {
   tag "$chr"
 
   cpus 8
-  memory 200.GB
+  memory 251.GB
   time '24:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
@@ -13,7 +13,7 @@ process GENOPROBS {
   tuple val(chr), file(founder_geno), file(sample_genos), file(pmap), file(gmap), file(covar), file(pheno)
 
   output:
-  tuple val(chr), file("*36_state_probs.RData"), file("*8_state_probs.RData"), file("*_control_file.json"), emit: geno_probs_out
+  tuple val(chr), file("*36_state_probs.RData"), file("*8_state_probs.RData"), file("*_cross.RData"), emit: geno_probs_out
 
   script:
   log.info "----- Reconstructing Sample Haplotypes for Chromosome: ${chr} -----"
