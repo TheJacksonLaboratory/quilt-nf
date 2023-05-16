@@ -9,8 +9,8 @@ process PICARD_MARKDUPLICATES {
 
   // save if mouse and wes or save if keep intermediate
   //publishDir "${params.sample_folder}/bams"
-  publishDir "${params.sample_folder}/bams", pattern: "*.bam", mode:'copy'
-  publishDir "${params.sample_folder}/bams", pattern: "*.bai", mode:'copy'
+  //publishDir "${params.sample_folder}/bams", pattern: "*.bam", mode:'copy'
+  //publishDir "${params.sample_folder}/bams", pattern: "*.bai", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam)

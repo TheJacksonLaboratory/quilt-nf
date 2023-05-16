@@ -1,6 +1,6 @@
 ################################################################################
 # Use the filtered Sanger VCF, which contains only DO founders and high-quality
-# biallelic SNPs, to build a genetic map file for QUILT. Only use Chr 1.
+# biallelic SNPs, to build a genetic map file for QUILT.
 #
 # Daniel Gatti
 # dan.gatti@jax.org
@@ -14,14 +14,14 @@ library(VariantAnnotation)
 
 args = commandArgs(trailingOnly = TRUE)
 
-base_dir = '/projects/compsci/vmp/lcgbs_ssif'
-
-vcf_dir = '/fastscratch/widmas'
-
+#base_dir = '/projects/compsci/vmp/lcgbs_ssif'
+#vcf_dir = '/fastscratch/widmas'
 #vcf_file = file.path(vcf_dir, 'sanger_chr1_do_snps.vcf.gz')
-vcf_file = args[1]
 
-output_file = file.path(vcf_dir, 'chr1_gen_map.txt')
+vcf_file = args[1]
+chr = args[2]
+
+output_file = paste0("chr",chr,"_gen_map.txt")
 
 ##### MAIN #####
 

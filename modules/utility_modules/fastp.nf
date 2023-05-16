@@ -8,7 +8,7 @@ process FASTP {
 
   container 'docker://sjwidmay/fastp_nf:fastp'
 
-  publishDir "${params.sample_folder}/fastp", pattern:"*_fastp_report.html", mode:'copy'
+  //publishDir "${params.sample_folder}/fastp", pattern:"*_fastp_report.html", mode:'copy'
 
   input:
   tuple val(sampleID), file(fq_reads)

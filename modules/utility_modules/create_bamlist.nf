@@ -6,19 +6,19 @@ process CREATE_BAMLIST {
 
   container 'quay.io-jaxcompsci-rstudio-4.2.0'
 
-  publishDir "${params.sample_folder}/bams", pattern: "STITCH_bamlist.txt", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}", pattern: "bamlist.txt", mode:'copy'
 
   input:
   val(bams)
 
   output:
-  path('STITCH_bamlist.txt'), emit: bam_list
+  path('bamlist.txt'), emit: bam_list
 
   script:
   log.info "----- Create List of .bam Files for STITCH -----"
 
   """
-  echo ${bams} > STITCH_bamlist.txt
+  echo ${bams} > bamlist.txt
   Rscript --vanilla ${projectDir}/bin/stitch/create_bamlist.R
   """
 }

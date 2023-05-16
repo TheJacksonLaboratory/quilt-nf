@@ -1,4 +1,4 @@
-process MPILEUP {
+process SAMPLE_COVERAGE {
 
   cpus 1
   memory 300.GB
@@ -8,19 +8,21 @@ process MPILEUP {
 
   container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
 
-  // publishDir "${params.sample_folder}/sample_coverage", pattern:"*_coverage.txt", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_coverage.txt", mode:'copy'
 
   input:
-  tuple val(sampleID), file(bam)
+  tuple val(sampleID), file(bam), file(bai)
 
   output:
-  tuple val(sampleID), file(bam), file("*.bed"), emit: bed
+  tuple val(sampleID), file(bam), file("*_coverage.txt"), emit: depth_out
 
   script:
   log.info "----- Create Pileups for Sample: ${sampleID} -----"
 
   """
-  samtools mpileup -f ${params.ref_fa} ${bam} > ${sampleID}.mpileup
-  awk '\$4 > 0 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
+  samtools depth ${bam} -a | awk 'BEGIN{sum=0} {sum += \$3; n++} END{print sum/n}' > ${sampleID}_coverage.txt
+
+  # samtools mpileup -f ${params.ref_fa} ${bam} > ${sampleID}.mpileup
+  # awk '\$4 > 0 {print \$1"\t"\$2}' ${sampleID}.mpileup > ${sampleID}.bed
   """
 }

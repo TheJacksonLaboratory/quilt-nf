@@ -7,7 +7,7 @@
 # 2023-04-28
 ################################################################################
 
-library(readxl)
+# library(readxl)
 library(VariantAnnotation)
 library(qtl2convert)
 library(qtl2)
@@ -41,14 +41,17 @@ marker_file = args[4]
 
 # qtl2 output directory.
 #qtl2_dir = '/fastscratch/dgatti/qtl2_do_seqwell'
-qtl2_dir = args[5]
+# qtl2_dir = args[5]
+
+# chromosome
+chr = args[5]
 
 print(args)
 
 
 ##### MAIN #####
 
-dir.create(qtl2_dir, showWarnings = FALSE)
+# dir.create(qtl2_dir, showWarnings = FALSE)
 
 print("Read in founder genotypes")
 # Read in founder genotypes.
@@ -158,9 +161,9 @@ sample_gt = all_gt[,-(1:8)]
 # TBD: How to filter SNPs with the same SDP.
 
 # Right now, but the chromosome in half....
-keep = 1:floor(nrow(sample_gt) / 2)
-all_gt = all_gt[keep,]
-sample_gt = all_gt[,-(1:8)]
+# keep = 1:floor(nrow(sample_gt) / 2)
+# all_gt = all_gt[keep,]
+# sample_gt = all_gt[,-(1:8)]
 
 # Write out the founders.
 # NOTE: Don't forget to change the order to the standard order!
@@ -169,19 +172,19 @@ founder_gt = founder_gt[,c('A_J', 'C57BL_6J', '129S1_SvImJ', 'NOD_ShiLtJ',
                            'NZO_HlLtJ', 'CAST_EiJ', 'PWK_PhJ', 'WSB_EiJ')]
 colnames(founder_gt) = LETTERS[1:8]
 founder_gt = data.frame(marker = rownames(founder_gt), founder_gt) 
-write.csv(founder_gt, file = file.path(qtl2_dir, 'founder_geno.csv'),
+write.csv(founder_gt, file = paste0("chr",chr,"_founder_geno.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out sample genotypes.
 sample_gt = data.frame(marker = rownames(sample_gt), sample_gt) 
-write.csv(sample_gt, file = file.path(qtl2_dir, 'sample_geno.csv'),
+write.csv(sample_gt, file = paste0("chr",chr,"_sample_geno.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out physical map.
 pmap = data.frame(marker = names(founder_rr),
                   chr    = seqnames(founder_rr),
                   pos    = start(founder_rr) * 1e-6)
-write.csv(pmap, file = file.path(qtl2_dir, 'pmap.csv'),
+write.csv(pmap, file = paste0("chr",chr,"_pmap.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out genetic map.
@@ -191,7 +194,7 @@ stopifnot(markers$position == start(founder_rr))
 gmap = data.frame(marker = names(founder_rr),
                   chr    = seqnames(founder_rr),
                   pos    = markers$Genetic_Map.cM.)
-write.csv(gmap, file = file.path(qtl2_dir, 'gmap.csv'),
+write.csv(gmap, file = paste0("chr",chr,"_gmap.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Read in sample metadata.
@@ -205,48 +208,48 @@ covar = data.frame(id  = meta$SampleID,
                    sex = substr(meta$SampleID, 1, 1),
                    gen = meta$Generation)
 covar$sex = c('female', 'male')[match(covar$sex, c('F', 'M'))]
-write.csv(covar, file = file.path(qtl2_dir, 'covar.csv'),
+write.csv(covar, file = 'covar.csv',
           quote = FALSE, row.names = FALSE)
 
 # Write out phenotypes.
 pheno = data.frame(id  = meta$SampleID,
                    val = rep(1, nrow(meta)))
-write.csv(pheno, file = file.path(qtl2_dir, 'pheno.csv'),
+write.csv(pheno, file = 'pheno.csv',
            quote = FALSE, row.names = FALSE) 
 
-# Write out JSON control file.
-json = '{
-  "description": "seqWell DO",
-  "crosstype": "do",
-  "sep": ",",
-  "na.strings": ["-", "NA"],
-  "comment.char": "#",
-  "geno": "sample_geno.csv",
-  "founder_geno": "founder_geno.csv",
-  "gmap": "gmap.csv",
-  "pmap": "pmap.csv",
-  "pheno": "pheno.csv",
-  "covar": "covar.csv",
-  "alleles": ["A", "B", "C", "D", "E", "F", "G", "H"],
-  "x_chr": "X",
-  "genotypes": {
-    "A": 1,
-    "H": 2,
-    "B": 3
-  },
-  "geno_transposed": true,
-  "founder_geno_transposed": true,
-  "sex": {
-    "covar": "sex",
-    "female": "female",
-    "male": "male"
-  },
-  "cross_info": {
-    "covar": "gen"
-  }
-}'
-
-writeLines(text = json, con = file.path(qtl2_dir, 'seqwell_do_grcm39.json'))
+# # Write out JSON control file.
+# json = '{
+#   "description": "seqWell DO",
+#   "crosstype": "do",
+#   "sep": ",",
+#   "na.strings": ["-", "NA"],
+#   "comment.char": "#",
+#   "geno": "sample_geno.csv",
+#   "founder_geno": "founder_geno.csv",
+#   "gmap": "gmap.csv",
+#   "pmap": "pmap.csv",
+#   "pheno": "pheno.csv",
+#   "covar": "covar.csv",
+#   "alleles": ["A", "B", "C", "D", "E", "F", "G", "H"],
+#   "x_chr": "X",
+#   "genotypes": {
+#     "A": 1,
+#     "H": 2,
+#     "B": 3
+#   },
+#   "geno_transposed": true,
+#   "founder_geno_transposed": true,
+#   "sex": {
+#     "covar": "sex",
+#     "female": "female",
+#     "male": "male"
+#   },
+#   "cross_info": {
+#     "covar": "gen"
+#   }
+# }'
+# 
+# writeLines(text = json, con = paste0("chr", chr,"seqwell_do_grcm39.json"))
 
 
 

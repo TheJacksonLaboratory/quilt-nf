@@ -7,8 +7,8 @@ nextflow.enable.dsl=2
 if (params.workflow == "wgs"){
   include {WGS} from './workflows/wgs'
 }
-if (params.workflow == "stitch"){
-  include {STITCH} from './workflows/stitch'
+if (params.workflow == "quilt"){
+  include {QUILT} from './workflows/stitch'
 }
 
 // Conditional to kick off appropriate workflow
@@ -16,7 +16,7 @@ workflow{
   if (params.workflow == "wgs"){
     WGS()
     }
-  if (params.workflow == "stitch"){
-    STITCH()
+  if (params.workflow == "quilt"){
+    QUILT()
     }
 }

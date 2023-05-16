@@ -29,9 +29,19 @@ include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
-include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
-include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
-include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combined_gvcfs.nf"
+include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
+include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
+include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
+include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
+include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
+include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
+include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
+include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
+include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
+
+//include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
+//include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
+//include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combined_gvcfs.nf"
 //include {GATK_VCF_TO_TXT} from "${projectDir}/modules/gatk/gatk_to_sample_genos"
 //include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
 //include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
@@ -39,11 +49,10 @@ include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combi
 
 
 //keep this in in case I need to revive some of the processe
-//include {MPILEUP} from "${projectDir}/modules/samtools/calc_pileups"
+
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 //include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
-//include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 //include {CREATE_POSFILE} from "${projectDir}/modules/bcftools/create_posfile"
 //include {CREATE_POSFILE_DO} from "${projectDir}/modules/bcftools/create_posfile_DO"
 //include {RUN_STITCH} from "${projectDir}/modules/stitch/run_stitch"
@@ -97,7 +106,7 @@ read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder}
 chrs = Channel.of(1..19)
 
 // main workflow
-workflow STITCH {
+workflow QUILT {
 
   // Step 0: Concatenate Fastq files if required. 
   if (params.concat_lanes){
@@ -140,26 +149,51 @@ workflow STITCH {
   PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
   data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
 
+  // Calculate pileups
+  SAMPLE_COVERAGE(data)
+
   // pair up each chromosome with sample bams
   chrom_channel = data.combine(chrs)
 
-  // Calculate pileups
-  //MPILEUP(data)
-  //EXPAND_BED(MPILEUP.out.bed)
+  // Collect .bam filenames in its own list
+  bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
+  CREATE_BAMLIST(bams)
+  
+  // Meanwhile, make reference files for DO animals
+  DO_FILTER_SANGER_SNPS(chrs)
+  MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
+  MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
+
+  MAKE_QUILT_MAP(MAKE_QUILT_REFERENCE_FILES.out.filtered_ref_variants)
+
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(MAKE_QUILT_REFERENCE_FILES.out.haplegendsample)
+  RUN_QUILT(quilt_inputs)
+
+  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.join(MAKE_QUILT_MAP.out.quilt_map)  
+  QUILT_TO_QTL2(quilt_for_qtl2)
+
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  
+
+
+
+
+
+
 
   // Filter bams to coverage level
   //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
   //INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
 
   // call variants for each chromosome within each sample
-  GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
+  //GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
 
   // combine sample gvcfs by chromosome
-  chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
-  COMBINE_GVCF(chr_gvcfs)
+  //chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
+  //COMBINE_GVCF(chr_gvcfs)
 
   // genotype combined gvcfs
-  GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
+  //GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
 
   // make output vcf into txt
   //GATK_VCF_TO_TXT(GENOTYPE_COMBINED_GVCF.out.vcf)
@@ -174,11 +208,8 @@ workflow STITCH {
   //GENO_PROBS(qtl2files)
 
 
-  // STITCH things
-  // Collect .bam filenames in its own list
-  //bams = INDEX_FILTERED_BAM.out.covered_bam
-  //                     .collect()
-  //CREATE_BAMLIST(bams)
+  // QUILT things
+
 
   // 8) Generate other required input files for STITCH
   //if (params.do_mice) {

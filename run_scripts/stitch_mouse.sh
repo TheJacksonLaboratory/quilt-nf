@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --mail-user=samuel.widmayer@jax.org
-#SBATCH --job-name=STITCH-NF-DO
+#SBATCH --job-name=QUILT-NF
 #SBATCH --mail-type=END,FAIL
 #SBATCH -p compute
 #SBATCH -q batch
@@ -16,11 +16,12 @@ module load nextflow
 
 # RUN PIPELINE
 nextflow main.nf \
---workflow stitch \
+--workflow quilt \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_ddRADseq_NovaSeq/' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq_full' \
 --gen_org mouse \
---pubdir '/fastscratch/STITCH_outputDir' \
+--pubdir '/projects/compsci/vmp/lcgbs_ssif/results/quilt' \
+--run_name $1 \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
 --covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
