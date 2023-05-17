@@ -3,12 +3,13 @@ process RUN_QUILT {
   
   // Chr Y doesn't work for some reason
   // errorStrategy 'ignore'
-  memory 101.GB
+  cpus 16
+  memory 400.GB
   time '48:00:00'
   
   container 'docker://sjwidmay/stitch_nf:QUILT'
 
-publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
   
   input:
   tuple file(bamlist), val(chr), file(hapfile), file(legendfile), file(samples)

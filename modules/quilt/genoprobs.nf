@@ -2,7 +2,7 @@ process GENOPROBS {
   tag "$chr"
 
   cpus 8
-  memory 251.GB
+  memory 300.GB
   time '24:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
