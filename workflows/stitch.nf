@@ -30,6 +30,7 @@ include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
+include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
 include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
@@ -151,14 +152,26 @@ workflow QUILT {
 
   // Calculate pileups
   SAMPLE_COVERAGE(data)
+  
+  // Accommodate downsampling
+  if (params.downsampleToCov) {
 
-  // pair up each chromosome with sample bams
-  chrom_channel = data.combine(chrs)
+  // Downsample bams to specified coverage if the full coverage allows
+  DOWNSAMPLE_BAM(SAMPLE_COVERAGE.out.depth_out)
+
+  // Collect downsampled .bam filenames in its own list
+  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
+  CREATE_BAMLIST(bams)
+  CREATE_BAMLIST.out.bam_list.view()
+
+  } else {
 
   // Collect .bam filenames in its own list
   bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
   CREATE_BAMLIST(bams)
   
+  }
+
   // Meanwhile, make reference files for DO animals
   DO_FILTER_SANGER_SNPS(chrs)
   MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
@@ -173,7 +186,7 @@ workflow QUILT {
   QUILT_TO_QTL2(quilt_for_qtl2)
 
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
-  
+  }
 
 
 
@@ -184,6 +197,9 @@ workflow QUILT {
   // Filter bams to coverage level
   //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
   //INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
+
+  // pair up each chromosome with sample bams
+  //chrom_channel = data.combine(chrs)
 
   // call variants for each chromosome within each sample
   //GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
@@ -211,27 +227,7 @@ workflow QUILT {
   // QUILT things
 
 
-  // 8) Generate other required input files for STITCH
-  //if (params.do_mice) {
 
-    //CREATE_POSFILE_DO(chrs)
-    //stitch_inputs = CREATE_BAMLIST.out.bam_list
-    //                            .combine(CREATE_POSFILE_DO.out.ref_files)
-    //RUN_STITCH_DO(stitch_inputs)
-    //STITCH_VCF_TO_TXT(RUN_STITCH_DO.out.stitch_vcf)
-    //geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-    //          .join(RUN_STITCH_DO.out.stitch_founder_genos)
-
-  //} else {
-
-    //CREATE_POSFILE(chrs)
-    //stitch_inputs = CREATE_BAMLIST.out.bam_list
-    //                            .combine(CREATE_POSFILE.out.posfile)
-    //RUN_STITCH(stitch_inputs)
-    //STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
-    //geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-    //          .join(RUN_STITCH.out.stitch_founder_genos)
-  //}
   
   // convert vcfs to qtl2-style files
   //STITCH_TO_QTL(geno_files)
