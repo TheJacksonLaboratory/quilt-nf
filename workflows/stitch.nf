@@ -142,8 +142,8 @@ workflow QUILT {
   SAMPLE_COVERAGE(data)
   
   // Accommodate downsampling
+  
   if (params.downsampleToCov) {
-
   // Downsample bams to specified coverage if the full coverage allows
   DOWNSAMPLE_BAM(SAMPLE_COVERAGE.out.depth_out)
 
@@ -151,13 +151,11 @@ workflow QUILT {
   bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
   CREATE_BAMLIST(bams)
   CREATE_BAMLIST.out.bam_list.view()
-
   } else {
-
   // Collect .bam filenames in its own list
   bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
   CREATE_BAMLIST(bams)
-  
+
   }
 
   // Meanwhile, make reference files for DO animals
@@ -175,67 +173,5 @@ workflow QUILT {
   QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes
-  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
-  }
-
-
-
-
-
-
-
-  // Filter bams to coverage level
-  //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
-  //INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
-
-  // pair up each chromosome with sample bams
-  //chrom_channel = data.combine(chrs)
-
-  // call variants for each chromosome within each sample
-  //GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
-
-  // combine sample gvcfs by chromosome
-  //chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
-  //COMBINE_GVCF(chr_gvcfs)
-
-  // genotype combined gvcfs
-  //GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
-
-  // make output vcf into txt
-  //GATK_VCF_TO_TXT(GENOTYPE_COMBINED_GVCF.out.vcf)
-
-  // parse txt file into qtl2-style files
-  //GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
-
-  // collect the qtl files and write them to each folder
-  //qtl2files = GATK_TO_QTL.out.chrs.collect()
-
-  // calculate genotype probabilities and make the fst database in each sample folder
-  //GENO_PROBS(qtl2files)
-
-
-  // QUILT things
-
-
-
-  
-  // convert vcfs to qtl2-style files
-  //STITCH_TO_QTL(geno_files)
-
-  // reconstruct haplotypes
-  //GENO_PROBS(STITCH_TO_QTL.out.qtl2files)
-  
-  //agg_stats = QUALITY_STATISTICS.out.quality_stats
-  //            .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
-  //            .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
-  //           .join(PICARD_COLLECTWGSMETRICS.out.txt)
-
-  // may replace with multiqc
-  //AGGREGATE_STATS(agg_stats)
-  
-  //markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
-  //align_stats = AGGREGATE_STATS.out.txt
-	//			.collect()
-  //STATS_MARKDOWN(align_stats)
- 
- }
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files) 
+}
