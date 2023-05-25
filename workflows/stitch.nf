@@ -147,21 +147,28 @@ workflow QUILT {
   // Downsample bams to specified coverage if the full coverage allows
   DOWNSAMPLE_BAM(SAMPLE_COVERAGE.out.depth_out)
 
-  // Collect downsampled .bam filenames in its own list
-  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
-  CREATE_BAMLIST(bams)
-  CREATE_BAMLIST.out.bam_list.view()
-  } else {
-  // Collect .bam filenames in its own list
-  bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
-  CREATE_BAMLIST(bams)
-
+  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
   }
 
+  // downsample bam files
+  DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
+
+  // Collect downsampled .bam filenames in its own list
+  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
+  bams.view()
+  
+  CREATE_BAMLIST(bams)
+  CREATE_BAMLIST.out.bam_list.view()
+
+  // Collect .bam filenames in its own list
+  //bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
+  //CREATE_BAMLIST(bams)
+  
   // Meanwhile, make reference files for DO animals
   DO_FILTER_SANGER_SNPS(chrs)
   MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
-  MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs
+  MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
   MAKE_QUILT_MAP(MAKE_QUILT_REFERENCE_FILES.out.filtered_ref_variants)
 
   // Run QUILT
@@ -172,6 +179,8 @@ workflow QUILT {
   quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.join(MAKE_QUILT_MAP.out.quilt_map)  
   QUILT_TO_QTL2(quilt_for_qtl2)
 
-  // Reconstruct haplotypes
-  GENOPROBS(QUILT_TO_QTL2.out.qtl2files) 
-}
+  // Reconstruct haplotypes with qtl2
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  
+ }
+
