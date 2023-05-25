@@ -24,6 +24,7 @@ nextflow main.nf \
 --run_name $1 \
 -w '/fastscratch/STITCH_outputDir/work' \
 --nFounders 8 \
+--downsample_to_cov 0.10 \
 --covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
 --comment "This script will run haplotype inference on DO lcWGS data" \
 -resume

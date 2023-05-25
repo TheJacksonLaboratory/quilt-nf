@@ -14,7 +14,8 @@ process SAMPLE_COVERAGE {
   tuple val(sampleID), file(bam), file(bai)
 
   output:
-  tuple val(sampleID), file(bam), file("*_coverage.txt"), emit: depth_out
+  tuple val(sampleID), file(bam), emit: bam_out
+  tuple val(sampleID), file("*_coverage.txt"), emit: depth_out
 
   script:
   log.info "----- Create Pileups for Sample: ${sampleID} -----"

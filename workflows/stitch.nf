@@ -30,6 +30,7 @@ include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
+include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
 include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
@@ -152,18 +153,28 @@ workflow QUILT {
   // Calculate pileups
   SAMPLE_COVERAGE(data)
 
-  // pair up each chromosome with sample bams
-  chrom_channel = data.combine(chrs)
+  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  }
+
+  // downsample bam files
+  DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
+
+  // Collect downsampled .bam filenames in its own list
+  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
+  bams.view()
+  
+  CREATE_BAMLIST(bams)
+  CREATE_BAMLIST.out.bam_list.view()
 
   // Collect .bam filenames in its own list
-  bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
-  CREATE_BAMLIST(bams)
+  //bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
+  //CREATE_BAMLIST(bams)
   
   // Meanwhile, make reference files for DO animals
   DO_FILTER_SANGER_SNPS(chrs)
   MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
   MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
-
   MAKE_QUILT_MAP(MAKE_QUILT_REFERENCE_FILES.out.filtered_ref_variants)
 
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(MAKE_QUILT_REFERENCE_FILES.out.haplegendsample)
@@ -174,82 +185,4 @@ workflow QUILT {
 
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
-
-
-
-
-
-
-
-  // Filter bams to coverage level
-  //PILEUPS_TO_BAM(EXPAND_BED.out.coverage_intervals)
-  //INDEX_FILTERED_BAM(PILEUPS_TO_BAM.out.filtered_bam)
-
-  // call variants for each chromosome within each sample
-  //GATK_HAPLOTYPECALLER_INTERVAL(chrom_channel)
-
-  // combine sample gvcfs by chromosome
-  //chr_gvcfs = GATK_HAPLOTYPECALLER_INTERVAL.out.vcf.groupTuple(by: 0)
-  //COMBINE_GVCF(chr_gvcfs)
-
-  // genotype combined gvcfs
-  //GENOTYPE_COMBINED_GVCF(COMBINE_GVCF.out.chr_vcf)
-
-  // make output vcf into txt
-  //GATK_VCF_TO_TXT(GENOTYPE_COMBINED_GVCF.out.vcf)
-
-  // parse txt file into qtl2-style files
-  //GATK_TO_QTL(GATK_VCF_TO_TXT.out.sample_genos)
-
-  // collect the qtl files and write them to each folder
-  //qtl2files = GATK_TO_QTL.out.chrs.collect()
-
-  // calculate genotype probabilities and make the fst database in each sample folder
-  //GENO_PROBS(qtl2files)
-
-
-  // QUILT things
-
-
-  // 8) Generate other required input files for STITCH
-  //if (params.do_mice) {
-
-    //CREATE_POSFILE_DO(chrs)
-    //stitch_inputs = CREATE_BAMLIST.out.bam_list
-    //                            .combine(CREATE_POSFILE_DO.out.ref_files)
-    //RUN_STITCH_DO(stitch_inputs)
-    //STITCH_VCF_TO_TXT(RUN_STITCH_DO.out.stitch_vcf)
-    //geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-    //          .join(RUN_STITCH_DO.out.stitch_founder_genos)
-
-  //} else {
-
-    //CREATE_POSFILE(chrs)
-    //stitch_inputs = CREATE_BAMLIST.out.bam_list
-    //                            .combine(CREATE_POSFILE.out.posfile)
-    //RUN_STITCH(stitch_inputs)
-    //STITCH_VCF_TO_TXT(RUN_STITCH.out.stitch_vcf)
-    //geno_files = STITCH_VCF_TO_TXT.out.sample_genos
-    //          .join(RUN_STITCH.out.stitch_founder_genos)
-  //}
-  
-  // convert vcfs to qtl2-style files
-  //STITCH_TO_QTL(geno_files)
-
-  // reconstruct haplotypes
-  //GENO_PROBS(STITCH_TO_QTL.out.qtl2files)
-  
-  //agg_stats = QUALITY_STATISTICS.out.quality_stats
-  //            .join(PICARD_MARKDUPLICATES.out.dedup_metrics)
-  //            .join(PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt)
-  //           .join(PICARD_COLLECTWGSMETRICS.out.txt)
-
-  // may replace with multiqc
-  //AGGREGATE_STATS(agg_stats)
-  
-  //markdown_template = Channel.of("${projectDir}/bin/stitch/aggregate_stats_summary.Rmd")
-  //align_stats = AGGREGATE_STATS.out.txt
-	//			.collect()
-  //STATS_MARKDOWN(align_stats)
- 
  }

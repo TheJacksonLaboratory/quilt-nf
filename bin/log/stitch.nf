@@ -3,7 +3,7 @@ def param_log(){
 log.info """
 ______________________________________________________
 
-                STITCH PARAMETER LOG
+                QUILT PARAMETER LOG
 
 --comment: ${params.comment}
 
@@ -13,7 +13,7 @@ ______________________________________________________
 --gen_org                       ${params.gen_org}
 --do_mice                       ${params.do_mice}
 --covar_file                    ${params.covar_file}
---seq_method                    ${params.seq_method}
+--downsample_to_cov             ${params.downsample_to_cov}
 --read_type                     ${params.read_type}
 --sample_folder                 ${params.sample_folder}
 --pattern                       ${params.pattern}
