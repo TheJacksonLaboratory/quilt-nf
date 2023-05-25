@@ -5,6 +5,7 @@ process GENOPROBS {
   memory 700.GB
   time '48:00:00'
 
+
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
 
   publishDir "${params.pubdir}/${params.run_name}/geno_probs", pattern: "*.RData", mode:'copy'

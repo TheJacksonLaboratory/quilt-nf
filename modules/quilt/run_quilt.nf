@@ -5,10 +5,12 @@ process RUN_QUILT {
   // errorStrategy 'ignore'
   memory 501.GB
   time '05:00:00'
+  cpus 16
+
   
   container 'docker://sjwidmay/stitch_nf:QUILT'
 
-publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
   
   input:
   tuple file(bamlist), val(chr), file(hapfile), file(legendfile), file(samples)

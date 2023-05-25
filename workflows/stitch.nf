@@ -3,20 +3,8 @@ nextflow.enable.dsl=2
 
 // Nextflow pipeline for preparing lcWGS data for haplotype reconstruction
 // using STITCH
-// General flow:
-// 1) Create channel of paired end or single end reads
-// 1a) Concatenate reads from the same sample or strain if desired
-// 2) Calculate quality statistics for sequencing
-// 3) Generate read groups
-// 4) BWA-mem alignment
-// 5) Sort SAM files
-// 6) Mark duplicates and gather alignment summary information
-// 7) Collect .bam filenames in its own list
-// 8) Generate other required input files for STITCH
-// 9) Run STITCH
-// 10) Aggregate summary statistics
 
-// import modules
+// Import modules
 include {help} from "${projectDir}/bin/help/wgs.nf"
 include {param_log} from "${projectDir}/bin/log/stitch.nf"
 include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
@@ -40,17 +28,8 @@ include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
 include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 
-//include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
-//include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
-//include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combined_gvcfs.nf"
-//include {GATK_VCF_TO_TXT} from "${projectDir}/modules/gatk/gatk_to_sample_genos"
-//include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
-//include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
-//include {GENO_PROBS} from "${projectDir}/modules/gatk/genoprobs"
-
 
 //keep this in in case I need to revive some of the processe
-
 //include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
 //include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
 //include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
@@ -68,6 +47,16 @@ include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 //include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 //include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 //include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
+//include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
+//include {COMBINE_GVCF} from "${projectDir}/modules/gatk/combine_gvcfs.nf"
+//include {GENOTYPE_COMBINED_GVCF} from "${projectDir}/modules/gatk/genotype_combined_gvcfs.nf"
+//include {GATK_VCF_TO_TXT} from "${projectDir}/modules/gatk/gatk_to_sample_genos"
+//include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
+//include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
+//include {GENO_PROBS} from "${projectDir}/modules/gatk/genoprobs"
+
+
+
 
 // help if needed
 if (params.help){
@@ -136,8 +125,7 @@ workflow QUILT {
 
   // Generate read groups
   READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
-  mapping = FASTP.out.fastp_filtered
-                 .join(READ_GROUPS.out.read_groups)
+  mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
 
   // Alignment
   BWA_MEM(mapping)
@@ -152,6 +140,12 @@ workflow QUILT {
 
   // Calculate pileups
   SAMPLE_COVERAGE(data)
+  
+  // Accommodate downsampling
+  
+  if (params.downsampleToCov) {
+  // Downsample bams to specified coverage if the full coverage allows
+  DOWNSAMPLE_BAM(SAMPLE_COVERAGE.out.depth_out)
 
   coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
 	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
@@ -177,12 +171,16 @@ workflow QUILT {
   MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
   MAKE_QUILT_MAP(MAKE_QUILT_REFERENCE_FILES.out.filtered_ref_variants)
 
+  // Run QUILT
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(MAKE_QUILT_REFERENCE_FILES.out.haplegendsample)
   RUN_QUILT(quilt_inputs)
 
+  // Convert QUILT outputs to qtl2 files
   quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.join(MAKE_QUILT_MAP.out.quilt_map)  
   QUILT_TO_QTL2(quilt_for_qtl2)
 
+  // Reconstruct haplotypes with qtl2
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
  }
+

@@ -15,10 +15,9 @@ process DOWNSAMPLE_BAM {
   output:
   tuple file("*_downsampled.bam"), emit: downsampled_bam
   tuple file("*_post_downsample_coverage.txt"), emit: downsampled_depth_out
-
+  
   script:
   log.info "----- Downsampling Reads from Sample: ${sampleID} -----"
-
 
   """
   echo ${coverage}
@@ -47,5 +46,6 @@ process DOWNSAMPLE_BAM {
     echo "Downsampling coefficient is less than 1. Downsampling the .bam file."
   fi
   """
+
 
 }
