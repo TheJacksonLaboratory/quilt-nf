@@ -3,9 +3,9 @@ process RUN_QUILT {
   
   // Chr Y doesn't work for some reason
   // errorStrategy 'ignore'
-  memory 501.GB
-  time '05:00:00'
-  cpus 16
+  memory 700.GB
+  time '12:00:00'
+  cpus 8
 
   
   container 'docker://sjwidmay/stitch_nf:QUILT'

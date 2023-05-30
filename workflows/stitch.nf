@@ -141,12 +141,7 @@ workflow QUILT {
   // Calculate pileups
   SAMPLE_COVERAGE(data)
   
-  // Accommodate downsampling
-  
-  if (params.downsampleToCov) {
   // Downsample bams to specified coverage if the full coverage allows
-  DOWNSAMPLE_BAM(SAMPLE_COVERAGE.out.depth_out)
-
   coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
 	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
   }
@@ -156,7 +151,7 @@ workflow QUILT {
 
   // Collect downsampled .bam filenames in its own list
   bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
-  bams.view()
+  //bams.view()
   
   CREATE_BAMLIST(bams)
   CREATE_BAMLIST.out.bam_list.view()

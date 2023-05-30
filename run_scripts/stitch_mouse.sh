@@ -23,7 +23,7 @@ nextflow main.nf \
 --pubdir '/projects/compsci/vmp/lcgbs_ssif/results/quilt' \
 --run_name $1 \
 -w '/fastscratch/STITCH_outputDir/work' \
---downsample_to_cov 0.10 \
+--downsample_to_cov 1.0 \
 --covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
 --comment "This script will run haplotype inference on DO lcWGS data" \
 -resume
