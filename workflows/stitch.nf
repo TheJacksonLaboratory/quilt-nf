@@ -151,31 +151,24 @@ workflow QUILT {
 
   // Collect downsampled .bam filenames in its own list
   bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
-  //bams.view()
-  
   CREATE_BAMLIST(bams)
-  CREATE_BAMLIST.out.bam_list.view()
 
+  // (No downsampling of bams)
   // Collect .bam filenames in its own list
   //bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
   //CREATE_BAMLIST(bams)
   
-  // Meanwhile, make reference files for DO animals
-  DO_FILTER_SANGER_SNPS(chrs)
-  MAKE_B6_VARIANTS(DO_FILTER_SANGER_SNPS.out.sanger_vcfs)
-  MAKE_QUILT_REFERENCE_FILES(MAKE_B6_VARIANTS.out.filtered_sanger_vcfs)
-  MAKE_QUILT_MAP(MAKE_QUILT_REFERENCE_FILES.out.filtered_ref_variants)
-
   // Run QUILT
-  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(MAKE_QUILT_REFERENCE_FILES.out.haplegendsample)
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+  quilt_inputs.view()
   RUN_QUILT(quilt_inputs)
 
   // Convert QUILT outputs to qtl2 files
-  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.join(MAKE_QUILT_MAP.out.quilt_map)  
-  QUILT_TO_QTL2(quilt_for_qtl2)
+  // quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.join(MAKE_QUILT_MAP.out.quilt_map)  
+  // QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes with qtl2
-  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  // GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
  }
 
