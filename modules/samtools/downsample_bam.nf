@@ -30,8 +30,9 @@ process DOWNSAMPLE_BAM {
   if awk -v num="\$1" 'BEGIN{ if (num > 1) exit 0; else exit 1; }'; then
     echo "Downsampling coefficient is greater than 1. Taking all reads."  
 
-    # rename bam and send with the others
-    mv ${bam} ${sampleID}_skipped_downsampled.bam
+    # send the original bam
+    samtools view -b ${bam} > ${sampleID}_skipped_downsampled.bam
+    samtools index ${sampleID}_skipped_downsampled.bam
 
     # calculate new genome-wide coverage to verify
     samtools depth ${sampleID}_skipped_downsampled.bam -a | awk 'BEGIN{sum=0} {sum += \$3; n++} END{print sum/n}' > ${sampleID}_post_downsample_coverage.txt
@@ -41,6 +42,7 @@ process DOWNSAMPLE_BAM {
     
     # downsample the bam file
     samtools view -b -s \$downsampling_coef ${bam} > ${sampleID}_downsampled.bam
+    samtools index ${sampleID}_downsampled.bam
 
     # calculate new genome-wide coverage to verify
     samtools depth ${sampleID}_downsampled.bam -a | awk 'BEGIN{sum=0} {sum += \$3; n++} END{print sum/n}' > ${sampleID}_post_downsample_coverage.txt
