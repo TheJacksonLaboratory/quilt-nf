@@ -65,7 +65,8 @@ print("Getting founder marker positions")
 # Get the marker positions for the founders.
 founder_rr = rowRanges(founder_vcf)
 names(founder_rr) = sub('\\|', '/', names(founder_rr))
-
+print("head(founder_rr)")
+head(founder_rr)
 rm(founder_vcf)
 
 print("Reading in sample genotypes")
@@ -74,6 +75,8 @@ sample_vcf = readVcf(sample_file, 'grcm39')
 sample_vcf = genotypeCodesToNucleotides(sample_vcf)
 sample_gt  = geno(sample_vcf)$GT
 sample_gt  = sub('\\|', '', sample_gt)
+print("head(sample_gt)")
+head(sample_gt)
 
 sample_pos = regexpr('[FM][0-9][0-9]', colnames(sample_gt))
 colnames(sample_gt) = substr(colnames(sample_gt), sample_pos, sample_pos + 2)
@@ -81,7 +84,8 @@ colnames(sample_gt) = substr(colnames(sample_gt), sample_pos, sample_pos + 2)
 print("Getting sample marker positions")
 # Get the marker positions for the samples.
 sample_rr = rowRanges(sample_vcf)
-
+print("head(sample_rr)")
+head(sample_rr)
 rm(sample_vcf)
 
 print("Retain SNPs in founder file")
@@ -112,6 +116,7 @@ print("Convert genotypes to numerics")
 # Note that the SNP names will be messed up by the data.frame.
 gt_num = data.frame(gt_num, stringsAsFactors = TRUE)
 # How many alleles do we have?
+print("How many alleles do we have?")
 num_geno = sapply(lapply(gt_num, levels), length)
 table(num_geno)
 
@@ -125,6 +130,7 @@ keep = which(num_geno == 3)
 keep = rownames(sample_gt)[keep]
 
 # How many SNPs do we keep?
+print("How many alleles do we have?")
 length(keep)
 
 
