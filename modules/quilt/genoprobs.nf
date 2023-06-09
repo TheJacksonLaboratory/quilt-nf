@@ -1,8 +1,8 @@
 process GENOPROBS {
   tag "$chr"
 
-  cpus 8
-  memory 700.GB
+  cpus 16
+  memory 500.GB
   time '48:00:00'
 
 

@@ -10,7 +10,7 @@ process QUILT_TO_QTL2 {
   publishDir "${params.pubdir}/${params.run_name}/qtl2files", pattern:"*", mode:'copy'
 
   input:
-  tuple val(chr), file(sample_genos), file(sample_genos_index), file(sanger_snps), file(sanger_snps_index), file(gen_map)
+  tuple val(chr), file(sample_genos), file(sample_genos_index)
 
   output:
   tuple val(chr), file("*_founder_geno.csv"), file("*_sample_geno.csv"), file("*_pmap.csv"), file("*_gmap.csv"), file("covar.csv"), file("pheno.csv"), emit: qtl2files
@@ -19,6 +19,6 @@ process QUILT_TO_QTL2 {
   log.info "----- Converting QUILT Genotypes to R/qtl2 Input Files for Chromosome: ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/quilt/prepare_do_qtl2_files.R ${sanger_snps} ${sample_genos} ${params.covar_file} ${gen_map} ${chr}
+  Rscript --vanilla ${projectDir}/bin/quilt/prepare_do_qtl2_files.R ${params.ref_file_dir}/chr${chr}_DO_phased_snps.vcf.gz ${sample_genos} ${params.covar_file} ${params.ref_file_dir}/chr${chr}_gen_map.txt ${chr}
   """
 }

@@ -3,8 +3,8 @@ process RUN_QUILT {
   
   // Chr Y doesn't work for some reason
   // errorStrategy 'ignore'
-  memory 700.GB
-  time '12:00:00'
+  memory 650.GB
+  time '06:00:00'
   cpus 1
 
   
