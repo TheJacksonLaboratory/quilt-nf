@@ -25,6 +25,7 @@ include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_vari
 include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
 include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
+include {QUILT_LD_PRUNING} from "${projectDir}/modules/bcftools/quilt_LD_prune.nf"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
 include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 
@@ -162,8 +163,11 @@ workflow QUILT {
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
   RUN_QUILT(quilt_inputs)
 
+  // Perform LD pruning on QUILT output
+  QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
+
   // Convert QUILT outputs to qtl2 files
-  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
+  quilt_for_qtl2 = QUILT_LD_PRUNING.out.pruned_quilt_vcf
   QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes with qtl2
