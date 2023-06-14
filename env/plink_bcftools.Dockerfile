@@ -21,8 +21,7 @@ RUN  apt-get --allow-releaseinfo-change update \
     liblzma-dev \
     libblas-dev \
     libssh2-1-dev \
-    libgit2-dev \
-    zlib
+    libgit2-dev
 
 RUN conda install -c bioconda plink
 RUN conda install -c bioconda bcftools
