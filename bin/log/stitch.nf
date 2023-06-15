@@ -14,6 +14,7 @@ ______________________________________________________
 --do_mice                       ${params.do_mice}
 --covar_file                    ${params.covar_file}
 --downsample_to_cov             ${params.downsample_to_cov}
+--run_name			${params.run_name}
 --read_type                     ${params.read_type}
 --sample_folder                 ${params.sample_folder}
 --pattern                       ${params.pattern}

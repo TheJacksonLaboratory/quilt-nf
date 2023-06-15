@@ -11,7 +11,7 @@ process QUILT_LD_PRUNING {
   tuple val(chr), file(sample_genos), file(sample_genos_index)
 
   output:
-  tuple val(chr), file("pruned.quilt.*.vcf.gz"), file("pruned.quilt.*.vcf.gz.tbi"), emit: pruned_quilt_vcf
+  tuple val(chr), file("pruned.quilt.*.vcf.gz"), file("pruned.quilt.*.vcf.gz.csi"), emit: pruned_quilt_vcf
 
   script:
   log.info "----- Performing LD Pruning on QUILT Variants for Chromosome: ${chr} -----"
@@ -31,7 +31,7 @@ process QUILT_LD_PRUNING {
   awk '{sub(/:/, "\\t"); print}' plink.prune.in  > marker.list.txt
 
   # perform LD pruning
-  bcftools view ${quiltVCF} \
+  bcftools view ${sample_genos} \
     -R marker.list.txt \
     --output-type z \
     -o pruned.quilt.${chr}.vcf.gz
