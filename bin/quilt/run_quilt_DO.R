@@ -26,7 +26,6 @@ QUILT::QUILT(chr = mouse_chr,
              reference_sample_file = args[4],
              reference_legend_file = args[5],
              nGen = 41,
-             nCores = (parallel::detectCores()/2),
              addOptimalHapsToVCF=TRUE,
              record_interim_dosages=TRUE,
              save_prepared_reference=TRUE)

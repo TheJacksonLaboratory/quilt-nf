@@ -2,7 +2,8 @@ process RUN_QUILT {
   tag "$chr"
   
   // Chr Y doesn't work for some reason
-  // errorStrategy 'ignore'
+  errorStrategy 'retry'
+  maxRetries 2
   memory 650.GB
   time '06:00:00'
   cpus 1
