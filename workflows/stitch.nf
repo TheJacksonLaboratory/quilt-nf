@@ -21,9 +21,6 @@ include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
 include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
-include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
-include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
-include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 include {QUILT_LD_PRUNING} from "${projectDir}/modules/bcftools/quilt_LD_prune.nf"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
@@ -55,6 +52,10 @@ include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 //include {GATK_TO_QTL} from "${projectDir}/modules/gatk/gatk_to_qtl2"
 //include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
 //include {GENO_PROBS} from "${projectDir}/modules/gatk/genoprobs"
+//include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
+//include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
+//include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
+
 
 
 
