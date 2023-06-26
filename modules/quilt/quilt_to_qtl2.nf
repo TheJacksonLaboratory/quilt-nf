@@ -19,6 +19,11 @@ process QUILT_TO_QTL2 {
   log.info "----- Converting QUILT Genotypes to R/qtl2 Input Files for Chromosome: ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/quilt/prepare_do_qtl2_files.R ${params.ref_file_dir}/chr${chr}_DO_phased_snps.vcf.gz ${sample_genos} ${params.covar_file} ${params.ref_file_dir}/chr${chr}_gen_map.txt ${chr}
+  Rscript --vanilla ${projectDir}/bin/quilt/prepare_do_qtl2_files.R \
+	${params.ref_file_dir}/chr${chr}_phased_snps.vcf.gz \
+	${sample_genos} \
+	${params.covar_file} \
+	${params.ref_file_dir}/chr${chr}_gen_map.txt \
+	${chr}
   """
 }
