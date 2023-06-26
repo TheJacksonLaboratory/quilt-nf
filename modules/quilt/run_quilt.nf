@@ -28,6 +28,7 @@ process RUN_QUILT {
       ${chr} \
       ${params.ref_file_dir}/chr${chr}.hap.gz \
       ${params.ref_file_dir}/chr${chr}.samples \
-      ${params.ref_file_dir}/chr${chr}.legend.gz
+      ${params.ref_file_dir}/chr${chr}.legend.gz \
+      ${params.covar_file}
   """
 }
