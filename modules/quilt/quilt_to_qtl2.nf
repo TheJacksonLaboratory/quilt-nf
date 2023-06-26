@@ -23,6 +23,7 @@ process QUILT_TO_QTL2 {
 	${params.ref_file_dir}/chr${chr}_phased_snps.vcf.gz \
 	${sample_genos} \
 	${params.covar_file} \
+  ${params.cross_type} \
 	${params.ref_file_dir}/chr${chr}_gen_map.txt \
 	${chr}
   """
