@@ -38,9 +38,10 @@ meta_file = args[3]
 
 # Cross type
 cross_type = args[4]
+
 # Marker map.
 #marker_file = '/fastscratch/dgatti/chr1_gen_map.txt'
-marker_file = args[5]]
+marker_file = args[5]
 
 # qtl2 output directory.
 #qtl2_dir = '/fastscratch/dgatti/qtl2_do_seqwell'

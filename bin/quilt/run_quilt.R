@@ -18,7 +18,8 @@ args <- commandArgs(trailingOnly = TRUE)
 mouse_bamlist <- args[1]
 
 # Path to qtl2 covar file
-meta <- args[6]
+meta_file <- args[6]
+print(meta_file)
 
 # Read covar file
 covar <- read.csv(meta_file)
@@ -35,6 +36,9 @@ covar_nGen <- median(covar$gen)
 mouse_chr <- paste0(args[2])
 
 QUILT::QUILT(chr = mouse_chr,
+             regionStart = 5000000, # remove when not testing 
+             regionEnd = 7000000, # remove when not testing 
+             buffer = 10000, # remove when not testing 
              bamlist = mouse_bamlist,
              outputdir = paste0(getwd(), "/"),
              reference_haplotype_file = args[3],
