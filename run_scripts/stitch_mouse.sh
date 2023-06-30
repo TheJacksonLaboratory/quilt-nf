@@ -18,14 +18,14 @@ module load nextflow
 nextflow main.nf \
 --workflow quilt \
 -profile sumner \
---sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/4WC_seqwell_NovaSeq_full' \
+--sample_folder '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_seqwell_NovaSeq_full' \
 --gen_org mouse \
 --pubdir '/projects/compsci/vmp/lcgbs_ssif/results/quilt' \
 --run_name $1 \
 -w '/fastscratch/STITCH_outputDir/work' \
 --downsample_to_cov 30 \
---cross_type 'genail4' \
---ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/' \
---covar_file '/projects/compsci/vmp/lcgbs_ssif/data/GigaMUGA/4WC_covar.csv' \
---comment "This script will run haplotype inference on 4WC lcWGS data" \
+--cross_type 'do' \
+--ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
+--covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
+--comment "This script will run haplotype inference on DO lcWGS data" \
 -resume

@@ -5,7 +5,7 @@ library(purrr)
 library(qtl2)
 
 # test_dir
-# test_dir <- "/fastscratch/STITCH_outputDir/work/41/5ef4eb4acd4e43ba728a497507346d/"
+# test_dir <- "/fastscratch/STITCH_outputDir/work/22/7c76bf5b0c3175069a8b8cf3ee3ee1"
 # setwd(test_dir)
 
 # take arguments
@@ -13,68 +13,81 @@ args <- commandArgs(trailingOnly = TRUE)
 
 # what chromosome?
 chrom <- args[1]
-# chrom <- "2"
+#chrom <- "12"
 
 # sample genotypes
 sample_genos <- args[2]
-# sample_genos <- "chr2_sample_geno.csv"
+#sample_genos <- "chr12_sample_geno.csv"
 
 # founder genotypes
 founder_genos <- args[3]
-# founder_genos <- "chr2_founder_geno.csv"
+#founder_genos <- "chr12_founder_geno.csv"
 
 # physical map
 pmap <- args[4]
-# pmap <- "chr2_pmap.csv"
+#pmap <- "chr12_pmap.csv"
 
 # genetic map
 gmap <- args[5]
-# gmap <- "chr2_gmap.csv"
+#gmap <- "chr12_gmap.csv"
 
 # sample metadata
 metadata <- args[6]
-# metadata <- "covar.csv"
+#metadata <- "covar.csv"
+covar <- read.csv(metadata)
+
+# cross type
+cross_type <- args[7]
+#cross_type <- "genail4"
+
+# Has a cross type been specified?
+stopifnot("cross_type" %in% ls(pattern = "cross_type"))
 
 
-# Write control file
-qtl2::write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
-                         crosstype="do",
-                         founder_geno_file=founder_genos,
-                         founder_geno_transposed=TRUE,
-                         alleles=c(LETTERS[1:8]),
-                         gmap_file=gmap,
-                         pmap_file=pmap,
-                         geno_file=sample_genos,
-                         geno_transposed = TRUE,
-                         geno_codes=list(A=1, H=2, B=3),
-                         sex_covar = "sex",
-                         sex_codes=list(female="female", male="male"),
-                         covar_file = metadata,
-                         crossinfo_covar="gen",
-                         overwrite = T)
+if(cross_type == "genail4"){
+  # write control file for genail4 crosses
+  write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
+                     crosstype="genail4",
+                     founder_geno_file=founder_genos,
+                     founder_geno_transposed=TRUE,
+                     gmap_file=gmap,
+                     pmap_file=pmap,
+                     geno_file=sample_genos,
+                     geno_transposed=TRUE,
+                     geno_codes=list(A=1, H=2, B=3),
+                     sex_covar="sex",
+                     sex_codes=list(female="female", male="male"),
+                     covar_file = metadata,
+                     crossinfo_covar = colnames(covar)[!colnames(covar) %in% c("id","sex",LETTERS)],
+                     overwrite = T)
+} else if(cross_type == "do"){
+  # Write control file for DO crosses
+  qtl2::write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
+                           crosstype="do",
+                           founder_geno_file=founder_genos,
+                           founder_geno_transposed=TRUE,
+                           # alleles=c(LETTERS[1:8]),
+                           gmap_file=gmap,
+                           pmap_file=pmap,
+                           geno_file=sample_genos,
+                           geno_transposed = TRUE,
+                           geno_codes=list(A=1, H=2, B=3),
+                           xchr="X",
+                           sex_covar = "sex",
+                           sex_codes=list(female="female", male="male"),
+                           covar_file = metadata,
+                           crossinfo_covar=colnames(covar)[!colnames(covar) %in% "id"],
+                           overwrite = T)
+} else {
+  print("Cross type specified does not have a process to make .json file; ending")
+}
+
 
 # Load in the cross object
 cross <- qtl2::read_cross2(paste0("chr",chrom,"_control_file.json"))
 
 # Drop null markers
 cross <- qtl2::drop_nullmarkers(cross)
-# for(chr in seq_along(cross$founder_geno)) {
-#   fg <- cross$founder_geno[[chr]]
-#   g <- cross$geno[[chr]]
-#   f1 <- colSums(fg==1)/colSums(fg != 0)
-#   
-#   fg[fg==0] <- NA
-#   g[g==0] <- NA
-#   
-#   fg[,f1 < 0.5] <- 4 - fg[,f1 < 0.5]
-#   g[,f1 < 0.5]  <- 4 - g[,f1 < 0.5]
-#   
-#   fg[is.na(fg)] <- 0
-#   g[is.na(g)] <- 0
-#   
-#   cross$founder_geno[[chr]] <- fg
-#   cross$geno[[chr]] <- g
-# }
 
 # Calculate genotype probs
 pr <- qtl2::calc_genoprob(cross = cross, 

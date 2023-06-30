@@ -20,6 +20,13 @@ process GENOPROBS {
   log.info "----- Reconstructing Sample Haplotypes for Chromosome: ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/quilt/genoprobs.R ${chr} ${sample_genos} ${founder_geno} ${pmap} ${gmap} ${covar}
+  Rscript --vanilla ${projectDir}/bin/quilt/genoprobs.R \
+	${chr} \
+	${sample_genos} \
+	${founder_geno} \
+	${pmap} \
+	${gmap} \
+	${covar} \
+	${params.cross_type}
   """
 }
