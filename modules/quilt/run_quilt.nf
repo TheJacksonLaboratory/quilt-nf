@@ -11,7 +11,8 @@ process RUN_QUILT {
   
   container 'docker://sjwidmay/stitch_nf:QUILT'
 
-  publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
+  // publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", 
+mode:'copy'
   
   input:
   tuple file(bamlist), val(chr)

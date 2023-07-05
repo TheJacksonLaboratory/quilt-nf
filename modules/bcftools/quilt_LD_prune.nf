@@ -7,6 +7,9 @@ process QUILT_LD_PRUNING {
 
   container 'docker://sjwidmay/quilt_nf:plink_bcftools'
 
+  publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", 
+mode:'copy'
+
   input:
   tuple val(chr), file(sample_genos), file(sample_genos_index)
 
