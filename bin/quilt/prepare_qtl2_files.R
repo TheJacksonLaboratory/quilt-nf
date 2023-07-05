@@ -2,9 +2,9 @@
 # Gather genotypes, markers, & covariates and format for qtl2::read_cross().
 # GRCm39.
 #
-# Daniel Gatti
-# dan.gatti@jax.org
-# 2023-04-28
+# Sam Widmayer
+# samuel.widmayer@jax.org
+# 2023-06-30
 ################################################################################
 
 # library(readxl)
