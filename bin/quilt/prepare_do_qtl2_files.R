@@ -207,18 +207,18 @@ write.csv(gmap, file = paste0("chr",chr,"_gmap.csv"),
 meta = read.csv(meta_file)
 #nc2 = which(nchar(meta$Name) == 2)
 #meta$Name[nc2] = paste0(substr(meta$Name[nc2], 1, 1), '0', substr(meta$Name[nc2], 2, 2))
-meta = subset(meta, SampleID %in% colnames(sample_gt))
+meta = subset(meta, id %in% colnames(sample_gt))
 
 # Write out covariates.
-covar = data.frame(id  = meta$SampleID,
-                   sex = substr(meta$SampleID, 1, 1),
-                   gen = meta$Generation)
+covar = data.frame(id  = meta$id,
+                   sex = substr(meta$id, 1, 1),
+                   gen = meta$gen)
 covar$sex = c('female', 'male')[match(covar$sex, c('F', 'M'))]
 write.csv(covar, file = 'covar.csv',
           quote = FALSE, row.names = FALSE)
 
 # Write out phenotypes.
-pheno = data.frame(id  = meta$SampleID,
+pheno = data.frame(id  = meta$id,
                    val = rep(1, nrow(meta)))
 write.csv(pheno, file = 'pheno.csv',
            quote = FALSE, row.names = FALSE) 

@@ -72,7 +72,6 @@ if(cross_type == "genail4"){
                            geno_file=sample_genos,
                            geno_transposed = TRUE,
                            geno_codes=list(A=1, H=2, B=3),
-                           xchr="X",
                            sex_covar = "sex",
                            sex_codes=list(female="female", male="male"),
                            covar_file = metadata,
