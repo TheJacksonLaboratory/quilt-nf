@@ -36,8 +36,8 @@ covar_nGen <- median(covar$gen)
 mouse_chr <- paste0(args[2])
 
 QUILT::QUILT(chr = mouse_chr,
-             regionStart = 5000000, # remove when not testing
-             regionEnd = 7000000, # remove when not testing
+             regionStart = 50000000, # remove when not testing
+             regionEnd = 55000000, # remove when not testing
              buffer = 10000, # remove when not testing
              bamlist = mouse_bamlist,
              outputdir = paste0(getwd(), "/"),

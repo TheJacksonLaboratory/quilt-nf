@@ -3,8 +3,8 @@
 #SBATCH --job-name=QUILT-NF
 #SBATCH --mail-type=END,FAIL
 #SBATCH -p compute
-#SBATCH -q batch
-#SBATCH -t 72:00:00
+#SBATCH -q long
+#SBATCH -t 96:00:00
 #SBATCH --mem=1G
 #SBATCH --ntasks=1
 
@@ -24,6 +24,8 @@ nextflow main.nf \
 --run_name $1 \
 -w '/fastscratch/STITCH_outputDir/work' \
 --downsample_to_cov 30 \
---ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/' \
+--cross_type 'do' \
+--ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
 --covar_file '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv' \
---comment "This script will run haplotype inference on DO lcWGS data"
+--comment "This script will run haplotype inference on DO lcWGS data" \
+-resume

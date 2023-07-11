@@ -11,10 +11,11 @@ Results Published to: ${params.pubdir}
 ______________________________________________________
 --workflow                      ${params.workflow}
 --gen_org                       ${params.gen_org}
---do_mice                       ${params.do_mice}
+--cross_type                    ${params.cross_type}
 --covar_file                    ${params.covar_file}
+--nFounders                     ${params.nFounders}
 --downsample_to_cov             ${params.downsample_to_cov}
---run_name			${params.run_name}
+--run_name			            ${params.run_name}
 --read_type                     ${params.read_type}
 --sample_folder                 ${params.sample_folder}
 --pattern                       ${params.pattern}

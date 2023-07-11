@@ -29,5 +29,5 @@ process RUN_QUILT {
       ${params.ref_file_dir}/chr${chr}.samples \
       ${params.ref_file_dir}/chr${chr}.legend.gz \
       ${params.covar_file}
-   """
+  """
 }
