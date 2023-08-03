@@ -24,39 +24,29 @@ library(qtl2)
 
 args = commandArgs(trailingOnly = TRUE)
 
-# testing directory
-# sample_file_dir_4WC <- "/fastscratch/STITCH_outputDir/work/0e/3600a9168e8fd7e9cb7e8b196c0014"
-# sample_file_dir_DO <- "/fastscratch/STITCH_outputDir/work/b4/f2f96658d2d02eeba902552582edd6"
-
-# Founder genotypes and marker positions.
-# founder_file_4WC = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders//chr12_phased_snps.vcf.gz'
-# founder_file_DO = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr12_phased_snps.vcf.gz'
+# Founder genotypes and marker positions
 founder_file = args[1]
+#founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
-# sample_file_4WC  = file.path(sample_file_dir_4WC,'pruned.quilt.12.vcf.gz')
-# sample_file_DO  = file.path(sample_file_dir_DO,'pruned.quilt.12.vcf.gz')
 sample_file = args[2]
+#sample_file = '/projects/compsci/vmp/lcgbs_ssif/generic_quilt.19.vcf.gz'
 
 # Sample metadata file.
-# meta_file_4WC = '/projects/compsci/vmp/lcgbs_ssif/data/GigaMUGA/4WC_covar.csv'
-# meta_file_DO = '/projects/compsci/vmp/USERS/widmas/stitch-nf/data/DO_covar.csv'
 meta_file = args[3]
+#meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
 
 # Cross type
-# cross_type_4WC = "genail4"
-# cross_type_DO = "do"
 cross_type = args[4]
-
+#cross_type = 'do'
 
 # Marker map.
-# marker_file_4WC = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders//chr12_gen_map.txt'
-# marker_file_DO = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr12_gen_map.txt'
 marker_file = args[5]
+#marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_gen_map.txt'
 
 # chromosome
 chr = args[6]
-# chr = "12"
+#chr = "19"
 
 print(args)
 
@@ -148,7 +138,10 @@ table(num_geno)
 # what's going on. 
 # For now, I'm retaining SNPs with all three genotypes.
 # Note that I'm using the rownames(sample_gt) because the names of num_geno
-# were messed up by data.frame() above. 
+# were messed up by data.frame() above.
+
+
+# NOTE: when running only 1 sample, this breaks vvv
 keep = which(num_geno == 3)
 keep = rownames(sample_gt)[keep]
 

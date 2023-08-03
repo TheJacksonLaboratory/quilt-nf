@@ -58,7 +58,7 @@ if(cross_type == "genail4"){
                      sex_covar="sex",
                      sex_codes=list(female="female", male="male"),
                      covar_file = metadata,
-                     crossinfo_covar = colnames(covar)[!colnames(covar) %in% c("id","sex",LETTERS)],
+                     crossinfo_covar = colnames(covar)[!colnames(covar) %in% c("id","sex")],
                      overwrite = T)
 } else if(cross_type == "do"){
   # Write control file for DO crosses
