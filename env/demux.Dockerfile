@@ -9,6 +9,4 @@ RUN \
 RUN  apt-get --allow-releaseinfo-change update \
     && apt-get install -y g++
 
-RUN git clone https://github.com/jfjlaros/demultiplex
-RUN cd demultiplex
-RUN pip install .
+RUN pip install demultiplex
