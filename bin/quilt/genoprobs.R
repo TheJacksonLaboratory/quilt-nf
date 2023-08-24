@@ -93,9 +93,29 @@ pr <- qtl2::calc_genoprob(cross = cross,
                           map = cross$pmap, 
                           error_prob = 0.002, 
                           cores = (parallel::detectCores()/2), quiet = F)
+# Estimate genotyping errors
+pr_errorlod <- qtl2::calc_errorlod(cross = cross,
+                                   probs = pr, 
+                                   cores = (parallel::detectCores()/2))
+
+# number of animals with that genotype with an error LOD > 2
+genotyping_errors <- rowSums(t(pr_errorlod[[1]]) > 2)
+error_genotypes <- names(which(genotyping_errors != 0))
+print("How many potential genotyping errors?")
+print(paste0(length(error_genotypes), " potential genotyping errors"))
+
+# Remove bad genotypes
+corrected_cross <- drop_markers(cross, error_genotypes)
+cross <- corrected_cross
+
+# Calculate new genotype probs with reduced map
+pr <- qtl2::calc_genoprob(cross = cross, 
+                          map = cross$pmap,
+                          error_prob = 0.002,
+                          cores = (parallel::detectCores()/2), quiet = F)
 # Calculate allele probs
-apr <- qtl2::genoprob_to_alleleprob(probs = pr, 
-                                    cores = (parallel::detectCores()/2))
+apr <- qtl2::genoprob_to_alleleprob(probs = pr,
+                                    cores = (parallel::detectCores()/2), quiet = F)
 
 # Save objects
 save(cross, file = paste0("chr_",chrom,"_cross.RData"))
