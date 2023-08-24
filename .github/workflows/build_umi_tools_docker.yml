@@ -1,0 +1,31 @@
+name: Build umi_tools container (env/umi_tools.Dockerfile)
+
+on:
+  push:
+    paths:
+    - 'env/umi_tools.Dockerfile'
+    - 'env/umi_tools.yml'
+    - '.github/workflows/build_umi_tools_docker.yml'
+  pull_request:
+    paths:
+    - 'env/umi_tools.Dockerfile'
+    - 'env/umi_tools.yml'
+    - '.github/workflows/build_umi_tools_docker.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    # Build Tools
+    - name: Build and Publish
+      uses: elgohr/Publish-Docker-Github-Action@v5
+      with:
+        name: sjwidmay/quilt_nf
+        username: ${{ secrets.SJW_DOCKER_USER }}
+        password: ${{ secrets.SJW_DOCKER_PASS }}
+        snapshot: true
+        dockerfile: umi_tools.Dockerfile
+        workdir: "env"
+        tags: "umi_tools"
