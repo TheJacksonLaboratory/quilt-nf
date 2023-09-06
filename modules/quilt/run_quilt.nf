@@ -4,14 +4,14 @@ process RUN_QUILT {
   // Chr Y doesn't work for some reason
   errorStrategy 'retry'
   maxRetries 1
-  memory 600.GB
+  memory 500.GB
   time '06:00:00'
   cpus 1
 
   
   container 'docker://sjwidmay/stitch_nf:QUILT'
 
-  // publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
   
   input:
   tuple file(bamlist), val(chr)

@@ -2,7 +2,7 @@ process QUILT_TO_QTL2 {
   tag "$chr"
 
   cpus 1
-  memory 15.GB
+  memory 200.GB
   time '01:00:00'
 
   container 'docker://sjwidmay/lcgbs_hr:variantannotation'
