@@ -14,6 +14,7 @@ process QUILT_TO_QTL2 {
 
   output:
   tuple val(chr), file("*_founder_geno.csv"), file("*_sample_geno.csv"), file("*_pmap.csv"), file("*_gmap.csv"), file("covar.csv"), file("pheno.csv"), emit: qtl2files
+  tuple val(chr), file("*_resolution_summary.csv"), emit: resolution_summary
 
   script:
   log.info "----- Converting QUILT Genotypes to R/qtl2 Input Files for Chromosome: ${chr} -----"
