@@ -17,6 +17,8 @@ include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
+include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
+include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
 include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
@@ -41,8 +43,6 @@ include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 //include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
 //include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
 //include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
-//include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
-//include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
 //include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
 //include {STATS_MARKDOWN} from "${projectDir}/modules/utility_modules/render_stats_markdown"
 //include {GATK_HAPLOTYPECALLER_INTERVAL} from "${projectDir}/modules/gatk/gatk_haplotypecaller_interval.nf"
@@ -141,6 +141,8 @@ workflow QUILT {
   data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
 
   // Calculate pileups
+  PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
+  PICARD_COLLECTWGSMETRICS(data)
   SAMPLE_COVERAGE(data)
   
   // Downsample bams to specified coverage if the full coverage allows
