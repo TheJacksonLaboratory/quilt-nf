@@ -165,10 +165,10 @@ workflow QUILT {
   RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output
-  QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
+  //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
-  quilt_for_qtl2 = QUILT_LD_PRUNING.out.pruned_quilt_vcf
+  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
   QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes with qtl2

@@ -26,27 +26,27 @@ args = commandArgs(trailingOnly = TRUE)
 
 # Founder genotypes and marker positions
 founder_file = args[1]
-#founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
+# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
 sample_file = args[2]
-#sample_file = '/projects/compsci/vmp/lcgbs_ssif/generic_quilt.19.vcf.gz'
+# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20230906_short_DO_seqwell_vcfinfofilter/quilt_vcfs/quilt.19.5000000.20000000.vcf.gz"
 
 # Sample metadata file.
 meta_file = args[3]
-#meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
+# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
 
 # Cross type
 cross_type = args[4]
-#cross_type = 'do'
+# cross_type = 'do'
 
 # Marker map.
 marker_file = args[5]
-#marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_gen_map.txt'
+# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_gen_map.txt'
 
 # chromosome
 chr = args[6]
-#chr = "19"
+# chr = "19"
 
 print(args)
 
@@ -80,6 +80,10 @@ print("Reading in sample genotypes")
 # Read in sample genotypes.
 sample_vcf = readVcf(sample_file, 'grcm39')
 sample_vcf = genotypeCodesToNucleotides(sample_vcf)
+sample_vcf_info = info(sample_vcf)
+rownames(sample_vcf_info) = gsub("[^A-Za-z0-9_]", "_", rownames(sample_vcf_info))
+
+# isolate sample genotypes
 sample_gt  = geno(sample_vcf)$GT
 sample_gt  = sub('\\|', '', sample_gt)
 stopifnot("id" %in% colnames(meta))
@@ -91,6 +95,8 @@ for(i in 1:length(colnames(sample_gt))){
 }
 stopifnot(length(covar_sample_inds) == length(colnames(sample_gt)))
 colnames(sample_gt) <- meta$id[covar_sample_inds]
+quilt_variants <- nrow(sample_gt)
+
 
 print("Getting sample marker positions")
 # Get the marker positions for the samples.
@@ -108,11 +114,53 @@ common_snps = intersect(rownames(founder_gt), rownames(sample_gt))
 founder_gt  = founder_gt[common_snps,]
 sample_gt   = sample_gt[common_snps,]
 founder_rr  = founder_rr[common_snps,]
-sample_rr   = sample_rr[common_snps,]  
+sample_rr   = sample_rr[common_snps,]
+sample_vcf_info = sample_vcf_info[rownames(sample_vcf_info) %in% common_snps,]
 
 # Verify that SNPs line up between founders and samples.
 stopifnot(rownames(founder_gt) == rownames(sample_gt))
 stopifnot(names(founder_rr)    == names(sample_rr))
+stopifnot(rownames(founder_gt) == rownames(sample_vcf_info))
+stopifnot(names(founder_rr) == rownames(sample_vcf_info))
+
+# filter further based on sample vcf metadata
+# REF allele pileup
+nrow(sample_vcf_info)
+upper <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.05))[[20]]
+lower <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.05))[[2]]
+sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) < upper),]
+sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) > lower),]
+
+# ALT allele pileup
+upper <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[20]]
+lower <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[2]]
+sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) < upper),]
+sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) > lower),]
+
+
+# how many sites deviate from HWE?
+print("Sites that deviate from HWE:")
+table(unlist(sample_vcf_info$HWE) < 0.05)[[2]]
+sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$HWE) > 0.05),]
+
+# trim sites with low info scores
+lower_info_score = quantile(unlist(sample_vcf_info$INFO_SCORE), seq(0,1,0.05))[[2]]
+sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score),]
+
+# thin the vcf for speed
+thin_vcf = rep_len(x = 1:5, length.out = nrow(sample_vcf_info))
+sample_vcf_info <- sample_vcf_info[which(thin_vcf == 1),]
+filtered_quilt_variants <- nrow(sample_vcf_info)
+
+# apply the changes to sample_gt and founder_gt
+founder_gt = founder_gt[rownames(founder_gt) %in% rownames(sample_vcf_info),]
+sample_gt = sample_gt[rownames(sample_gt) %in% rownames(sample_vcf_info),]
+founder_rr = founder_rr[which(names(founder_rr) %in% rownames(sample_vcf_info)),]
+sample_rr = sample_rr[which(names(sample_rr) %in% rownames(sample_vcf_info)),]
+filtered_quilt_variants <- nrow(sample_gt)
+resolution_summary <- data.frame(quilt_variants,filtered_quilt_variants)
+resolution_summary$chr <- chr
+write.csv(resolution_summary, paste0("chr",chr,"_resolution_summary.csv"))
 
 # Make heterozygous alleles consistent.
 gt_num = t(sample_gt)
