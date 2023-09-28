@@ -4,7 +4,7 @@
 #
 # Sam Widmayer
 # samuel.widmayer@jax.org
-# 2023-06-30
+# 2023-09-27
 ################################################################################
 
 # library(readxl)
@@ -26,11 +26,11 @@ args = commandArgs(trailingOnly = TRUE)
 
 # Founder genotypes and marker positions
 founder_file = args[1]
-# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
+# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
 sample_file = args[2]
-# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20230906_short_DO_seqwell_vcfinfofilter/quilt_vcfs/quilt.19.5000000.20000000.vcf.gz"
+# sample_file = "/flashscratch/STITCH_outputDir/work/96/588d8f5b5b72d45e553ec81d97764f/quilt.X.vcf.gz"
 
 # Sample metadata file.
 meta_file = args[3]
@@ -42,13 +42,12 @@ cross_type = args[4]
 
 # Marker map.
 marker_file = args[5]
-# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_gen_map.txt'
+# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_gen_map.txt'
 
 # chromosome
 chr = args[6]
-# chr = "19"
+# chr = "X"
 
-print(args)
 
 
 ##### MAIN #####
@@ -72,8 +71,7 @@ print("Getting founder marker positions")
 # Get the marker positions for the founders.
 founder_rr = rowRanges(founder_vcf)
 names(founder_rr) = gsub("[^A-Za-z0-9_]", "_", names(founder_rr))
-print("head(founder_rr)")
-head(founder_rr)
+# head(founder_rr)
 rm(founder_vcf)
 
 print("Reading in sample genotypes")
@@ -103,8 +101,6 @@ print("Getting sample marker positions")
 sample_rr = rowRanges(sample_vcf)
 names(sample_rr) = gsub("[^A-Za-z0-9_]", "_", names(sample_rr))
 rownames(sample_gt) = gsub("[^A-Za-z0-9_]", "_", rownames(sample_gt))
-print("head(sample_rr)")
-head(sample_rr)
 rm(sample_vcf)
 
 print("Retain SNPs in founder file")
@@ -123,34 +119,56 @@ stopifnot(names(founder_rr)    == names(sample_rr))
 stopifnot(rownames(founder_gt) == rownames(sample_vcf_info))
 stopifnot(names(founder_rr) == rownames(sample_vcf_info))
 
-# filter further based on sample vcf metadata
-# REF allele pileup
-nrow(sample_vcf_info)
-upper <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.05))[[20]]
-lower <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.05))[[2]]
-sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) < upper),]
-sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) > lower),]
-
-# ALT allele pileup
-upper <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[20]]
-lower <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[2]]
-sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) < upper),]
-sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) > lower),]
 
 
 # how many sites deviate from HWE?
 print("Sites that deviate from HWE:")
-table(unlist(sample_vcf_info$HWE) < 0.05)[[2]]
+table(unlist(sample_vcf_info$HWE) < 0.05)[[2]]  
 sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$HWE) > 0.05),]
 
 # trim sites with low info scores
-lower_info_score = quantile(unlist(sample_vcf_info$INFO_SCORE), seq(0,1,0.05))[[2]]
-sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score),]
+lower_info_score = 0.95
+above_threshold_sites <- length(which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score))
 
-# thin the vcf for speed
-thin_vcf = rep_len(x = 1:5, length.out = nrow(sample_vcf_info))
-sample_vcf_info <- sample_vcf_info[which(thin_vcf == 1),]
-filtered_quilt_variants <- nrow(sample_vcf_info)
+# first test: is there a single variant above the info score threshold?
+if(above_threshold_sites < 10000){
+  print("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
+  new_threshold <- quantile(x = unlist(sample_vcf_info$INFO_SCORE), probs = seq(0,1,0.05))[[20]]
+  sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > new_threshold),]
+  filtered_quilt_variants <- nrow(sample_vcf_info)
+} else if (above_threshold_sites < 50000){
+  # This bin is for runs where there were sites above the threshold, but fewer
+  print(paste0(above_threshold_sites," info scores above 0.95; keeping just these"))
+  sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score),]
+  filtered_quilt_variants <- nrow(sample_vcf_info)
+  new_threshold <- lower_info_score
+} else {
+  print(paste0("At least 50,000 info scores above 0.95; thinning the VCF"))
+  table(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score)[[2]]
+  sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score),]
+  # thin the vcf for speed
+  thin_vcf = rep_len(x = 1:5, length.out = nrow(sample_vcf_info))
+  sample_vcf_info <- sample_vcf_info[which(thin_vcf == 1),]
+  filtered_quilt_variants <- nrow(sample_vcf_info)
+  new_threshold <- lower_info_score
+}
+
+
+
+# filter further based on sample vcf metadata
+# REF allele pileup
+# nrow(sample_vcf_info)
+# upper <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.01))[[20]]
+# lower <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.05))[[2]]
+# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) < upper),]
+# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) > lower),]
+# 
+# # ALT allele pileup
+# upper <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[20]]
+# lower <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[2]]
+# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) < upper),]
+# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) > lower),]
+
 
 # apply the changes to sample_gt and founder_gt
 founder_gt = founder_gt[rownames(founder_gt) %in% rownames(sample_vcf_info),]
@@ -158,7 +176,7 @@ sample_gt = sample_gt[rownames(sample_gt) %in% rownames(sample_vcf_info),]
 founder_rr = founder_rr[which(names(founder_rr) %in% rownames(sample_vcf_info)),]
 sample_rr = sample_rr[which(names(sample_rr) %in% rownames(sample_vcf_info)),]
 filtered_quilt_variants <- nrow(sample_gt)
-resolution_summary <- data.frame(quilt_variants,filtered_quilt_variants)
+resolution_summary <- data.frame(quilt_variants,filtered_quilt_variants, new_threshold)
 resolution_summary$chr <- chr
 write.csv(resolution_summary, paste0("chr",chr,"_resolution_summary.csv"))
 
@@ -190,20 +208,24 @@ table(num_geno)
 
 
 # NOTE: when running only 1 sample, this breaks vvv
-keep = which(num_geno == 3)
-keep = rownames(sample_gt)[keep]
+if(resolution_summary$filtered_quilt_variants > 35000){
+  keep = which(num_geno == 3)
+  keep = rownames(sample_gt)[keep]
+  
+  # How many SNPs do we keep?
+  print("How many alleles do we have?")
+  length(keep)
 
-# How many SNPs do we keep?
-print("How many alleles do we have?")
-length(keep)
+  print("Filtering founder and sample SNPs")
+  # Filter the founder and sample SNPs.
+  founder_gt = founder_gt[keep,]
+  sample_gt  = sample_gt[keep,]
+  founder_rr = founder_rr[keep,]
+  sample_rr  = sample_rr[keep,]
+} else {
+  print("Too few imputed SNPs to restrict to 3 genotypes; keeping what we have")
+}
 
-
-print("Filtering founder and sample SNPs")
-# Filter the founder and sample SNPs.
-founder_gt = founder_gt[keep,]
-sample_gt  = sample_gt[keep,]
-founder_rr = founder_rr[keep,]
-sample_rr  = sample_rr[keep,]
 
 # Verify that SNPs line up between founders and samples.
 stopifnot(rownames(founder_gt) == rownames(sample_gt))

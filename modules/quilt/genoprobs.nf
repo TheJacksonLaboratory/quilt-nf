@@ -2,8 +2,10 @@ process GENOPROBS {
   tag "$chr"
 
   cpus 1
-  memory 600.GB
-  time '96:00:00'
+  memory {200.GB * task.attempt}
+  time {12.hour * task.attempt}
+  errorStrategy 'retry' 
+  maxRetries 2
 
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
@@ -20,8 +22,7 @@ process GENOPROBS {
   log.info "----- Reconstructing Sample Haplotypes for Chromosome: ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/quilt/genoprobs.R \
-	${chr} \
+  Rscript --vanilla ${projectDir}/bin/quilt/genoprobs.R ${chr} \
 	${sample_genos} \
 	${founder_geno} \
 	${pmap} \
