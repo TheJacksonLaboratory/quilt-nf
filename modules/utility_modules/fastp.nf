@@ -1,3 +1,4 @@
+
 process FASTP {
 
   tag "$sampleID"
@@ -36,8 +37,8 @@ process FASTP {
 	--detect_adapter_for_pe \\
 	-g \\
 	-c \\
-  -D \\
+	-D \\
 	-p \\
-  --html ${sampleID}_fastp_report.html
+	--html ${sampleID}_fastp_report.html
   """
 }

@@ -4,7 +4,7 @@ process RUN_QUILT {
   // Chr Y doesn't work for some reason
   errorStrategy 'retry'
   maxRetries 1
-  memory 349.GB
+  memory 360.GB
   time '12:00:00'
   cpus 1
 

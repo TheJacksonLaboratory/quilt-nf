@@ -13,7 +13,7 @@ process MULTIQC {
   file('*')
 
   output:
-  path('*_multiqc_report.html'), emit: multiqc_report
+  tuple file('*_multiqc_report.html'), file('multiqc_data/multiqc_data.json'), emit: multiqc_report
 
   script:
   log.info "----- Running MULTIQC on All Samples -----"
