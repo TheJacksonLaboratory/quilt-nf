@@ -10,3 +10,4 @@ RUN  apt-get --allow-releaseinfo-change update \
     && apt-get install -y g++
 
 RUN pip install demultiplex
+RUN pip install ultraplex
