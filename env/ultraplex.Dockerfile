@@ -1,12 +1,12 @@
 FROM continuumio/miniconda
 LABEL Sam Widmayer <sjwidmay@gmail.com>
 
-COPY demux.yml .
+COPY ultraplex.yml .
 RUN \
-   conda env update -n root -f demux.yml \
+   conda env update -n root -f ultraplex.yml \
 && conda clean -a
 
 RUN  apt-get --allow-releaseinfo-change update \
     && apt-get install -y g++
 
-RUN pip install demultiplex
+RUN pip install ultraplex

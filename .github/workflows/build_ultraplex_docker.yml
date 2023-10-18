@@ -1,0 +1,29 @@
+name: Build ultraplex container (env/ultraplex.Dockerfile)
+
+on:
+  push:
+    paths:
+    - 'env/ultraplex.Dockerfile'
+    - '.github/workflows/build_ultraplex_docker.yml'
+  pull_request:
+    paths:
+    - 'env/ultraplex.Dockerfile'
+    - '.github/workflows/build_ultraplex_docker.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    # Build Tools
+    - name: Build and Publish
+      uses: elgohr/Publish-Docker-Github-Action@v5
+      with:
+        name: sjwidmay/stitch_nf
+        username: ${{ secrets.SJW_DOCKER_USER }}
+        password: ${{ secrets.SJW_DOCKER_PASS }}
+        snapshot: true
+        dockerfile: ultraplex.Dockerfile
+        workdir: "env"
+        tags: "ultraplex"
