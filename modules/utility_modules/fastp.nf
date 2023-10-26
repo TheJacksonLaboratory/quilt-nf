@@ -37,6 +37,7 @@ process FASTP {
 	--detect_adapter_for_pe \\
 	-g \\
 	-c \\
+	-U \\
 	-D \\
 	-p \\
 	--html ${sampleID}_fastp_report.html

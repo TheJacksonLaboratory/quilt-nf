@@ -27,14 +27,17 @@ args = commandArgs(trailingOnly = TRUE)
 # Founder genotypes and marker positions
 founder_file = args[1]
 # founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_phased_snps.vcf.gz'
+# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr14_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
 sample_file = args[2]
 # sample_file = "/flashscratch/STITCH_outputDir/work/96/588d8f5b5b72d45e553ec81d97764f/quilt.X.vcf.gz"
+# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20230930_4WC_seqwell_full/quilt_vcfs/quilt.14.vcf.gz"
 
 # Sample metadata file.
 meta_file = args[3]
-# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
+#meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
+# meta_file = '/projects/compsci/vmp/lcgbs_ssif/data/GigaMUGA/4WC_covar_quilt.csv'
 
 # Cross type
 cross_type = args[4]
@@ -43,10 +46,11 @@ cross_type = args[4]
 # Marker map.
 marker_file = args[5]
 # marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_gen_map.txt'
+# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr14_gen_map.txt'
 
 # chromosome
 chr = args[6]
-# chr = "X"
+# chr = "14"
 
 
 
