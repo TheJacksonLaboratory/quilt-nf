@@ -20,6 +20,7 @@ ______________________________________________________
 --sample_folder                 ${params.sample_folder}
 --pattern                       ${params.pattern}
 --extension                     ${params.extension}
+--library_type			${params.library_type}
 --concat_lanes                  ${params.concat_lanes}
 -w                              ${workDir}
 -c                              ${params.config}
