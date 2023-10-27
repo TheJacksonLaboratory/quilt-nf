@@ -4,6 +4,7 @@ LABEL Sam Widmayer <sjwidmay@gmail.com>
 
 RUN  apt-get --allow-releaseinfo-change update \
     && apt-get install -y g++ \
+    apt-get install -y procps \
     automake \
     autoconf \
     libpcre3-dev \
