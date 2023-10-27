@@ -110,71 +110,64 @@ workflow QUILT {
         read_ch = CONCATENATE_READS_SE.out.concat_fastq
     }
   }
-
-  // Run trimmomatic
-  //TRIMMOMATIC_PE(read_ch)
+  read_ch.view()
 
   // Calculate quality statistics for sequencing
-  FASTP(read_ch)
+  //FASTP(read_ch)
   //QUALITY_STATISTICS(read_ch)
   
   // Run fastqc on adapter trimmed reads
-  FASTQC(FASTP.out.fastp_filtered)
+  //FASTQC(FASTP.out.fastp_filtered)
 
   // Run multiqc
-  fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-  MULTIQC(fastqc_reports)
+  //fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+  //MULTIQC(fastqc_reports)
 
   // Generate read groups
-  READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
-  mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
+  //READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
+  //mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
 
   // Alignment
-  BWA_MEM(mapping)
+  //BWA_MEM(mapping)
   // BOWTIE2(mapping)
 
   // Sort SAM files
-  PICARD_SORTSAM(BWA_MEM.out.sam)
+  //PICARD_SORTSAM(BWA_MEM.out.sam)
 
   // Mark duplicates 
-  PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
-  data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
+  //PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
+  //data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
 
   // Calculate pileups
-  PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
-  PICARD_COLLECTWGSMETRICS(data)
-  SAMPLE_COVERAGE(data)
+  //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
+  //PICARD_COLLECTWGSMETRICS(data)
+  //SAMPLE_COVERAGE(data)
   
   // Downsample bams to specified coverage if the full coverage allows
-  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
-  }
+  //coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+  //	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  //}
 
   // downsample bam files
-  DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
+  //DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
 
   // Collect downsampled .bam filenames in its own list
-  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
-  CREATE_BAMLIST(bams)
-
-  // (No downsampling of bams)
-  // Collect .bam filenames in its own list
-  //bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
+  //bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
   //CREATE_BAMLIST(bams)
   
   // Run QUILT
-  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
-  RUN_QUILT(quilt_inputs)
+  //quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+  //RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output
   //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
-  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
-  QUILT_TO_QTL2(quilt_for_qtl2)
+  //quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
+  //QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes with qtl2
-  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  //GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
  }
 
