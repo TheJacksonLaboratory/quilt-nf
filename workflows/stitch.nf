@@ -13,6 +13,7 @@ include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/conca
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {FASTP} from "${projectDir}/modules/utility_modules/fastp"
+include {CLONE_FILTER} from "${projectDir}/modules/utility_modules/stacks"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
@@ -111,18 +112,29 @@ workflow QUILT {
     }
   }
   read_ch.view()
-  params.library_type.view()
-
   // Calculate quality statistics for sequencing
-  //FASTP(read_ch)
-  //QUALITY_STATISTICS(read_ch)
-  
-  // Run fastqc on adapter trimmed reads
-  //FASTQC(FASTP.out.fastp_filtered)
+  if (params.library_type == 'ddRADseq'){
+    CLONE_FILTER(read_ch)
+    QUALITY_STATISTICS(read_ch)
+    // Run fastqc on adapter trimmed reads
+    FASTQC(CLONE_FILTER.out.clone_filtered)
 
-  // Run multiqc
-  //fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-  //MULTIQC(fastqc_reports)
+    // Run multiqc
+    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+    MULTIQC(fastqc_reports)
+
+  } else {
+    FASTP(read_ch)
+    QUALITY_STATISTICS(read_ch)
+    // Run fastqc on adapter trimmed reads
+    FASTQC(FASTP.out.fastp_filtered)
+
+    // Run multiqc
+    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+    MULTIQC(fastqc_reports)
+  }
+
+
 
   // Generate read groups
   //READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
