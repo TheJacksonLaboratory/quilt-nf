@@ -13,7 +13,7 @@ include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/conca
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {FASTP} from "${projectDir}/modules/utility_modules/fastp"
-include {CLONE_FILTER} from "${projectDir}/modules/utility_modules/stacks"
+include {CLONE_FILTER} from "${projectDir}/modules/stacks/clone_filter"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
@@ -95,44 +95,47 @@ if (params.concat_lanes){
 
 // if channel is empty give error message and exit
 read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder} Matching Pattern: ${params.pattern}"}
+//read_ch.view()
 
 chrs = Channel.of(1..19,"X")
 
 // main workflow
 workflow QUILT {
 
-  // Step 0: Concatenate Fastq files if required. 
-  if (params.concat_lanes){
-    if (params.read_type == 'PE'){
-        CONCATENATE_READS_PE(read_ch)
-        read_ch = CONCATENATE_READS_PE.out.concat_fastq
-    } else if (params.read_type == 'SE'){
-        CONCATENATE_READS_SE(read_ch)
-        read_ch = CONCATENATE_READS_SE.out.concat_fastq
-    }
-  }
-  read_ch.view()
+ // Step 0: Concatenate Fastq files if required. 
+ if (params.concat_lanes){
+   if (params.read_type == 'PE'){
+       CONCATENATE_READS_PE(read_ch)
+       read_ch = CONCATENATE_READS_PE.out.concat_fastq
+   } else if (params.read_type == 'SE'){
+       CONCATENATE_READS_SE(read_ch)
+       read_ch = CONCATENATE_READS_SE.out.concat_fastq
+   }
+ }
+
+ read_ch.view()
+
   // Calculate quality statistics for sequencing
-  if (params.library_type == 'ddRADseq'){
-    CLONE_FILTER(read_ch)
-    QUALITY_STATISTICS(read_ch)
+  //if (params.library_type == 'ddRADseq'){
+  //  CLONE_FILTER(read_ch)
+    //QUALITY_STATISTICS(read_ch)
     // Run fastqc on adapter trimmed reads
-    FASTQC(CLONE_FILTER.out.clone_filtered)
+ //   FASTQC(CLONE_FILTER.out.clone_filtered)
 
     // Run multiqc
-    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-    MULTIQC(fastqc_reports)
+//    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+  //  MULTIQC(fastqc_reports)
 
-  } else {
-    FASTP(read_ch)
-    QUALITY_STATISTICS(read_ch)
+//  } else {
+    //FASTP(read_ch)
+    //QUALITY_STATISTICS(read_ch)
     // Run fastqc on adapter trimmed reads
-    FASTQC(FASTP.out.fastp_filtered)
+    //FASTQC(FASTP.out.fastp_filtered)
 
     // Run multiqc
-    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-    MULTIQC(fastqc_reports)
-  }
+    //fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+   // MULTIQC(fastqc_reports)
+  //}
 
 
 
@@ -182,5 +185,5 @@ workflow QUILT {
   // Reconstruct haplotypes with qtl2
   //GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
- }
+}
 

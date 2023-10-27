@@ -25,7 +25,6 @@ process CLONE_FILTER {
                             -2 ${fq_reads[1]} \\
                             -i gzfastq \\
                             -y gzfastq \\
-                            -o ${outDir} \\
                             -D \\
                             --oligo_len_1 8 \\
                             --inline_null
