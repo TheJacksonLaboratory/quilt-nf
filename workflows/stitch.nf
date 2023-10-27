@@ -111,6 +111,7 @@ workflow QUILT {
     }
   }
   read_ch.view()
+  params.library_type.view()
 
   // Calculate quality statistics for sequencing
   //FASTP(read_ch)

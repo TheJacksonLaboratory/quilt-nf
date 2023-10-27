@@ -16,6 +16,7 @@ ______________________________________________________
 --nFounders                     ${params.nFounders}
 --downsample_to_cov             ${params.downsample_to_cov}
 --run_name			            ${params.run_name}
+--library_type                  ${params.library_type}
 --read_type                     ${params.read_type}
 --sample_folder                 ${params.sample_folder}
 --pattern                       ${params.pattern}
