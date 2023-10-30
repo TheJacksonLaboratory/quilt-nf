@@ -11,11 +11,13 @@ include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
+include {FASTQC_DDRADSEQ} from "${projectDir}/modules/utility_modules/fastqc_ddradseq"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {FASTP} from "${projectDir}/modules/utility_modules/fastp"
 include {CLONE_FILTER} from "${projectDir}/modules/stacks/clone_filter"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
+include {BWA_MEM_DDRADSEQ} from "${projectDir}/modules/bwa/bwa_mem_ddradseq"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
@@ -95,7 +97,6 @@ if (params.concat_lanes){
 
 // if channel is empty give error message and exit
 read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder} Matching Pattern: ${params.pattern}"}
-//read_ch.view()
 
 chrs = Channel.of(1..19,"X")
 
@@ -113,77 +114,89 @@ workflow QUILT {
    }
  }
 
- read_ch.view()
+ //read_ch.view()
 
   // Calculate quality statistics for sequencing
-  //if (params.library_type == 'ddRADseq'){
-  //  CLONE_FILTER(read_ch)
+  if (params.library_type == 'ddRADseq'){
+    CLONE_FILTER(read_ch)
     //QUALITY_STATISTICS(read_ch)
     // Run fastqc on adapter trimmed reads
- //   FASTQC(CLONE_FILTER.out.clone_filtered)
+    FASTQC_DDRADSEQ(CLONE_FILTER.out.clone_filtered)
 
     // Run multiqc
-//    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-  //  MULTIQC(fastqc_reports)
+    fastqc_reports = FASTQC_DDRADSEQ.out.to_multiqc.flatten().collect()
+    MULTIQC(fastqc_reports)
 
-//  } else {
-    //FASTP(read_ch)
+    // Generate read groups
+    READ_GROUPS(CLONE_FILTER.out.clone_filtered, "gatk")
+    mapping = CLONE_FILTER.out.clone_filtered.join(READ_GROUPS.out.read_groups)
+
+    // Alignment
+    BWA_MEM_DDRADSEQ(mapping)
+
+    // Sort SAM files
+    PICARD_SORTSAM(BWA_MEM_DDRADSEQ.out.sam)
+    data = PICARD_SORTSAM.out.bam.join(PICARD_SORTSAM.out.bai)
+    data.view()
+
+    } else {
+    FASTP(read_ch)
     //QUALITY_STATISTICS(read_ch)
     // Run fastqc on adapter trimmed reads
-    //FASTQC(FASTP.out.fastp_filtered)
+    FASTQC(FASTP.out.fastp_filtered)
 
     // Run multiqc
-    //fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-   // MULTIQC(fastqc_reports)
-  //}
+    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+    MULTIQC(fastqc_reports)
+
+    // Generate read groups
+    READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
+    mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
+    
+    // Alignment
+    BWA_MEM(mapping)
+
+    // Sort SAM files
+    PICARD_SORTSAM(BWA_MEM.out.sam)
+
+    // Mark duplicates
+    PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
+    data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
+  }
 
 
 
-  // Generate read groups
-  //READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
-  //mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
-
-  // Alignment
-  //BWA_MEM(mapping)
-  // BOWTIE2(mapping)
-
-  // Sort SAM files
-  //PICARD_SORTSAM(BWA_MEM.out.sam)
-
-  // Mark duplicates 
-  //PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
-  //data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
 
   // Calculate pileups
-  //PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
-  //PICARD_COLLECTWGSMETRICS(data)
-  //SAMPLE_COVERAGE(data)
+  PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
+  PICARD_COLLECTWGSMETRICS(data)
+  SAMPLE_COVERAGE(data)
   
   // Downsample bams to specified coverage if the full coverage allows
-  //coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  //	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
-  //}
+  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+  	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  }
 
   // downsample bam files
-  //DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
+  DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
 
   // Collect downsampled .bam filenames in its own list
-  //bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
-  //CREATE_BAMLIST(bams)
+  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
+  CREATE_BAMLIST(bams)
   
   // Run QUILT
-  //quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
-  //RUN_QUILT(quilt_inputs)
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+  RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output
-  //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
+  QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
-  //quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
-  //QUILT_TO_QTL2(quilt_for_qtl2)
+  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
+  QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes with qtl2
-  //GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
 }
 

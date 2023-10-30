@@ -3,7 +3,7 @@ process CLONE_FILTER {
   tag "$sampleID"
 
   cpus 1
-  memory 30.GB
+  memory 100.GB
   time '02:00:00'
 
   container 'docker://sjwidmay/stitch_nf:stacks'
