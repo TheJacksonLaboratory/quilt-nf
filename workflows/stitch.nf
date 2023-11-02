@@ -11,10 +11,13 @@ include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
+include {FASTQC_DDRADSEQ} from "${projectDir}/modules/utility_modules/fastqc_ddradseq"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {FASTP} from "${projectDir}/modules/utility_modules/fastp"
+include {CLONE_FILTER} from "${projectDir}/modules/stacks/clone_filter"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
+include {BWA_MEM_DDRADSEQ} from "${projectDir}/modules/bwa/bwa_mem_ddradseq"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
@@ -100,45 +103,69 @@ chrs = Channel.of(1..19,"X")
 // main workflow
 workflow QUILT {
 
-  // Step 0: Concatenate Fastq files if required. 
-  if (params.concat_lanes){
-    if (params.read_type == 'PE'){
-        CONCATENATE_READS_PE(read_ch)
-        read_ch = CONCATENATE_READS_PE.out.concat_fastq
-    } else if (params.read_type == 'SE'){
-        CONCATENATE_READS_SE(read_ch)
-        read_ch = CONCATENATE_READS_SE.out.concat_fastq
-    }
-  }
+ // Step 0: Concatenate Fastq files if required. 
+ if (params.concat_lanes){
+   if (params.read_type == 'PE'){
+       CONCATENATE_READS_PE(read_ch)
+       read_ch = CONCATENATE_READS_PE.out.concat_fastq
+   } else if (params.read_type == 'SE'){
+       CONCATENATE_READS_SE(read_ch)
+       read_ch = CONCATENATE_READS_SE.out.concat_fastq
+   }
+ }
 
-  // Run trimmomatic
-  //TRIMMOMATIC_PE(read_ch)
+ //read_ch.view()
 
   // Calculate quality statistics for sequencing
-  FASTP(read_ch)
-  //QUALITY_STATISTICS(read_ch)
-  
-  // Run fastqc on adapter trimmed reads
-  FASTQC(FASTP.out.fastp_filtered)
+  if (params.library_type == 'ddRADseq'){
+    CLONE_FILTER(read_ch)
+    //QUALITY_STATISTICS(read_ch)
+    // Run fastqc on adapter trimmed reads
+    FASTQC_DDRADSEQ(CLONE_FILTER.out.clone_filtered)
 
-  // Run multiqc
-  fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-  MULTIQC(fastqc_reports)
+    // Run multiqc
+    fastqc_reports = FASTQC_DDRADSEQ.out.to_multiqc.flatten().collect()
+    MULTIQC(fastqc_reports)
 
-  // Generate read groups
-  READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
-  mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
+    // Generate read groups
+    READ_GROUPS(CLONE_FILTER.out.clone_filtered, "gatk")
+    mapping = CLONE_FILTER.out.clone_filtered.join(READ_GROUPS.out.read_groups)
 
-  // Alignment
-  BWA_MEM(mapping)
-  // BOWTIE2(mapping)
+    // Alignment
+    BWA_MEM_DDRADSEQ(mapping)
 
-  // Sort SAM files
-  PICARD_SORTSAM(BWA_MEM.out.sam)
+    // Sort SAM files
+    PICARD_SORTSAM(BWA_MEM_DDRADSEQ.out.sam)
+    data = PICARD_SORTSAM.out.bam.join(PICARD_SORTSAM.out.bai)
+    data.view()
 
-  // Mark duplicates 
-  PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
-  data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
+    } else {
+    FASTP(read_ch)
+    //QUALITY_STATISTICS(read_ch)
+    // Run fastqc on adapter trimmed reads
+    FASTQC(FASTP.out.fastp_filtered)
+
+    // Run multiqc
+    fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+    MULTIQC(fastqc_reports)
+
+    // Generate read groups
+    READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
+    mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
+    
+    // Alignment
+    BWA_MEM(mapping)
+
+    // Sort SAM files
+    PICARD_SORTSAM(BWA_MEM.out.sam)
+
+    // Mark duplicates
+    PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
+    data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
+  }
+
+
+
 
   // Calculate pileups
   PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
@@ -147,7 +174,7 @@ workflow QUILT {
   
   // Downsample bams to specified coverage if the full coverage allows
   coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
   }
 
   // downsample bam files
@@ -156,18 +183,13 @@ workflow QUILT {
   // Collect downsampled .bam filenames in its own list
   bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
   CREATE_BAMLIST(bams)
-
-  // (No downsampling of bams)
-  // Collect .bam filenames in its own list
-  //bams = PICARD_MARKDUPLICATES.out.dedup_bam.collect()
-  //CREATE_BAMLIST(bams)
   
   // Run QUILT
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
   RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output
-  //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
+  QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
   quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
@@ -176,5 +198,5 @@ workflow QUILT {
   // Reconstruct haplotypes with qtl2
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
- }
+}
 

@@ -5,7 +5,7 @@ process GENOPROBS {
   memory {200.GB * task.attempt}
   time {12.hour * task.attempt}
   errorStrategy 'retry' 
-  maxRetries 2
+  maxRetries 3
 
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
