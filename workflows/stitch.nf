@@ -27,7 +27,6 @@ include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {DO_FILTER_SANGER_SNPS} from "${projectDir}/modules/bcftools/DO_filter_sangerSNPs"
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
-include {QUILT_LD_PRUNING} from "${projectDir}/modules/bcftools/quilt_LD_prune.nf"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
 include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 
@@ -58,7 +57,7 @@ include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 //include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
 //include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
 //include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
-
+//include {QUILT_LD_PRUNING} from "${projectDir}/modules/bcftools/quilt_LD_prune.nf"
 
 
 
@@ -189,7 +188,7 @@ workflow QUILT {
   RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output
-  QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
+  //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
   quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
