@@ -22,6 +22,7 @@ include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
+include {MPILEUP} from "${projectDir}/modules/bcftools/mpileup"
 include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
 include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
@@ -170,6 +171,7 @@ workflow QUILT {
   PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
   PICARD_COLLECTWGSMETRICS(data)
   SAMPLE_COVERAGE(data)
+  MPILEUP(data)
   
   // Downsample bams to specified coverage if the full coverage allows
   coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
