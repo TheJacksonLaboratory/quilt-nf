@@ -26,6 +26,6 @@ process MPILEUP {
   # call variants
   bcftools call -mv ${sampleID}_mpileup.bcf -Oz -o ${sampleID}_calls.vcf.gz
   bcftools index ${sampleID}_calls.vcf.gz
-  bcftools query --print-header -e 'QUAL<=30' -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' ${sampleID}_calls.vcf.gz | sed 's/[[# 0-9]*]//g' sed 's/:GT//g' > ${sampleID}_filtered_calls.txt
+  bcftools query --print-header -e 'QUAL<=30' -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' ${sampleID}_calls.vcf.gz | sed 's/[[# 0-9]*]//g' | sed 's/:GT//g' > ${sampleID}_filtered_calls.txt
   """
 }
