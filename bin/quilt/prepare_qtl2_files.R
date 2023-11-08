@@ -27,12 +27,12 @@ args = commandArgs(trailingOnly = TRUE)
 # Founder genotypes and marker positions
 founder_file = args[1]
 # founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_phased_snps.vcf.gz'
-# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr14_phased_snps.vcf.gz'
+# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
 sample_file = args[2]
 # sample_file = "/flashscratch/STITCH_outputDir/work/96/588d8f5b5b72d45e553ec81d97764f/quilt.X.vcf.gz"
-# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20230930_4WC_seqwell_full/quilt_vcfs/quilt.14.vcf.gz"
+# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20231102_4WC_ddradseq_full/quilt_vcfs/quilt.19.vcf.gz"
 
 # Sample metadata file.
 meta_file = args[3]
@@ -41,16 +41,16 @@ meta_file = args[3]
 
 # Cross type
 cross_type = args[4]
-# cross_type = 'do'
+# cross_type = 'genail4'
 
 # Marker map.
 marker_file = args[5]
 # marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_gen_map.txt'
-# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr14_gen_map.txt'
+# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_gen_map.txt'
 
 # chromosome
 chr = args[6]
-# chr = "14"
+# chr = "19"
 
 
 
@@ -126,13 +126,15 @@ stopifnot(names(founder_rr) == rownames(sample_vcf_info))
 
 
 # how many sites deviate from HWE?
-print("Sites that deviate from HWE:")
-table(unlist(sample_vcf_info$HWE) < 0.05)[[2]]  
+print("Pct of sites that deviate from HWE:")
+paste0(round((table(unlist(sample_vcf_info$HWE) < 0.05)[[2]]/quilt_variants*100),2),"%")  
 sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$HWE) > 0.05),]
 
 # trim sites with low info scores
 lower_info_score = 0.95
 above_threshold_sites <- length(which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score))
+above_threshold_sites/length(unlist(sample_vcf_info$INFO_SCORE))
+hist(unlist(sample_vcf_info$INFO_SCORE))
 
 # first test: is there a single variant above the info score threshold?
 if(above_threshold_sites < 10000){
