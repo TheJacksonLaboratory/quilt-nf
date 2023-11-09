@@ -100,6 +100,10 @@ read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder}
 
 chrs = Channel.of(1..19,"X")
 
+downsampling_values = Channel
+    .fromPath("")
+    .splitText()
+
 // main workflow
 workflow QUILT {
 
