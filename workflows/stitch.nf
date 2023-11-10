@@ -178,30 +178,33 @@ workflow QUILT {
   MPILEUP(data)
   
   // Downsample bams to specified coverage if the full coverage allows
-  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
-  }
+  //coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+  //	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  //}
 
   // downsample bam files
-  DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
+  coverageFilesChannel.view()
+  downsample_values = Channel.fromPath("${params.downsample_to_cov}").splitText()
+  downsample_values.view()
+  //DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
 
   // Collect downsampled .bam filenames in its own list
-  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
-  CREATE_BAMLIST(bams)
+  //bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
+  //CREATE_BAMLIST(bams)
   
   // Run QUILT
-  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
-  RUN_QUILT(quilt_inputs)
+  //quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+  //RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output
   //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
-  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
-  QUILT_TO_QTL2(quilt_for_qtl2)
+  //quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
+  //QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes with qtl2
-  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  //GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
 }
 
