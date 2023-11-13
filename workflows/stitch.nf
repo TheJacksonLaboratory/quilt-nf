@@ -100,10 +100,6 @@ read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder}
 
 chrs = Channel.of(1..19,"X")
 
-downsampling_values = Channel
-    .fromPath("")
-    .splitText()
-
 // main workflow
 workflow QUILT {
 
@@ -178,19 +174,20 @@ workflow QUILT {
   MPILEUP(data)
   
   // Downsample bams to specified coverage if the full coverage allows
-  //coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  //	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
-  //}
+  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+  	tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  }
 
   // downsample bam files
-  coverageFilesChannel.view()
-  downsample_values = Channel.fromPath("${params.downsample_to_cov}").splitText()
-  downsample_values.view()
-  //DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
+  downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
+  downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
+  DOWNSAMPLE_BAM(downsampling_bams)
 
   // Collect downsampled .bam filenames in its own list
-  //bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
-  //CREATE_BAMLIST(bams)
+  //DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1).collect().view()
+  bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
+  //DOWNSAMPLE_BAM.out.downsampled_bam.collect().view()
+  CREATE_BAMLIST(bams)
   
   // Run QUILT
   //quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)

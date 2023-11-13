@@ -9,7 +9,7 @@ process CREATE_BAMLIST {
   publishDir "${params.pubdir}/${params.run_name}", pattern: "bamlist.txt", mode:'copy'
 
   input:
-  val(bams)
+  val(bams), val(downsample_to_cov)
 
   output:
   path('bamlist.txt'), emit: bam_list
