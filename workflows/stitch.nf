@@ -179,14 +179,17 @@ workflow QUILT {
   }
 
   // downsample bam files
-  DOWNSAMPLE_BAM(coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out))
+  downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
+  downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
+  DOWNSAMPLE_BAM(downsampling_bams)
 
   // Collect downsampled .bam filenames in its own list
-  bams = DOWNSAMPLE_BAM.out.downsampled_bam.collect()
+  bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
   CREATE_BAMLIST(bams)
   
   // Run QUILT
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+  //quilt_inputs.view()
   RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output

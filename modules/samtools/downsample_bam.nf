@@ -7,22 +7,22 @@ process DOWNSAMPLE_BAM {
 
   container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
 
-  publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_post_downsample_coverage.txt", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/coverage", pattern:"*_post_downsample_coverage.txt", mode:'copy'
 
   input:
-  tuple val(sampleID), val(coverage), file(bam)
+  tuple val(sampleID), val(coverage), file(bam), val(downsample_to_cov)
 
   output:
-  tuple file("*_downsampled.bam"), emit: downsampled_bam
+  tuple file("*_downsampled.bam"), val(downsample_to_cov), emit: downsampled_bam
   tuple file("*_post_downsample_coverage.txt"), emit: downsampled_depth_out
   
   script:
-  log.info "----- Downsampling Reads from Sample: ${sampleID} -----"
+  log.info "----- Downsampling Reads: ${sampleID}, ${downsample_to_cov}X -----"
 
   """
   echo ${coverage}
-  echo ${params.downsample_to_cov}
-  downsampling_coef=\$(awk 'BEGIN { print ( ${params.downsample_to_cov} / ${coverage} ) }')
+  echo ${downsample_to_cov}
+  downsampling_coef=\$(awk 'BEGIN { print ( ${downsample_to_cov} / ${coverage} ) }')
   echo \$downsampling_coef
 
   function check_downsampling() {
