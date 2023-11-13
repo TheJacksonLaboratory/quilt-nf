@@ -1,5 +1,5 @@
 process QUILT_TO_QTL2 {
-  tag "$chr"
+  tag "$chr, $downsample_to_cov"
 
   cpus 1
   memory 250.GB
@@ -7,13 +7,13 @@ process QUILT_TO_QTL2 {
 
   container 'docker://sjwidmay/lcgbs_hr:variantannotation'
 
-  publishDir "${params.pubdir}/${params.run_name}/qtl2files", pattern:"*", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/qtl2files", pattern:"*", mode:'copy'
 
   input:
-  tuple val(chr), file(sample_genos), file(sample_genos_index)
+  tuple val(chr), val(downsample_to_cov), file(sample_genos), file(sample_genos_index)
 
   output:
-  tuple val(chr), file("*_founder_geno.csv"), file("*_sample_geno.csv"), file("*_pmap.csv"), file("*_gmap.csv"), file("covar.csv"), file("pheno.csv"), emit: qtl2files
+  tuple val(chr), val(downsample_to_cov), file("*_founder_geno.csv"), file("*_sample_geno.csv"), file("*_pmap.csv"), file("*_gmap.csv"), file("covar.csv"), file("pheno.csv"), emit: qtl2files
   tuple val(chr), file("*_resolution_summary.csv"), emit: resolution_summary
 
   script:

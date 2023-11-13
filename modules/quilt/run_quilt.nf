@@ -1,26 +1,25 @@
 process RUN_QUILT {
-  tag "$chr"
+  tag "$chr, $downsample_to_cov"
   
-  // Chr Y doesn't work for some reason
+  memory {150.GB * task.attempt}
+  time {6.hour * task.attempt}
   errorStrategy 'retry'
-  maxRetries 1
-  memory 360.GB
-  time '12:00:00'
+  maxRetries 3
   cpus 1
 
   
   container 'docker://sjwidmay/stitch_nf:QUILT'
 
-  publishDir "${params.pubdir}/${params.run_name}/quilt_vcfs", pattern:"*", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/quilt_vcfs", pattern:"*", mode:'copy'
   
   input:
-  tuple file(bamlist), val(chr)
+  tuple file(bamlist), val(downsample_to_cov), val(chr)
 
   output:
-  tuple val(chr), file("quilt.*.vcf.gz"), file("quilt.*.vcf.gz.tbi"), emit: quilt_vcf
+  tuple val(chr), val(downsample_to_cov), file("quilt.*.vcf.gz"), file("quilt.*.vcf.gz.tbi"), emit: quilt_vcf
 
   script:
-  log.info "----- Running QUILT on Chromosome ${chr} -----"
+  log.info "----- Running QUILT on Chromosome ${chr}, ${downsample_to_cov}X -----"
 
   """
   Rscript --vanilla ${projectDir}/bin/quilt/run_quilt.R ${bamlist} \

@@ -184,24 +184,23 @@ workflow QUILT {
   DOWNSAMPLE_BAM(downsampling_bams)
 
   // Collect downsampled .bam filenames in its own list
-  //DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1).collect().view()
   bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
-  //DOWNSAMPLE_BAM.out.downsampled_bam.collect().view()
   CREATE_BAMLIST(bams)
   
   // Run QUILT
-  //quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
-  //RUN_QUILT(quilt_inputs)
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+  //quilt_inputs.view()
+  RUN_QUILT(quilt_inputs)
 
   // Perform LD pruning on QUILT output
   //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
-  //quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
-  //QUILT_TO_QTL2(quilt_for_qtl2)
+  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
+  QUILT_TO_QTL2(quilt_for_qtl2)
 
   // Reconstruct haplotypes with qtl2
-  //GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   
 }
 
