@@ -1,9 +1,10 @@
 process DOWNSAMPLE_BAM {
 
+  memory {100.GB * task.attempt}
+  errorStrategy 'retry'
+  maxRetries 3
   cpus 1
-  memory 50.GB
-  time '04:00:00'
-  //errorStrategy 'retry' 
+  time {4.hour * task.attempt}
 
   container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
 

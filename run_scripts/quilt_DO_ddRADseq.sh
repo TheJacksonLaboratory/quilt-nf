@@ -26,7 +26,7 @@ nextflow main.nf \
 --library_type "ddRADseq" \
 --run_name $1 \
 -w '/fastscratch/STITCH_outputDir/work' \
---downsample_to_cov 30 \
+--downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/downsampling_values.csv' \
 --cross_type 'do' \
 --ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
 --covar_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv' \

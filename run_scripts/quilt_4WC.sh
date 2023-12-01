@@ -26,7 +26,7 @@ nextflow main.nf \
 --library_type "seqwell" \
 --run_name $1 \
 -w '/flashscratch/QUILT_outputDir/work' \
---downsample_to_cov 30 \
+--downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/downsampling_values.csv' \
 --cross_type 'genail4' \
 --ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders' \
 --covar_file '/projects/compsci/vmp/lcgbs_ssif/data/GigaMUGA/4WC_covar_quilt.csv' \
