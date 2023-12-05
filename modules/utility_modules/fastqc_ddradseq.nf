@@ -8,8 +8,12 @@ process FASTQC_DDRADSEQ {
 
   container 'docker://biocontainers/fastqc:v0.11.9_cv8'
 
-  input:
-  tuple val(sampleID), file(fq_1), file(fq_2)
+  // for runs without clone filtering:
+  //input:
+  //tuple val(sampleID), file(fq_reads)
+
+  //input:
+  //tuple val(sampleID), file(fq_1), file(fq_2)
 
   output:
   tuple file("*_fastqc.html"), file("*_fastqc.zip"), emit: to_multiqc

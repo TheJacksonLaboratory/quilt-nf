@@ -114,14 +114,13 @@ workflow QUILT {
    }
  }
 
- //read_ch.view()
 
   // Calculate quality statistics for sequencing
   if (params.library_type == 'ddRADseq'){
     CLONE_FILTER(read_ch)
-    //QUALITY_STATISTICS(read_ch)
     // Run fastqc on adapter trimmed reads
     FASTQC_DDRADSEQ(CLONE_FILTER.out.clone_filtered)
+    //FASTQC_DDRADSEQ(read_ch)
 
     // Run multiqc
     fastqc_reports = FASTQC_DDRADSEQ.out.to_multiqc.flatten().collect()
@@ -130,6 +129,8 @@ workflow QUILT {
     // Generate read groups
     READ_GROUPS(CLONE_FILTER.out.clone_filtered, "gatk")
     mapping = CLONE_FILTER.out.clone_filtered.join(READ_GROUPS.out.read_groups)
+    //READ_GROUPS(read_ch, "gatk")
+    //mapping = read_ch.join(READ_GROUPS.out.read_groups)
 
     // Alignment
     BWA_MEM_DDRADSEQ(mapping)
@@ -137,9 +138,9 @@ workflow QUILT {
     // Sort SAM files
     PICARD_SORTSAM(BWA_MEM_DDRADSEQ.out.sam)
     data = PICARD_SORTSAM.out.bam.join(PICARD_SORTSAM.out.bai)
-    data.view()
 
     } else {
+
     FASTP(read_ch)
     //QUALITY_STATISTICS(read_ch)
     // Run fastqc on adapter trimmed reads
@@ -189,11 +190,7 @@ workflow QUILT {
   
   // Run QUILT
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
-  //quilt_inputs.view()
   RUN_QUILT(quilt_inputs)
-
-  // Perform LD pruning on QUILT output
-  //QUILT_LD_PRUNING(RUN_QUILT.out.quilt_vcf)
 
   // Convert QUILT outputs to qtl2 files
   quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf

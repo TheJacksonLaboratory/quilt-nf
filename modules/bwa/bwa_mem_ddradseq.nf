@@ -14,6 +14,10 @@ process BWA_MEM_DDRADSEQ {
   input:
   tuple val(sampleID), file(fq_1), file(fq_2), file(read_groups)
 
+  // for runs without clone filtering
+  //input:
+  //tuple val(sampleID), file(fq_files), file(read_groups)
+
   output:
   tuple val(sampleID), file("*.sam"), emit: sam
 
