@@ -189,7 +189,8 @@ workflow QUILT {
   CREATE_BAMLIST(bams)
   
   // Run QUILT
-  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+  binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs).combine(binShuffleChannel)
   RUN_QUILT(quilt_inputs)
 
   // Convert QUILT outputs to qtl2 files

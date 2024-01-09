@@ -4,7 +4,7 @@
 #SBATCH --mail-type=END,FAIL
 #SBATCH -p compute
 #SBATCH -q batch
-#SBATCH -t 36:00:00
+#SBATCH -t 72:00:00
 #SBATCH --mem=1G
 #SBATCH --ntasks=1
 
@@ -26,7 +26,8 @@ nextflow main.nf \
 --library_type "seqwell" \
 --run_name $1 \
 -w '/flashscratch/STITCH_outputDir/work' \
---downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/downsampling_values.csv' \
+--downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/bin_shuffle_downsample.csv' \
+--bin_shuffling_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/shuffle_bins.csv' \
 --cross_type 'do' \
 --ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
 --covar_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv' \

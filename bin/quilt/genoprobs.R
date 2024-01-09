@@ -117,7 +117,10 @@ pr <- qtl2::calc_genoprob(cross = cross,
 apr <- qtl2::genoprob_to_alleleprob(probs = pr,
                                     cores = (parallel::detectCores()/2), quiet = F)
 
-
+# ### for testing
+# load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_36_state_probs.RData")
+# load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_8_state_probs.RData")
+# load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_cross.RData")
 
 print("Counting Crossovers.")
 # count crossovers
@@ -136,9 +139,7 @@ crossover_locs <- qtl2::locate_xo(geno = m_quilt,
 save(cross, file = paste0("chr_",chrom,"_cross.RData"))
 save(pr, file = paste0("chr_",chrom,"_36_state_probs.RData"))
 save(apr, file = paste0("chr_",chrom,"_8_state_probs.RData"))
-write.csv(x = crossover_locs, 
-          file = paste0("chr_",chrom,"_crossovers.csv"), 
-          quote = F, row.names = F)
+save(crossover_locs, file = paste0("chr_",chrom,"_crossovers.RData"))
 # 
 # # measuring recombination blocks
 # xo_block_sizes <- lapply(1:length(crossover_locs), function(ind){

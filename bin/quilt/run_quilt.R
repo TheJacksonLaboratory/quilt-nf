@@ -12,6 +12,7 @@ args <- commandArgs(trailingOnly = TRUE)
 #args[4] = reference sample file (if DO)
 #args[5] = reference legend file (if DO)
 #args[6] = covar file
+#args[7] = bin shuffle radius
 
 # Input files
 # Path to original bamlist
@@ -36,16 +37,16 @@ covar_nGen <- median(covar$gen)
 mouse_chr <- paste0(args[2])
 
 QUILT::QUILT(chr = mouse_chr,
-#            regionStart = 5000000, # remove when not testing
-#            regionEnd = 7000000, # remove when not testing
-#            buffer = 10000, # remove when not testing
-             bamlist = mouse_bamlist,
-             outputdir = paste0(getwd(), "/"),
-             reference_haplotype_file = args[3],
-             reference_sample_file = args[4],
-             reference_legend_file = args[5],
-	     shuffle_bin_radius = 200000,
-             nGen = covar_nGen,
-             addOptimalHapsToVCF=TRUE,
-             record_interim_dosages=TRUE,
-             save_prepared_reference=TRUE)
+           # regionStart = 5000000, # remove when not testing
+           # regionEnd = 10000000, # remove when not testing
+           # buffer = 10000, # remove when not testing
+           bamlist = mouse_bamlist,
+           outputdir = paste0(getwd(), "/"),
+           reference_haplotype_file = args[3],
+           reference_sample_file = args[4],
+           reference_legend_file = args[5],
+           shuffle_bin_radius = as.numeric(args[7]),
+           nGen = covar_nGen,
+           addOptimalHapsToVCF=TRUE,
+           record_interim_dosages=TRUE,
+           save_prepared_reference=TRUE)

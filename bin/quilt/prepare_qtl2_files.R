@@ -26,26 +26,27 @@ args = commandArgs(trailingOnly = TRUE)
 
 # Founder genotypes and marker positions
 founder_file = args[1]
-# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_phased_snps.vcf.gz'
+#founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
 # founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
 sample_file = args[2]
-# sample_file = "/flashscratch/STITCH_outputDir/work/96/588d8f5b5b72d45e553ec81d97764f/quilt.X.vcf.gz"
+#sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20231212_DO_seqwell/3/quilt_vcfs/quilt.19.vcf.gz"
 # sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20231102_4WC_ddradseq_full/quilt_vcfs/quilt.19.vcf.gz"
 
 # Sample metadata file.
 meta_file = args[3]
-#meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
+# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
 # meta_file = '/projects/compsci/vmp/lcgbs_ssif/data/GigaMUGA/4WC_covar_quilt.csv'
 
 # Cross type
 cross_type = args[4]
+# cross_type = 'do'
 # cross_type = 'genail4'
 
 # Marker map.
 marker_file = args[5]
-# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chrX_gen_map.txt'
+# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_gen_map.txt'
 # marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_gen_map.txt'
 
 # chromosome
@@ -125,39 +126,57 @@ stopifnot(names(founder_rr) == rownames(sample_vcf_info))
 
 
 
+
 # how many sites deviate from HWE?
 print("Pct of sites that deviate from HWE:")
-paste0(round((table(unlist(sample_vcf_info$HWE) < 0.05)[[2]]/quilt_variants*100),2),"%")  
-sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$HWE) > 0.05),]
+sample_vcf_info <- data.frame(apply(sample_vcf_info, 2, function(x) unlist(x)))
+paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")  
+sample_vcf_info <- sample_vcf_info[which(sample_vcf_info$HWE > 0.05),]
+# sample_vcf_info_orig <- sample_vcf_info
+# variant_pca <- princomp(sample_vcf_info_orig[complete.cases(sample_vcf_info_orig),c(1:3,6)])
+# 
+# pca_bound <- cbind(variant_pca$scores[,2],sample_vcf_info_orig[complete.cases(sample_vcf_info_orig),])
+# colnames(pca_bound)[1] <- "PC2"
+# pca_bound %>%
+#   ggplot(.) + 
+#   theme_bw() + 
+#   geom_point(mapping = aes(x = PC2, y = HWE), alpha = 0.05)
+# 
+# pca_bound %>%
+#   dplyr::mutate(TRC = ERC+EAC) %>%
+#   ggplot(.) + 
+#   theme_bw() + 
+#   geom_point(mapping = aes(x = PC2, y = TRC), alpha = 0.05)
 
 # trim sites with low info scores
-lower_info_score = 0.95
-above_threshold_sites <- length(which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score))
-above_threshold_sites/length(unlist(sample_vcf_info$INFO_SCORE))
-hist(unlist(sample_vcf_info$INFO_SCORE))
+lower_info_score <- 0.95
+above_threshold_sites <- length(which(sample_vcf_info$INFO_SCORE > lower_info_score))
+above_threshold_sites/length(sample_vcf_info$INFO_SCORE)
 
 # first test: is there a single variant above the info score threshold?
 if(above_threshold_sites < 10000){
   print("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
-  new_threshold <- quantile(x = unlist(sample_vcf_info$INFO_SCORE), probs = seq(0,1,0.05))[[20]]
-  sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > new_threshold),]
+  new_threshold <- quantile(x = sample_vcf_info$INFO_SCORE, probs = seq(0,1,0.05))[[20]]
+  sample_vcf_info = sample_vcf_info[which(sample_vcf_info$INFO_SCORE > new_threshold),]
   filtered_quilt_variants <- nrow(sample_vcf_info)
 } else if (above_threshold_sites < 50000){
   # This bin is for runs where there were sites above the threshold, but fewer
   print(paste0(above_threshold_sites," info scores above 0.95; keeping just these"))
-  sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score),]
+  sample_vcf_info = sample_vcf_info[which(sample_vcf_info$INFO_SCORE) > lower_info_score,]
   filtered_quilt_variants <- nrow(sample_vcf_info)
   new_threshold <- lower_info_score
 } else {
   print(paste0("At least 50,000 info scores above 0.95; thinning the VCF"))
-  table(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score)[[2]]
-  sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$INFO_SCORE) > lower_info_score),]
-  # thin the vcf for speed
+  table(sample_vcf_info$INFO_SCORE > lower_info_score)[[2]]
+  sample_vcf_info = sample_vcf_info[which(sample_vcf_info$INFO_SCORE > lower_info_score),]
+  #thin the vcf for speed
   thin_vcf = rep_len(x = 1:5, length.out = nrow(sample_vcf_info))
   sample_vcf_info <- sample_vcf_info[which(thin_vcf == 1),]
   filtered_quilt_variants <- nrow(sample_vcf_info)
   new_threshold <- lower_info_score
 }
+
+
 
 
 
