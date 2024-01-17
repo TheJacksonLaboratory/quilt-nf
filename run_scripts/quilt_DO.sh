@@ -27,7 +27,7 @@ nextflow main.nf \
 --run_name $1 \
 -w '/flashscratch/STITCH_outputDir/work' \
 --downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/bin_shuffle_downsample.csv' \
---bin_shuffling_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/shuffle_bins.csv' \
+--bin_shuffling_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/shuffle_bins_small.csv' \
 --cross_type 'do' \
 --ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
 --covar_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv' \

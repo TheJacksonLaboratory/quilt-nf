@@ -31,7 +31,8 @@ covar <- read.csv(meta_file)
 stopifnot("gen" %in% colnames(covar))
 # kill if there generation covariate isn't numeric or integer
 stopifnot(is.numeric(covar$gen) || is.integer(covar$gen))
-covar_nGen <- median(covar$gen)
+stopifnot(length(covar$gen[!is.na(covar$gen)]) > 0)
+covar_nGen <- median(covar$gen[!is.na(covar$gen)])
 
 # Chromosome to be analyzed
 mouse_chr <- paste0(args[2])

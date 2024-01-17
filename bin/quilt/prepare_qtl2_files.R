@@ -11,6 +11,8 @@
 library(VariantAnnotation)
 library(qtl2convert)
 library(qtl2)
+library(stringr)
+
 
 ##### VARIABLES #####
 
@@ -26,16 +28,18 @@ args = commandArgs(trailingOnly = TRUE)
 
 # Founder genotypes and marker positions
 founder_file = args[1]
-#founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
+# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
 # founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
 sample_file = args[2]
-#sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20231212_DO_seqwell/3/quilt_vcfs/quilt.19.vcf.gz"
+# sample_file = "/projects/reinholdt-lab/DO_ESC/results/quilt/20240114_DO_ESC/5/2000/quilt_vcfs/quilt.19.vcf.gz"
+# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20231212_DO_seqwell/3/quilt_vcfs/quilt.19.vcf.gz"
 # sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20231102_4WC_ddradseq_full/quilt_vcfs/quilt.19.vcf.gz"
 
 # Sample metadata file.
 meta_file = args[3]
+# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_ESC_covar.csv'
 # meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
 # meta_file = '/projects/compsci/vmp/lcgbs_ssif/data/GigaMUGA/4WC_covar_quilt.csv'
 
@@ -62,6 +66,9 @@ print("Read in metadata")
 # meta_4WC <- read.csv(meta_file_4WC)
 # meta_DO <- read.csv(meta_file_DO)
 meta <- read.csv(meta_file)
+
+# can't have duplicate sample ids in the metadata for qtl2
+meta <- meta[which(!duplicated(meta$id)),]
 
 print("Read in founder genotypes")
 # Read in founder genotypes.
@@ -91,14 +98,43 @@ sample_gt  = geno(sample_vcf)$GT
 sample_gt  = sub('\\|', '', sample_gt)
 stopifnot("id" %in% colnames(meta))
 covar_sample_inds <- c()
-for(i in 1:length(colnames(sample_gt))){
-  ind <- lapply(meta$id, function(x) grep(pattern = x,
-                                   x = colnames(sample_gt)[i]))
-  covar_sample_inds[i] <- which(ind == 1)
+
+# if you need to test a different genotype table
+# sample_gt <- read.delim("/projects/reinholdt-lab/DO_ESC/results/quilt/DO.ESC.test.column.names.txt")
+# colnames(sample_gt) <- gsub(pattern = "[.]", replacement = "-", colnames(sample_gt))
+# sample_gt <- sample_gt[,-c(1:4)]
+
+# link the sample IDs 
+# assuming that the covar file has some element of the library name in it
+covar_sample_ids <- lapply(colnames(sample_gt), function(x){
+  # try a symbol split
+  first_split <- stringr::str_split(string = x, pattern = "[:punct:]")[[1]]
+  sample_search <- lapply(first_split, function(y){
+    putative_id <- meta$id[meta$id %in% y]
+    if(length(putative_id) > 0){
+      return(putative_id)
+    }
+  })
+  unlist(sample_search[which(lapply(sample_search, function(x) is.null(x)) == FALSE)])
+})
+
+# get rid of samples from quilt vcf not present in the metadata
+# remove the null sample names from the covar file ids
+quilt_samples_absent_from_meta <- unlist(lapply(covar_sample_ids, is.null))
+if(any(quilt_samples_absent_from_meta)){
+  covar_sample_ids <- covar_sample_ids[-which(quilt_samples_absent_from_meta)]
+  sample_gt <- sample_gt[,-which(quilt_samples_absent_from_meta)]
 }
-stopifnot(length(covar_sample_inds) == length(colnames(sample_gt)))
-colnames(sample_gt) <- meta$id[covar_sample_inds]
+
+# assign the sample names from the metadata present in both files to the sample genotypes
+colnames(sample_gt) <- unlist(covar_sample_ids)
+
+# filter metadata down to samples in the genotype file
+meta <- meta[which(meta$id %in% colnames(sample_gt)),]
 quilt_variants <- nrow(sample_gt)
+
+# at this point, metadata sample size should match the quilt sample size
+stopifnot(ncol(sample_gt) == nrow(meta))
 
 
 print("Getting sample marker positions")
@@ -132,21 +168,6 @@ print("Pct of sites that deviate from HWE:")
 sample_vcf_info <- data.frame(apply(sample_vcf_info, 2, function(x) unlist(x)))
 paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")  
 sample_vcf_info <- sample_vcf_info[which(sample_vcf_info$HWE > 0.05),]
-# sample_vcf_info_orig <- sample_vcf_info
-# variant_pca <- princomp(sample_vcf_info_orig[complete.cases(sample_vcf_info_orig),c(1:3,6)])
-# 
-# pca_bound <- cbind(variant_pca$scores[,2],sample_vcf_info_orig[complete.cases(sample_vcf_info_orig),])
-# colnames(pca_bound)[1] <- "PC2"
-# pca_bound %>%
-#   ggplot(.) + 
-#   theme_bw() + 
-#   geom_point(mapping = aes(x = PC2, y = HWE), alpha = 0.05)
-# 
-# pca_bound %>%
-#   dplyr::mutate(TRC = ERC+EAC) %>%
-#   ggplot(.) + 
-#   theme_bw() + 
-#   geom_point(mapping = aes(x = PC2, y = TRC), alpha = 0.05)
 
 # trim sites with low info scores
 lower_info_score <- 0.95
