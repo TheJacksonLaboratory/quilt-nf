@@ -2,10 +2,10 @@ process GENOPROBS {
   tag "$chr, $downsample_to_cov"
 
   cpus 1
-  memory {150.GB * task.attempt}
-  time {8.hour * task.attempt}
+  memory {500.GB * task.attempt}
+  time {12.hour * task.attempt}
   errorStrategy 'retry' 
-  maxRetries 1
+  maxRetries 2
 
 
   container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'

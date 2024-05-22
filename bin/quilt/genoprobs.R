@@ -56,7 +56,8 @@ if(cross_type == "genail4"){
                      geno_transposed=TRUE,
                      geno_codes=list(A=1, H=2, B=3),
                      sex_covar="sex",
-                     sex_codes=list(female="female", male="male"),
+                     sex_codes=list("F"="female", 
+                                    "M"="male"),
                      covar_file = metadata,
                      crossinfo_covar = colnames(covar)[!colnames(covar) %in% c("id","sex")],
                      overwrite = T)
@@ -73,9 +74,10 @@ if(cross_type == "genail4"){
                            geno_transposed = TRUE,
                            geno_codes=list(A=1, H=2, B=3),
                            sex_covar = "sex",
-                           sex_codes=list(female="female", male="male"),
+                           sex_codes=list("F"="female", 
+                                          "M"="male"),
                            covar_file = metadata,
-                           crossinfo_covar=colnames(covar)[!colnames(covar) %in% "id"],
+                           crossinfo_covar="gen",
                            overwrite = T)
 } else {
   print("Cross type specified does not have a process to make .json file; ending")

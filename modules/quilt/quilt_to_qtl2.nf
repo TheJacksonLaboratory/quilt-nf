@@ -1,10 +1,11 @@
 process QUILT_TO_QTL2 {
   tag "$chr, $downsample_to_cov"
 
+  time {2.hour * task.attempt}
   cpus 1
-  memory {300.GB * task.attempt}
-  time {3.hour * task.attempt}
-  errorStrategy 'retry'
+  memory {100.GB * task.attempt}
+  maxRetries 3
+  errorStrategy { task.exitStatus == 138..143 ? 'retry' : 'terminate' }
 
   container 'docker://sjwidmay/lcgbs_hr:variantannotation'
 
