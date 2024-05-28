@@ -1,8 +1,0 @@
-name: demux
-channels:
-  - defaults
-  - bioconda
-  - conda-forge
-dependencies:
-  - python>3.5
-  - pip
