@@ -8,7 +8,7 @@ process GENOPROBS {
   maxRetries 2
 
 
-  container 'docker://sjwidmay/lcgbs_hr:qtl2_et_al'
+  container 'docker://sjwidmay/lcgbs_hr:latest'
 
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/geno_probs", pattern:"*.RData", mode:'copy'
   

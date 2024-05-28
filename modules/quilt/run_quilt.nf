@@ -8,7 +8,7 @@ process RUN_QUILT {
   maxRetries 2
 
   
-  container 'docker://sjwidmay/stitch_nf:QUILT'
+  container 'sjwidmay-stitch_nf-QUILT'
 
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/quilt_vcfs", pattern:"*", mode:'copy'
   

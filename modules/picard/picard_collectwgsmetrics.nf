@@ -5,7 +5,7 @@ process PICARD_COLLECTWGSMETRICS {
   memory = 10.GB
   time = '08:00:00'
 
-  container 'broadinstitute/gatk:4.2.4.1'
+  container 'broadinstitute-gatk-4.2.4.1'
 
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern: "*.txt", mode:'copy'
 

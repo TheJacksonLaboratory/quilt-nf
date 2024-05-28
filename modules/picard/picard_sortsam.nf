@@ -2,10 +2,10 @@ process PICARD_SORTSAM {
   tag "$sampleID"
 
   cpus 8
-  memory 20.GB
+  memory 50.GB
   time '06:00:00'
 
-  container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
+  container 'quay.io-biocontainers-picard:2.26.10--hdfd78af_0'
 
   //publishDir "${params.pubdir}/${ params.organize_by=='sample' ? sampleID+'/bam' : 'picard' }", pattern: "*_sortsam.bam", mode:'copy', enabled: params.keep_intermediate
 

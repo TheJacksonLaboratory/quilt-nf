@@ -8,6 +8,7 @@ process FASTP {
   time '24:00:00'
 
   container 'docker://sjwidmay/fastp_nf:fastp'
+  // container 'quay.io/biocontainers/fastp:0.23.2--h5f740d0_3'
 
   //publishDir "${params.sample_folder}/fastp", pattern:"*_fastp_report.html", mode:'copy'
 

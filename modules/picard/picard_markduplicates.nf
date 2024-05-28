@@ -5,7 +5,7 @@ process PICARD_MARKDUPLICATES {
   memory 200.GB
   time '12:00:00'
 
-  container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
+  container 'quay.io-biocontainers-picard-2.26.10--hdfd78af_0'
 
   // save if mouse and wes or save if keep intermediate
   //publishDir "${params.sample_folder}/bams"
@@ -33,7 +33,6 @@ process PICARD_MARKDUPLICATES {
   REMOVE_DUPLICATES=true \\
   CREATE_INDEX=true \\
   VALIDATION_STRINGENCY=LENIENT \\
-  TMP_DIR=${params.tmpdir} \\
   > ${sampleID}.picard.log 2>&1  
   """
 }

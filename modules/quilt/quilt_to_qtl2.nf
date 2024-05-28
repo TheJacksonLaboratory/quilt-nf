@@ -7,7 +7,7 @@ process QUILT_TO_QTL2 {
   maxRetries 3
   errorStrategy { task.exitStatus == 138..143 ? 'retry' : 'terminate' }
 
-  container 'docker://sjwidmay/lcgbs_hr:variantannotation'
+  container 'sjwidmay-lcgbs_hr-variantannotation'
 
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/qtl2files", pattern:"*", mode:'copy'
 

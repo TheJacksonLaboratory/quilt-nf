@@ -6,7 +6,7 @@ process SAMPLE_COVERAGE {
   errorStrategy 'retry' 
   maxRetries 3
 
-  container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
+  container 'quay.io-biocontainers-samtools:1.16.1--h00cdaf9_2'
 
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_coverage.txt", mode:'copy'
 
