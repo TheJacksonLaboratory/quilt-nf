@@ -2,7 +2,7 @@ process PICARD_COLLECTWGSMETRICS {
   tag "$sampleID"
 
   cpus = 1
-  memory = 10.GB
+  memory = 50.GB
   time = '08:00:00'
 
   container 'broadinstitute-gatk-4.2.4.1'

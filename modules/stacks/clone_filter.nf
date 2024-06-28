@@ -3,10 +3,10 @@ process CLONE_FILTER {
   tag "$sampleID"
 
   cpus 1
-  memory 100.GB
-  time '02:00:00'
+  memory 150.GB
+  time '04:00:00'
 
-  container 'docker://sjwidmay/stitch_nf:stacks'
+  container 'docker://sjwidmay/stacks:latest'
 
   //publishDir "${params.sample_folder}/fastp", pattern:"*_fastp_report.html", mode:'copy'
 

@@ -17,7 +17,7 @@ module load nextflow
 # RUN PIPELINE
 nextflow main.nf \
 --workflow quilt \
--profile sumner \
+-profile sumner2 \
 --sample_folder '/projects/compsci/vmp/lcgbs_ssif/data/novaseq_seqwell_full/DO' \
 --gen_org mouse \
 --pubdir '/projects/compsci/vmp/lcgbs_ssif/results/quilt' \
@@ -26,8 +26,8 @@ nextflow main.nf \
 --library_type "seqwell" \
 --run_name $1 \
 -w '/flashscratch/STITCH_outputDir/work' \
---downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/bin_shuffle_downsample.csv' \
---bin_shuffling_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/shuffle_bins_small.csv' \
+--downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/downsampling_values.csv' \
+--bin_shuffling_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/shuffle_bins.csv' \
 --cross_type 'do' \
 --ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
 --covar_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv' \
