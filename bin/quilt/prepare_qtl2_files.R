@@ -26,25 +26,25 @@ library(stringr)
 
 args = commandArgs(trailingOnly = TRUE)
 
-# Founder genotypes and marker positions
+# # Founder genotypes and marker positions
 founder_file = args[1]
-
-# Sample genotypes from QUILT.
+# 
+# # Sample genotypes from QUILT.
 sample_file = args[2]
-
-# Sample metadata file.
+# 
+# # Sample metadata file.
 meta_file = args[3]
-
-# Cross type
+# 
+# # Cross type
 cross_type = args[4]
-
-# Marker map.
+# 
+# # Marker map.
 marker_file = args[5]
-
-# Grid file
+# 
+# # Grid file
 grid_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/quilt_1M_physical_grid.csv'
-
-# chromosome
+# 
+# # chromosome
 chr = args[6]
 
 
@@ -55,7 +55,7 @@ chr = args[6]
 
 # Sample genotypes from QUILT.
 # sample_file = "/projects/reinholdt-lab/DO_ESC/results/quilt/20240224_DO_ESC_downsample/5/2000/quilt_vcfs/quilt.19.vcf.gz"
-# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20240311_DO_test_grid_downsample/0.001/2000/quilt_vcfs/quilt.19.vcf.gz"
+# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20240324_DO_grid_downsample/0.005/2000/quilt_vcfs/quilt.19.vcf.gz"
 # sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20240222_4WC_downsampling_gridprobs/3/2000/quilt_vcfs/quilt.19.vcf.gz"
 
 # Sample metadata file.
@@ -72,7 +72,7 @@ chr = args[6]
 # marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_gen_map.txt'
 
 # chromosome
-# chr = "X"
+# chr = "19"
 
 
 
@@ -235,10 +235,14 @@ if(chr != "X"){
 lower_info_score <- 0.95
 above_threshold_sites <- length(which(sample_vcf_info$INFO_SCORE > lower_info_score))
 paste0(signif(above_threshold_sites/length(sample_vcf_info$INFO_SCORE), 4)*100,"% of sites above 0.95 INFO score threshold (",above_threshold_sites,")")
-# first test: is there a single variant above the info score threshold?
+
 if(above_threshold_sites < 10000){
   print("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
-  new_threshold <- quantile(x = sample_vcf_info$INFO_SCORE, probs = seq(0,1,0.05))[[20]]
+  count <- 0
+  while (count < 10000) {
+    new_threshold <- new_threshold - 0.01  # Increment the threshold
+    count <- length(which(sample_vcf_info$INFO_SCORE > new_threshold))
+  }
   sample_vcf_info = sample_vcf_info[which(sample_vcf_info$INFO_SCORE > new_threshold),]
   filtered_quilt_variants <- nrow(sample_vcf_info)
 } else {

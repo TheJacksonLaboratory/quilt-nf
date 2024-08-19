@@ -12,7 +12,7 @@ cd $SLURM_SUBMIT_DIR
 
 # LOAD NEXTFLOW
 module use --append /projects/omics_share/meta/modules
-module load nextflow
+module load nextflow/23.10.1
 
 # RUN PIPELINE
 nextflow main.nf \
@@ -26,8 +26,8 @@ nextflow main.nf \
 --library_type "seqwell" \
 --run_name $1 \
 -w '/flashscratch/STITCH_outputDir/work' \
---downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/downsampling_values.csv' \
 --bin_shuffling_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/shuffle_bins.csv' \
+--downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/downsampling_values.csv' \
 --cross_type 'do' \
 --ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
 --covar_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv' \
