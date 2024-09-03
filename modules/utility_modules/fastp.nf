@@ -4,8 +4,8 @@ process FASTP {
   tag "$sampleID"
 
   cpus 1
-  memory 30.GB
-  time '24:00:00'
+  memory 50.GB
+  time '3:00:00'
 
   container 'docker://sjwidmay/fastp_nf:fastp'
   // container 'quay.io/biocontainers/fastp:0.23.2--h5f740d0_3'

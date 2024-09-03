@@ -239,6 +239,7 @@ paste0(signif(above_threshold_sites/length(sample_vcf_info$INFO_SCORE), 4)*100,"
 if(above_threshold_sites < 10000){
   print("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
   count <- 0
+  new_threshold <- lower_info_score
   while (count < 10000) {
     new_threshold <- new_threshold - 0.01  # Increment the threshold
     count <- length(which(sample_vcf_info$INFO_SCORE > new_threshold))

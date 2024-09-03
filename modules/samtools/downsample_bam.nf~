@@ -1,0 +1,29 @@
+process DOWNSAMPLE_BAM {
+
+  cpus 1
+  memory 51.GB
+  time '01:00:00'
+  //errorStrategy 'retry' 
+
+  container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
+
+  publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_downsampled_coverage.txt", mode:'copy'
+
+  input:
+  tuple val(sampleID), val(coverage), file(bam)
+
+  output:
+  tuple val(sampleID), file("*_downsampled.bam"), emit: downsampled_bam
+  tuple file("*_downsampled_coverage.txt"), emit: downsampled_depth_out
+
+  script:
+  log.info "----- Downsampling Reads from Sample: ${sampleID} -----"
+
+  dowsampling_coef = ${params.downsample_to_cov} / ${coverage}
+
+
+  """
+  echo ${downsampling_coef}
+  """
+
+}

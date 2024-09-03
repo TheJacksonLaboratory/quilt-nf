@@ -12,8 +12,8 @@ process FASTQC_DDRADSEQ {
   //input:
   //tuple val(sampleID), file(fq_reads)
 
-  //input:
-  //tuple val(sampleID), file(fq_1), file(fq_2)
+  input:
+  tuple val(sampleID), file(fq_1), file(fq_2)
 
   output:
   tuple file("*_fastqc.html"), file("*_fastqc.zip"), emit: to_multiqc

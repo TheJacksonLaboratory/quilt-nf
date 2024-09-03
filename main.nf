@@ -8,7 +8,7 @@ if (params.workflow == "wgs"){
   include {WGS} from './workflows/wgs'
 }
 if (params.workflow == "quilt"){
-  include {QUILT} from './workflows/stitch'
+  include {QUILT} from './workflows/quilt'
 }
 
 // Conditional to kick off appropriate workflow

@@ -1,7 +1,7 @@
 process QUILT_TO_QTL2 {
   tag "$chr, $downsample_to_cov"
 
-  time {2.hour * task.attempt}
+  time {4.hour * task.attempt}
   cpus 1
   memory {100.GB * task.attempt}
   maxRetries 3

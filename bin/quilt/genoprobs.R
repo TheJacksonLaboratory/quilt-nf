@@ -78,6 +78,7 @@ if(cross_type == "genail4"){
                                           "M"="male"),
                            covar_file = metadata,
                            crossinfo_covar="gen",
+                           xchr = "X",
                            overwrite = T)
 } else {
   print("Cross type specified does not have a process to make .json file; ending")
