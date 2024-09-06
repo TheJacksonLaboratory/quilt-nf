@@ -174,14 +174,15 @@ if (params.align_only){
     MPILEUP(data)
   
     // Downsample bams to specified coverage if the full coverage allows
-    coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  	    tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
-    }
+    SAMPLE_COVERAGE.out.depth_out.view()
+    //coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+  	//    tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+    //}
 
     // downsample bam files
-    downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
-    downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
-    DOWNSAMPLE_BAM_ALIGN_ONLY(downsampling_bams)
+    // downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
+    // downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
+    // DOWNSAMPLE_BAM_ALIGN_ONLY(downsampling_bams)
 
 } else {
     // Calculate quality statistics for sequencing
