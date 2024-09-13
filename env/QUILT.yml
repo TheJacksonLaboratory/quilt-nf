@@ -1,8 +1,0 @@
-name: quilt
-channels:
-  - defaults
-  - bioconda
-  - conda-forge
-  - r
-dependencies:
-  - r-quilt

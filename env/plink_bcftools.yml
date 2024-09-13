@@ -1,7 +1,0 @@
-name: plink_bcftools
-channels:
-  - defaults
-  - bioconda
-dependencies:
-  - plink
-  - bcftools=1.9
