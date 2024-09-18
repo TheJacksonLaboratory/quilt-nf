@@ -10,10 +10,6 @@
 
 cd $SLURM_SUBMIT_DIR
 
-LCGBS_DIR=/projects/compsci/vmp/lcgbs_ssif
-
-QUILT_DIR=/projects/compsci/vmp/USERS/widmas/quilt-nf
-
 # LOAD NEXTFLOW
 module use --append /projects/omics_share/meta/modules
 module load nextflow/23.10.1
@@ -22,19 +18,18 @@ module load nextflow/23.10.1
 nextflow main.nf \
 --workflow quilt \
 -profile sumner2 \
---sample_folder ${LCGBS_DIR}/data/novaseq_seqwell_full/DO \
+--sample_folder '/projects/reinholdt-lab/DO_ESC/data/lcgbs' \
 --gen_org mouse \
---pubdir ${LCGBS_DIR}/results/quilt \
+--pubdir '/projects/reinholdt-lab/DO_ESC/results/quilt' \
 --extension 'fastq.gz' \
---pattern="*_R{1,2}*" \
+--pattern="*_R{1,2}.*" \
 --library_type "seqwell" \
 --run_name $1 \
 -w '/flashscratch/widmas/QUILT/work' \
---bin_shuffling_file ${QUILT_DIR}/data/shuffle_bins.csv \
---downsample_to_cov ${QUILT_DIR}/data/downsampling_values.csv \
+--bin_shuffling_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_ESC_binshuffle.csv' \
+--downsample_to_cov '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/downsampling_values.csv' \
 --cross_type 'do' \
---ref_file_dir ${LCGBS_DIR}/data/DO_founders \
---covar_file ${QUILT_DIR}/data/DO_covar.csv \
---align_only \
+--ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
+--covar_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_ESC_covar.csv' \
 --comment "This script will run haplotype inference on DO lcWGS data" \
 -resume
