@@ -10,7 +10,7 @@ ______________________________________________________
 Results Published to: ${params.pubdir}
 ______________________________________________________
 --workflow                      ${params.workflow}
---gen_org                       ${params.gen_org}
+--aling_only                    ${params.align_only}
 --cross_type                    ${params.cross_type}
 --covar_file                    ${params.covar_file}
 --downsample_to_cov             ${params.downsample_to_cov}
