@@ -8,6 +8,8 @@ process PICARD_COLLECTWGSMETRICS {
   container 'broadinstitute-gatk-4.2.4.1'
 
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern: "*.txt", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/bams", pattern: "*.bam", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/bams", pattern: "*.bai", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam), file(bam_bai)

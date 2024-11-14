@@ -2,7 +2,7 @@ process PICARD_SORTSAM {
   tag "$sampleID"
 
   cpus 8
-  memory 100.GB
+  memory 120.GB
   time '06:00:00'
 
   container 'quay.io-biocontainers-picard:2.26.10--hdfd78af_0'

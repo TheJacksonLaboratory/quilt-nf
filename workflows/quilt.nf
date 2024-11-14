@@ -180,9 +180,9 @@ if (params.align_only){
     }
 
     // downsample bam files
-    // downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
-    // downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
-    // DOWNSAMPLE_BAM_ALIGN_ONLY(downsampling_bams)
+    downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
+    downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
+    DOWNSAMPLE_BAM_ALIGN_ONLY(downsampling_bams)
 
 } else {
     // Calculate quality statistics for sequencing

@@ -9,7 +9,7 @@ process DOWNSAMPLE_BAM_ALIGN_ONLY {
   container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
 
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/coverage", pattern:"*_post_downsample_coverage.txt", mode:'copy'
-  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/bams", pattern:"*_downsampled.bam", mode:'copy'
+  publishDir "${workDir}/${params.run_name}/${downsample_to_cov}/bams", pattern:"*_downsampled.bam", mode:'copy'
 
   input:
   tuple val(sampleID), val(coverage), file(bam), val(downsample_to_cov)

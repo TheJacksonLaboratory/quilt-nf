@@ -22,7 +22,5 @@ process GENO_PROBS {
 
   """
   Rscript --vanilla ${projectDir}/bin/stitch/genoprobs.R ${chr} ${sample_genos} ${allele_codes} ${pmap} ${gmap} ${founder_geno} ${params.covar_file}
-  mv *36_state_probs.RData chr${chr}_36_state_probs.RData
-  mv *8_state_probs.RData chr${chr}_8_state_probs.RData
   """
 }

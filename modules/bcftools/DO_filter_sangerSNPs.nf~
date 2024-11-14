@@ -12,7 +12,7 @@ process DO_FILTER_SANGER_SNPS {
   val(chr)
 
   output:
-  tuple val(chr), file("*_do_snps.vcf.gz"), file("*_do_snps.vcf.gz.csi"), emit: sanger_vcfs
+  tuple val(chr), file("*_do_snps.vcf.gz"), file("*_do_snps.vcf.gz.tbi"), emit: sanger_vcfs
 
   script:
   log.info "----- Filtering DO Sanger SNPs for Chromosome ${chr} -----"
@@ -34,7 +34,7 @@ process DO_FILTER_SANGER_SNPS {
        --max-alleles 2 \
        --min-ac 2 \
        --output-type z \
-       --output sanger_chr${chr}_do_snps.vcf.gz \
+       --output-file sanger_chr${chr}_do_snps.vcf.gz \
        s_file${chr}.vcf.gz
 
   bcftools index sanger_chr${chr}_do_snps.vcf.gz
