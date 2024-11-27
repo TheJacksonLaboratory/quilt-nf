@@ -5,44 +5,43 @@ library(purrr)
 library(qtl2)
 
 # test_dir
-# test_dir <- "/fastscratch/STITCH_outputDir/work/22/7c76bf5b0c3175069a8b8cf3ee3ee1"
+# test_dir <- "/flashscratch/widmas/QUILT/work/4a/79cdc84f437cf0617d07f329e4c4fb"
 # setwd(test_dir)
+# chrom <- "19"
+# sample_genos <- list.files(pattern = "sample_geno")
+# founder_genos <- list.files(pattern = "founder_geno")
+# pmap <- list.files(pattern = "pmap")
+# gmap <- list.files(pattern = "gmap")
+# metadata <- "covar.csv"
+# cross_type <- "bxd"
 
 # take arguments
 args <- commandArgs(trailingOnly = TRUE)
 
 # what chromosome?
 chrom <- args[1]
-#chrom <- "12"
 
 # sample genotypes
 sample_genos <- args[2]
-#sample_genos <- "chr12_sample_geno.csv"
 
 # founder genotypes
 founder_genos <- args[3]
-#founder_genos <- "chr12_founder_geno.csv"
 
 # physical map
 pmap <- args[4]
-#pmap <- "chr12_pmap.csv"
 
 # genetic map
 gmap <- args[5]
-#gmap <- "chr12_gmap.csv"
 
 # sample metadata
 metadata <- args[6]
-#metadata <- "covar.csv"
 covar <- read.csv(metadata)
 
 # cross type
 cross_type <- args[7]
-#cross_type <- "genail4"
 
 # Has a cross type been specified?
 stopifnot("cross_type" %in% ls(pattern = "cross_type"))
-
 
 if(cross_type == "genail4"){
   # write control file for genail4 crosses
@@ -67,7 +66,6 @@ if(cross_type == "genail4"){
                            crosstype="do",
                            founder_geno_file=founder_genos,
                            founder_geno_transposed=TRUE,
-                           # alleles=c(LETTERS[1:8]),
                            gmap_file=gmap,
                            pmap_file=pmap,
                            geno_file=sample_genos,
@@ -80,6 +78,19 @@ if(cross_type == "genail4"){
                            crossinfo_covar="gen",
                            xchr = "X",
                            overwrite = T)
+} else if(cross_type == "bxd"){
+  qtl2::write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
+                         crosstype="risib",
+                         geno_file=sample_genos,
+                         geno_transposed=TRUE,
+                         geno_codes=list(B=1, D=2),
+                         xchr="X",
+                         gmap_file=gmap,
+                         pmap_file=pmap,
+                         crossinfo_file = metadata,
+                         crossinfo_codes = c("BxD"=0),
+                         alleles=c("B", "D"),
+                         overwrite=TRUE)
 } else {
   print("Cross type specified does not have a process to make .json file; ending")
 }
@@ -125,152 +136,20 @@ apr <- qtl2::genoprob_to_alleleprob(probs = pr,
 # load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_8_state_probs.RData")
 # load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_cross.RData")
 
-print("Counting Crossovers.")
-# count crossovers
-m_quilt <- qtl2::maxmarg(probs = pr,
-                         cores = c(parallel::detectCores()/2))
-crossovers <- qtl2::count_xo(geno = m_quilt,
-                             quiet = F,
-                             cores = c(parallel::detectCores()/2))
-
-# find recombination breakpoints
-crossover_locs <- qtl2::locate_xo(geno = m_quilt,
-                                  map = cross$pmap,
-                                  cores = c(parallel::detectCores()/2))[[1]]
+# print("Counting Crossovers.")
+# # count crossovers
+# m_quilt <- qtl2::maxmarg(probs = pr,
+#                          cores = c(parallel::detectCores()/2))
+# crossovers <- qtl2::count_xo(geno = m_quilt,
+#                              quiet = F,
+#                              cores = c(parallel::detectCores()/2))
+# 
+# # find recombination breakpoints
+# crossover_locs <- qtl2::locate_xo(geno = m_quilt,
+#                                   map = cross$pmap,
+#                                   cores = c(parallel::detectCores()/2))[[1]]
 
 # Save objects
 save(cross, file = paste0("chr_",chrom,"_cross.RData"))
 save(pr, file = paste0("chr_",chrom,"_36_state_probs.RData"))
 save(apr, file = paste0("chr_",chrom,"_8_state_probs.RData"))
-save(crossover_locs, file = paste0("chr_",chrom,"_crossovers.RData"))
-# 
-# # measuring recombination blocks
-# xo_block_sizes <- lapply(1:length(crossover_locs), function(ind){
-#   # print(ind)
-#   sample <- names(crossover_locs[ind])
-#   if(length(crossover_locs[[ind]]) == 0){
-#     print("No crossovers detected on individual; skipping")
-#   } else {
-#     xo_lengths <- list()
-#     for(xo in 1:length(crossover_locs[[ind]])){
-#       if(xo == 1){
-#         df <- data.frame(sample,crossover_locs[[ind]][xo] - cross$pmap[[1]][[1]])
-#         df$block_start <- cross$pmap[[1]][[1]]
-#       } else {
-#         df <- data.frame(sample,crossover_locs[[ind]][xo] - crossover_locs[[ind]][xo-1])
-#         df$block_start <- crossover_locs[[ind]][xo-1]
-#       }
-#       df$block_end <- crossover_locs[[ind]][xo]
-#       colnames(df)[1:2] <- c("sample","block_size")
-#       xo_lengths[[xo]] <- df
-#     }
-#     return(Reduce(dplyr::bind_rows,xo_lengths))
-#   }
-# })
-# 
-# # find recombination blocks < a certain size
-# find_spurious_xo_markers <- purrr::map2(.x = crossover_locs, 
-#                                         .y = xo_block_sizes, 
-#                                         .f = function(x,y){
-#   small_blocks = x[which(y$block_size < 0.001)]
-#   if(length(small_blocks) == 0){
-#     return(NA)
-#   } else {
-#     markers_to_remove <- qtl2::find_marker(map = cross$pmap, 
-#                                            chr = chrom,
-#                                            pos = small_blocks)
-#     return(markers_to_remove)
-#   }})
-# names(find_spurious_xo_markers) <- NULL
-# spurious_xo_markers <- unlist(find_spurious_xo_markers)
-# spurious_xo_markers <- spurious_xo_markers[!is.na(spurious_xo_markers)]
-# 
-# # how many markers contribute this?
-# print(paste("Unique spurious markers:", length(unique(spurious_xo_markers))))
-# print(paste("Total spurious markers:", length(spurious_xo_markers)))
-# 
-# if(length(spurious_xo_markers) == 0){
-#   print("No recombination blocks smaller than 1kb")
-#   
-#   # Save allele probs
-#   save(cross, file = paste0("chr_",chrom,"_cross.RData"))
-#   save(pr, file = paste0("chr_",chrom,"_36_state_probs.RData"))
-#   save(apr, file = paste0("chr_",chrom,"_8_state_probs.RData"))
-#   
-#   # Save crossovers
-#   xo_block_sizes_df <- xo_block_sizes %>% 
-#     Reduce(dplyr::bind_rows, .) %>%
-#     dplyr::mutate(chr = chrom)
-#   write.csv(xo_block_sizes_df,
-#             file = paste0("chr_",chrom,"_crossovers.csv"),
-#             quote = F, row.names = F)
-#   
-# } else {
-#   # remove these markers from the requisite cross object elements
-#   cross <- drop_markers(cross = cross, unique(spurious_xo_markers))
-#   
-#   # Calculate new genotype probs with reduced map AGAIN
-#   pr <- qtl2::calc_genoprob(cross = cross, 
-#                             map = cross$pmap,
-#                             error_prob = 0.002,
-#                             cores = (parallel::detectCores()/2), quiet = F)
-#   # Calculate allele probs
-#   apr <- qtl2::genoprob_to_alleleprob(probs = pr,
-#                                       cores = (parallel::detectCores()/2), quiet = F)
-#   
-#   # Save objects
-#   save(cross, file = paste0("chr_",chrom,"_cross.RData"))
-#   save(pr, file = paste0("chr_",chrom,"_36_state_probs.RData"))
-#   save(apr, file = paste0("chr_",chrom,"_8_state_probs.RData"))
-#   
-#   print("Counting Crossovers with Corrected Breakpoints")
-#   # count crossovers
-#   m_quilt <- qtl2::maxmarg(probs = pr,
-#                            cores = c(parallel::detectCores()/2))
-#   crossovers <- qtl2::count_xo(geno = m_quilt, 
-#                                quiet = F, 
-#                                cores = c(parallel::detectCores()/2))
-#   
-#   # find recombination breakpoints
-#   crossover_locs <- qtl2::locate_xo(geno = m_quilt,
-#                                     map = cross$pmap, 
-#                                     cores = c(parallel::detectCores()/2))[[1]]
-#   
-#   # measuring recombination blocks
-#   xo_block_sizes <- lapply(1:length(crossover_locs), function(ind){
-#     # print(ind)
-#     sample <- names(crossover_locs[ind])
-#     if(length(crossover_locs[[ind]]) == 0){
-#       print("No crossovers detected on individual; skipping")
-#     } else {
-#       xo_lengths <- list()
-#       for(xo in 1:length(crossover_locs[[ind]])){
-#         if(xo == 1){
-#           df <- data.frame(sample,crossover_locs[[ind]][xo] - cross$pmap[[1]][[1]])
-#           df$block_start <- cross$pmap[[1]][[1]]
-#         } else {
-#           df <- data.frame(sample,crossover_locs[[ind]][xo] - crossover_locs[[ind]][xo-1])
-#           df$block_start <- crossover_locs[[ind]][xo-1]
-#         }
-#         df$block_end <- crossover_locs[[ind]][xo]
-#         colnames(df)[1:2] <- c("sample","block_size")
-#         xo_lengths[[xo]] <- df
-#       }
-#       return(Reduce(dplyr::bind_rows,xo_lengths))
-#     }
-#   })
-#   
-#   # Save crossovers
-#   xo_block_sizes_df <- xo_block_sizes %>% 
-#     Reduce(dplyr::bind_rows, .) %>%
-#     dplyr::mutate(chr = chrom)
-#   write.csv(xo_block_sizes_df, 
-#             file = paste0("chr_",chrom,"_crossovers.csv"),
-#             quote = F, row.names = F)
-#   
-# }
-
-
-
-
-

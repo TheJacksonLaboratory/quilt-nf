@@ -10,7 +10,7 @@ process MULTIQC {
   publishDir "${params.pubdir}/${params.run_name}/multiqc", pattern:"*", mode:'copy'
 
   input:
-  file('*')
+  path('*')
 
   output:
   tuple file('*_multiqc_report.html'), file('multiqc_data/multiqc_data.json'), emit: multiqc_report

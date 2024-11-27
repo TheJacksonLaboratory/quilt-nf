@@ -15,7 +15,6 @@ process DOWNSAMPLE_BAM {
 
   output:
   tuple file("*_downsampled.bam"), val(downsample_to_cov), emit: downsampled_bam
-  tuple file("*_post_downsample_coverage.txt"), emit: downsampled_depth_out
   
   script:
   log.info "----- Downsampling Reads: ${sampleID}, ${downsample_to_cov}X -----"

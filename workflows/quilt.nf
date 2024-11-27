@@ -103,7 +103,7 @@ chrs = Channel.of(1..19,"X")
 // main workflow
 workflow QUILT {
 
- // Step 0: Concatenate Fastq files if required. 
+ // Concatenate Fastq files if required. 
  if (params.concat_lanes){
    if (params.read_type == 'PE'){
        CONCATENATE_READS_PE(read_ch)
@@ -114,6 +114,7 @@ workflow QUILT {
    }
  }
 
+// Assess quality of reads without performing haplotype reconstruction
 if (params.align_only){
 
     // Calculate quality statistics for sequencing
@@ -185,6 +186,7 @@ if (params.align_only){
     DOWNSAMPLE_BAM_ALIGN_ONLY(downsampling_bams)
 
 } else {
+
     // Calculate quality statistics for sequencing
     if (params.library_type == 'ddRADseq'){
         
@@ -211,14 +213,12 @@ if (params.align_only){
 
     } else {
 
+        // Trim any adapters
         FASTP(read_ch)
         
         // Run fastqc on adapter trimmed reads
         FASTQC(FASTP.out.fastp_filtered)
-
-        // Run multiqc
         fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-        MULTIQC(fastqc_reports)
 
         // Generate read groups
         READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
@@ -234,31 +234,54 @@ if (params.align_only){
         PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
         data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
   }
-
-  
-    // Calculate pileups
+    // Collect reports for multiqc
     PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
+    align_summaries = PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt
     PICARD_COLLECTWGSMETRICS(data)
+    wgs_summaries = PICARD_COLLECTWGSMETRICS.out.txt
+
+    // Run multiqc
+    to_multiqc = fastqc_reports
+                    .mix(align_summaries)
+                    .mix(wgs_summaries)
+                    .flatten()
+                    .collect()
+    MULTIQC(to_multiqc)
+      
+    // Calculate pileups
     SAMPLE_COVERAGE(data)
     MPILEUP(data)
   
     // Downsample bams to specified coverage if the full coverage allows
     coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  	    tuple -> [tuple[0], tuple[2].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  	   tuple -> [tuple[0], tuple[2].splitText()[0].replaceAll("\\n", "").toFloat()] 
     }
 
-    // downsample bam files
+    //downsample bam files
     downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
     downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
     DOWNSAMPLE_BAM(downsampling_bams)
 
-    // Collect downsampled .bam filenames in its own list
+    //Collect downsampled .bam filenames in its own list
     bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
     CREATE_BAMLIST(bams)
   
-    // Run QUILT
+    // For haplotype reconstruction, need to know which founder haplotypes are sourced
+    if(params.cross_type == 'do'){
+      ref_hap_dir = Channel.of( [params.do_ref_haps,  params.cross_type] )
+    } else if(params.cross_type == 'bxd'){
+      ref_hap_dir = Channel.of( [params.bxd_ref_haps, params.cross_type] )
+    } else {
+      ref_hap_dir = Channel.of( [params.ref_hap_dir,  params.cross_type] )
+    }
+
+    // bin shuffle radius channel import
     binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
-    quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs).combine(binShuffleChannel)
+    
+    // Run QUILT
+    quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
+                                              .combine(binShuffleChannel)
+                                              .combine(ref_hap_dir)
     RUN_QUILT(quilt_inputs)
 
     // Convert QUILT outputs to qtl2 files

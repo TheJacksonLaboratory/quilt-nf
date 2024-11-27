@@ -14,7 +14,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
   tuple val(sampleID), file(bam), file(bam_bai)
 
   output:
-  tuple val(sampleID), file("*.txt"), emit: txt
+  path("*.txt"), emit: txt
 
   script:
   log.info "----- Collect Alignment Summary Metrics Running on: ${sampleID} -----"
