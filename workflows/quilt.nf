@@ -180,9 +180,8 @@ if (params.align_only){
     MPILEUP(data)
   
     // Downsample bams to specified coverage if the full coverage allows
-    SAMPLE_COVERAGE.out.depth_out.view()
     coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  	    tuple -> [tuple[0], tuple[2].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  	    tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
     }
 
     // downsample bam files
@@ -256,7 +255,7 @@ if (params.align_only){
   
     // Downsample bams to specified coverage if the full coverage allows
     coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  	   tuple -> [tuple[0], tuple[2].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  	   tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
     }
 
     //downsample bam files
