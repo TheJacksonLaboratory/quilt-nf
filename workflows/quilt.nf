@@ -125,10 +125,7 @@ if (params.align_only){
         
         // Run fastqc on adapter trimmed reads
         FASTQC_DDRADSEQ(CLONE_FILTER.out.clone_filtered)
-
-        // Run multiqc
         fastqc_reports = FASTQC_DDRADSEQ.out.to_multiqc.flatten().collect()
-        MULTIQC(fastqc_reports)
 
         // Generate read groups
         READ_GROUPS(CLONE_FILTER.out.clone_filtered, "gatk")
@@ -147,10 +144,7 @@ if (params.align_only){
         
         // Run fastqc on adapter trimmed reads
         FASTQC(FASTP.out.fastp_filtered)
-
-        // Run multiqc
         fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
-        MULTIQC(fastqc_reports)
 
         // Generate read groups
         READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
@@ -167,10 +161,21 @@ if (params.align_only){
         data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
   }
 
-  
-    // Calculate pileups
+    // Collect reports for multiqc
     PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
+    align_summaries = PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt
     PICARD_COLLECTWGSMETRICS(data)
+    wgs_summaries = PICARD_COLLECTWGSMETRICS.out.txt
+
+    // Run multiqc
+    to_multiqc = fastqc_reports
+                    .mix(align_summaries)
+                    .mix(wgs_summaries)
+                    .flatten()
+                    .collect()
+    MULTIQC(to_multiqc)
+
+    // Calculate pileups
     SAMPLE_COVERAGE(data)
     MPILEUP(data)
   
@@ -195,10 +200,7 @@ if (params.align_only){
         
         // Run fastqc on adapter trimmed reads
         FASTQC_DDRADSEQ(CLONE_FILTER.out.clone_filtered)
-
-        // Run multiqc
         fastqc_reports = FASTQC_DDRADSEQ.out.to_multiqc.flatten().collect()
-        MULTIQC(fastqc_reports)
 
         // Generate read groups
         READ_GROUPS(CLONE_FILTER.out.clone_filtered, "gatk")
@@ -271,6 +273,8 @@ if (params.align_only){
       ref_hap_dir = Channel.of( [params.do_ref_haps,  params.cross_type] )
     } else if(params.cross_type == 'bxd'){
       ref_hap_dir = Channel.of( [params.bxd_ref_haps, params.cross_type] )
+    } else if(params.cross_type == 'cc'){
+      ref_hap_dir = Channel.of( [params.do_ref_haps, params.cross_type] )
     } else {
       ref_hap_dir = Channel.of( [params.ref_hap_dir,  params.cross_type] )
     }

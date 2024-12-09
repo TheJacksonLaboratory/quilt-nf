@@ -8,8 +8,6 @@ process CLONE_FILTER {
 
   container 'docker://sjwidmay/stacks:latest'
 
-  //publishDir "${params.sample_folder}/fastp", pattern:"*_fastp_report.html", mode:'copy'
-
   input:
   tuple val(sampleID), file(fq_reads)
 
@@ -26,7 +24,7 @@ process CLONE_FILTER {
                             -i gzfastq \\
                             -y gzfastq \\
                             -D \\
-                            --oligo_len_1 8 \\
-                            --inline_null
+                            --oligo_len_2 8 \\
+                            --null_index
   """
 }

@@ -1,14 +1,14 @@
 process DOWNSAMPLE_BAM_ALIGN_ONLY {
 
-  memory {100.GB * task.attempt}
+  memory {75.GB * task.attempt}
   errorStrategy 'retry'
-  maxRetries 3
+  maxRetries 1
   cpus 1
   time {4.hour * task.attempt}
 
   container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
 
-  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/coverage", pattern:"*_post_downsample_coverage.txt", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/coverage", pattern:"*_post_downsample_coverage.txt", mode:'move'
   publishDir "${workDir}/${params.run_name}/${downsample_to_cov}/bams", pattern:"*_downsampled.bam", mode:'copy'
 
   input:
@@ -16,6 +16,7 @@ process DOWNSAMPLE_BAM_ALIGN_ONLY {
 
   output:
   tuple file("*_downsampled.bam"), val(downsample_to_cov), emit: downsampled_bam
+  tuple file("*_post_downsample_coverage.txt"), val(downsample_to_cov), emit: downsampled_cov_txt
   
   script:
   log.info "----- Downsampling Reads: ${sampleID}, ${downsample_to_cov}X -----"
