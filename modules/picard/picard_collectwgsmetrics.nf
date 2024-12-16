@@ -15,7 +15,7 @@ process PICARD_COLLECTWGSMETRICS {
   tuple val(sampleID), file(bam), file(bam_bai)
 
   output:
-  tuple val(sampleID), file("*.txt"), emit: txt
+  path("*.txt"), emit: txt
 
   script:
   log.info "----- Collect WGS Metrics Running on: ${sampleID} -----"
