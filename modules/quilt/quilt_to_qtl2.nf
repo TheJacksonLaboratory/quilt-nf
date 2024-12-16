@@ -3,8 +3,8 @@ process QUILT_TO_QTL2 {
 
   time {90.min * task.attempt}
   cpus 1
-  memory {50.GB * task.attempt}
-  maxRetries 2
+  memory {60.GB * task.attempt}
+  maxRetries 1
   errorStrategy 'retry'
 
   container 'sjwidmay-lcgbs_hr-variantannotation'

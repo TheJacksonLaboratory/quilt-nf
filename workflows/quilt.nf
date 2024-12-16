@@ -10,13 +10,11 @@ include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
 include {CONCATENATE_READS_SE} from "${projectDir}/modules/utility_modules/concatenate_reads_SE"
 include {FASTQC} from "${projectDir}/modules/utility_modules/fastqc"
-include {FASTQC_DDRADSEQ} from "${projectDir}/modules/utility_modules/fastqc_ddradseq"
 include {MULTIQC} from "${projectDir}/modules/utility_modules/multiqc"
 include {FASTP} from "${projectDir}/modules/utility_modules/fastp"
 include {CLONE_FILTER} from "${projectDir}/modules/stacks/clone_filter"
 include {READ_GROUPS} from "${projectDir}/modules/utility_modules/read_groups"
 include {BWA_MEM} from "${projectDir}/modules/bwa/bwa_mem"
-include {BWA_MEM_DDRADSEQ} from "${projectDir}/modules/bwa/bwa_mem_ddradseq"
 include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
@@ -59,6 +57,8 @@ include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 //include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
 //include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
 //include {QUILT_LD_PRUNING} from "${projectDir}/modules/bcftools/quilt_LD_prune.nf"
+//include {FASTQC_DDRADSEQ} from "${projectDir}/modules/utility_modules/fastqc_ddradseq"
+//include {BWA_MEM_DDRADSEQ} from "${projectDir}/modules/bwa/bwa_mem_ddradseq"
 
 
 
@@ -114,33 +114,18 @@ workflow QUILT {
    }
  }
 
-// Assess quality of reads without performing haplotype reconstruction
-if (params.align_only){
-
-    // Calculate quality statistics for sequencing
-    if (params.library_type == 'ddRADseq'){
+// Calculate quality statistics for sequencing
+if (params.library_type == 'ddRADseq'){
         
         // Run Stacks clone filter
         CLONE_FILTER(read_ch)
         
-        // Run fastqc on adapter trimmed reads
-        FASTQC_DDRADSEQ(CLONE_FILTER.out.clone_filtered)
-        fastqc_reports = FASTQC_DDRADSEQ.out.to_multiqc.flatten().collect()
-
-        // Generate read groups
-        READ_GROUPS(CLONE_FILTER.out.clone_filtered, "gatk")
-        mapping = CLONE_FILTER.out.clone_filtered.join(READ_GROUPS.out.read_groups)
-
-        // Alignment
-        BWA_MEM_DDRADSEQ(mapping)
-
-        // Sort SAM files
-        PICARD_SORTSAM(BWA_MEM_DDRADSEQ.out.sam)
-        data = PICARD_SORTSAM.out.bam.join(PICARD_SORTSAM.out.bai)
-
-    } else {
-
-        FASTP(read_ch)
+        decloned_read_ch = CLONE_FILTER.out.clone_filtered.map {
+  	    tuple -> [ tuple[0], [tuple[1], tuple[2]] ]
+        }
+        
+        // remove adapters?
+        FASTP(decloned_read_ch)
         
         // Run fastqc on adapter trimmed reads
         FASTQC(FASTP.out.fastp_filtered)
@@ -149,67 +134,12 @@ if (params.align_only){
         // Generate read groups
         READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
         mapping = FASTP.out.fastp_filtered.join(READ_GROUPS.out.read_groups)
-    
+
         // Alignment
         BWA_MEM(mapping)
 
         // Sort SAM files
         PICARD_SORTSAM(BWA_MEM.out.sam)
-
-        // Mark duplicates
-        PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
-        data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
-  }
-
-    // Collect reports for multiqc
-    PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
-    align_summaries = PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt
-    PICARD_COLLECTWGSMETRICS(data)
-    wgs_summaries = PICARD_COLLECTWGSMETRICS.out.txt
-
-    // Run multiqc
-    to_multiqc = fastqc_reports
-                    .mix(align_summaries)
-                    .mix(wgs_summaries)
-                    .flatten()
-                    .collect()
-    MULTIQC(to_multiqc)
-
-    // Calculate pileups
-    SAMPLE_COVERAGE(data)
-    MPILEUP(data)
-  
-    // Downsample bams to specified coverage if the full coverage allows
-    coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  	    tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
-    }
-
-    // downsample bam files
-    downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
-    downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
-    DOWNSAMPLE_BAM_ALIGN_ONLY(downsampling_bams)
-
-} else {
-
-    // Calculate quality statistics for sequencing
-    if (params.library_type == 'ddRADseq'){
-        
-        // Run Stacks clone filter
-        CLONE_FILTER(read_ch)
-        
-        // Run fastqc on adapter trimmed reads
-        FASTQC_DDRADSEQ(CLONE_FILTER.out.clone_filtered)
-        fastqc_reports = FASTQC_DDRADSEQ.out.to_multiqc.flatten().collect()
-
-        // Generate read groups
-        READ_GROUPS(CLONE_FILTER.out.clone_filtered, "gatk")
-        mapping = CLONE_FILTER.out.clone_filtered.join(READ_GROUPS.out.read_groups)
-
-        // Alignment
-        BWA_MEM_DDRADSEQ(mapping)
-
-        // Sort SAM files
-        PICARD_SORTSAM(BWA_MEM_DDRADSEQ.out.sam)
         data = PICARD_SORTSAM.out.bam.join(PICARD_SORTSAM.out.bai)
 
     } else {
@@ -234,39 +164,41 @@ if (params.align_only){
         // Mark duplicates
         PICARD_MARKDUPLICATES(PICARD_SORTSAM.out.bam)
         data = PICARD_MARKDUPLICATES.out.dedup_bam.join(PICARD_MARKDUPLICATES.out.dedup_bai)
-  }
-    // Collect reports for multiqc
-    PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
-    align_summaries = PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt
-    PICARD_COLLECTWGSMETRICS(data)
-    wgs_summaries = PICARD_COLLECTWGSMETRICS.out.txt
+}
+  // Collect reports for multiqc
+  PICARD_COLLECTALIGNMENTSUMMARYMETRICS(data)
+  align_summaries = PICARD_COLLECTALIGNMENTSUMMARYMETRICS.out.txt
+  
+  PICARD_COLLECTWGSMETRICS(data)
+  wgs_summaries = PICARD_COLLECTWGSMETRICS.out.txt
 
-    // Run multiqc
-    to_multiqc = fastqc_reports
+  // Run multiqc
+  to_multiqc = fastqc_reports
                     .mix(align_summaries)
                     .mix(wgs_summaries)
                     .flatten()
                     .collect()
-    MULTIQC(to_multiqc)
+  MULTIQC(to_multiqc)
       
-    // Calculate pileups
-    SAMPLE_COVERAGE(data)
-    MPILEUP(data)
+  // Calculate pileups
+  SAMPLE_COVERAGE(data)
+  //MPILEUP(data)
   
-    // Downsample bams to specified coverage if the full coverage allows
-    coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-  	   tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
-    }
+  // Downsample bams to specified coverage if the full coverage allows
+  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+     tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  }
 
-    //downsample bam files
-    downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
-    downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
-    DOWNSAMPLE_BAM(downsampling_bams)
+  //downsample bam files
+  downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
+  downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
+  DOWNSAMPLE_BAM(downsampling_bams)
 
+  if (params.align_only == false){
     //Collect downsampled .bam filenames in its own list
     bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
     CREATE_BAMLIST(bams)
-  
+
     // For haplotype reconstruction, need to know which founder haplotypes are sourced
     if(params.cross_type == 'do'){
       ref_hap_dir = Channel.of( [params.do_ref_haps,  params.cross_type] )
@@ -277,22 +209,19 @@ if (params.align_only){
     } else {
       ref_hap_dir = Channel.of( [params.ref_hap_dir,  params.cross_type] )
     }
-
+  
     // bin shuffle radius channel import
     binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
-    
+  
     // Run QUILT
     quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
                                               .combine(binShuffleChannel)
                                               .combine(ref_hap_dir)
     RUN_QUILT(quilt_inputs)
-
     // Convert QUILT outputs to qtl2 files
     quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
     QUILT_TO_QTL2(quilt_for_qtl2)
-
     // Reconstruct haplotypes with qtl2
     GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
-
-} 
+  }
 }

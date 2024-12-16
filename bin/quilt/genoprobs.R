@@ -78,6 +78,24 @@ if(cross_type == "genail4"){
                            crossinfo_covar="gen",
                            xchr = "X",
                            overwrite = T)
+} else if(cross_type == "cc"){
+  # Write control file for CC
+  # write control file for genail4 crosses
+  write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
+                     crosstype="genail8",
+                     founder_geno_file=founder_genos,
+                     founder_geno_transposed=TRUE,
+                     gmap_file=gmap,
+                     pmap_file=pmap,
+                     geno_file=sample_genos,
+                     geno_transposed=TRUE,
+                     geno_codes=list(A=1, H=2, B=3),
+                     sex_covar="sex",
+                     sex_codes=list("F"="female", 
+                                    "M"="male"),
+                     covar_file = metadata,
+                     crossinfo_covar = colnames(covar)[!colnames(covar) %in% c("id","sex")],
+                     overwrite = T)
 } else if(cross_type == "bxd"){
   qtl2::write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
                          crosstype="risib",

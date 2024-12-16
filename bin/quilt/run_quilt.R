@@ -39,7 +39,7 @@ leg <- args[7]
 rad <- args[8]
 
 # Take cross type and determine how QUILT should be executed
-if(cross_type == "do"){
+if(cross_type == "do" | cross_type == "cc"){
   
   # DO covar files require generation estimates, so can use this for QUILT
   

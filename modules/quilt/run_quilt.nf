@@ -1,11 +1,11 @@
 process RUN_QUILT {
   tag "$chr, $downsample_to_cov"
   
-  memory 200.GB
+  memory 300.GB
   time {16.hour * task.attempt}
   cpus 1
   errorStrategy 'retry' 
-  maxRetries 2
+  maxRetries 1
 
   
   container 'sjwidmay-stitch_nf-QUILT'

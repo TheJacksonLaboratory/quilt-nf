@@ -55,8 +55,8 @@ grid_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/quilt_1M_physical_
 # founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/BXD_founders/chr19_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
-# sample_file = "/projects/reinholdt-lab/DO_ESC/results/quilt/20240224_DO_ESC_downsample/5/2000/quilt_vcfs/quilt.19.vcf.gz"
-# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20240324_DO_grid_downsample/0.005/2000/quilt_vcfs/quilt.19.vcf.gz"
+# sample_file = "/projects/reinholdt-lab/DO_ESC/results/quilt/ /5/2000/quilt_vcfs/quilt.19.vcf.gz"
+# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20241203_DO_ddradseq/0.005/2000/quilt_vcfs/quilt.19.vcf.gz"
 # sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20240222_4WC_downsampling_gridprobs/3/2000/quilt_vcfs/quilt.19.vcf.gz"
 # sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20241118_quilt_bxdtest/5/2000/quilt_vcfs/quilt.19.vcf.gz"
 
@@ -70,6 +70,7 @@ grid_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/quilt_1M_physical_
 # cross_type = 'do'
 # cross_type = 'genail4'
 # cross_type = 'bxd'
+# cross_type = 'cc'
 
 # Marker map.
 # marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_gen_map.txt'
@@ -134,7 +135,7 @@ stopifnot("id" %in% colnames(meta))
 covar_sample_inds <- c()
 
 # attempt a clean join; this is only possible when exact sample names are known
-if(!all(meta$id %in% colnames(sample_gt)) && all(colnames(sample_gt) %in% meta$id)){
+if(!all(meta$id %in% colnames(sample_gt)) && !all(colnames(sample_gt) %in% meta$id)){
   
   message("At least one sample name as supplied in metadata doesn't match sequencing data.")
   message("Searching sample genotypes for metadata sample names...")
@@ -242,6 +243,10 @@ if(chr != "X"){
     sample_vcf_info <- sample_vcf_info[which(sample_vcf_info$HWE > 0.05),]
   } else if(cross_type == "bxd"){
     print("BXD strains; sites not expected to adhere to HWE")
+    print("Skipping HWE filter")
+    paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+  } else if(cross_type == "cc"){
+    print("CC strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
     paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else {
@@ -436,7 +441,7 @@ write.csv(gmap, file = paste0("chr",chr,"_gmap.csv"),
 stopifnot("cross_type" %in% ls(pattern = "cross_type"))
 
 # Does the covar file match the format of the cross type?
-if(cross_type == "genail4" || cross_type == "genail8"){
+if(cross_type == "genail4" || cross_type == "genail8" || cross_type == "cc"){
   stopifnot("id" %in% colnames(meta))
   stopifnot("gen" %in% colnames(meta))
   stopifnot(colnames(founder_gt)[-1] %in% LETTERS)
@@ -448,6 +453,7 @@ if(cross_type == "genail4" || cross_type == "genail8"){
   }
   write.csv(meta, file = 'covar.csv',
             quote = FALSE, row.names = FALSE)
+
 } else if(cross_type == "do"){
   stopifnot("id" %in% colnames(meta))
   stopifnot("gen" %in% colnames(meta))
@@ -459,6 +465,7 @@ if(cross_type == "genail4" || cross_type == "genail8"){
   }
   write.csv(meta, file = 'covar.csv',
             quote = FALSE, row.names = FALSE)
+
 } else if(cross_type == "bxd"){
   
   # keep the default id column
@@ -469,6 +476,7 @@ if(cross_type == "genail4" || cross_type == "genail8"){
   }
   write.csv(meta, file = 'covar.csv',
             quote = FALSE, row.names = FALSE)
+
 } else {
   "Cross type parsing not included for the specified cross type"
 }
