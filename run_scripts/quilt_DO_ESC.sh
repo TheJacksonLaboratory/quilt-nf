@@ -7,6 +7,7 @@
 #SBATCH -t 72:00:00
 #SBATCH --mem=50G
 #SBATCH --ntasks=1
+#SBATCH --output=%x.%j.out
 
 cd $SLURM_SUBMIT_DIR
 
@@ -32,4 +33,5 @@ nextflow main.nf \
 --ref_file_dir '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders' \
 --covar_file '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_ESC_covar.csv' \
 --comment "This script will run haplotype inference on DO lcWGS data" \
+--align_only \
 -resume
