@@ -3,9 +3,8 @@
 nextflow.enable.dsl=2
 
 // Import workflow
-// 20230103: Only WGS workflow functional from original cs-nf-pipelines repo
-if (params.workflow == "wgs"){
-  include {WGS} from './workflows/wgs'
+if (params.workflow == "make_quilt_reference_data"){
+  include {MAKE_QUILT_REF_DATA} from './workflows/make_quilt_reference_data'
 }
 if (params.workflow == "quilt"){
   include {QUILT} from './workflows/quilt'
@@ -13,8 +12,8 @@ if (params.workflow == "quilt"){
 
 // Conditional to kick off appropriate workflow
 workflow{
-  if (params.workflow == "wgs"){
-    WGS()
+  if (params.workflow == "make_quilt_reference_data"){
+    MAKE_QUILT_REF_DATA()
     }
   if (params.workflow == "quilt"){
     QUILT()
