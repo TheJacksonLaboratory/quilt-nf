@@ -12,7 +12,7 @@ process QUILT_TO_QTL2 {
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/qtl2files", pattern:"*", mode:'copy'
 
   input:
-  tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file(sample_genos), file(sample_genos_index), val(ref_hap_dir), val(cross_type)
+  tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file(sample_genos), file(sample_genos_index)
 
   output:
   tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file("*_founder_geno.csv"), file("*_sample_geno.csv"), file("*_pmap.csv"), file("*_gmap.csv"), file("covar.csv"), file("pheno.csv"), val(cross_type), emit: qtl2files
@@ -22,10 +22,10 @@ process QUILT_TO_QTL2 {
   log.info "----- Converting QUILT Genotypes to R/qtl2 Input Files for Chromosome: ${chr} -----"
 
   """
-  Rscript --vanilla ${projectDir}/bin/quilt/prepare_qtl2_files.R ${ref_hap_dir}/chr${chr}_phased_snps.vcf.gz \
+  Rscript --vanilla ${projectDir}/bin/quilt/prepare_qtl2_files.R ${projectDir}/reference_data/${params.cross_type}/chr${chr}_phased_snps.vcf.gz \
 	${sample_genos} \
 	${params.covar_file} \
-	${cross_type} \
-	${ref_hap_dir}/chr${chr}_gen_map.txt ${chr}
+	${params.cross_type} \
+	${projectDir}/reference_data/${params.cross_type}/chr${chr}_gen_map.txt ${chr}
   """
 }

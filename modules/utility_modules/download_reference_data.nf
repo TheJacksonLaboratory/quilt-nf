@@ -1,22 +1,26 @@
-process DOWNLOAD_REFERENCE_DATA {
+process DOWNLOAD_INDEX_REFERENCE_DATA {
 
-  memory 20.GB
-  time '1:00:00'
+  cpus 8
+  memory {60.GB * task.attempt}
+  time {3.hour * task.attempt}
+  errorStrategy 'retry' 
+  maxRetries 1
   
-  container 'oras://community.wave.seqera.io/library/aria2:1.34.0--a666a8e80d294f96'
+  container 'oras://community.wave.seqera.io/library/bwakit_aria2:834e73b8be9d404a'
 
-  publishDir "${projectDir}/reference_data/", pattern:"GRCm39.fa", mode:'copy', overwrite: false
+  publishDir "${projectDir}/reference_data/", pattern:"GRCm39.fa.*", mode:'copy', overwrite: false
   publishDir "${projectDir}/reference_data/", pattern:"*.vcf.gz", mode:'copy', overwrite: false
   
   output:
   tuple file("GRCm39.fa"), file("*.vcf.gz"), emit: ref_data
+  tuple file("GRCm39.fa.*"), file("*.vcf.gz"), emit: ref_genome_indices
   
   script:
   
   """
-    if [ -f ${projectDir}/reference_data/GRCm39.fa ]; then
+    if [ -f ${projectDir}/reference_data/GRCm39.fa.* ]; then
         echo "Files already exist. Using the existing file."
-        cp ${projectDir}/reference_data/GRCm39.fa .
+        cp ${projectDir}/reference_data/GRCm39* .
         cp ${projectDir}/reference_data/mgp_REL2021_snps.vcf.gz .
     else
         echo "Downloading reference genome."
@@ -27,6 +31,10 @@ process DOWNLOAD_REFERENCE_DATA {
 
         echo "Downloading Sanger SNPs."
         aria2c -c -x 10 -s 10 ${params.ref_vcf_url}
+
+        echo "Indexing reference genome."
+        bwa index -a is GRCm39.fa GRCm39.fa
+
     fi
   """
 

@@ -14,7 +14,6 @@ ______________________________________________________________________________
 -w                                                  ${workDir}
 -c                                                  ${params.config}
 --pubdir                                            ${params.pubdir}
---custom_strains                                    ${params.custom_strains}
 
 Project Directory: ${projectDir}
 ______________________________________________________________________________

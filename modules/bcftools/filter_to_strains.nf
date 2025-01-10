@@ -5,14 +5,11 @@ process FILTER_TO_STRAINS {
   
   container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
 
-  // publishDir "${projectDir}/reference_data/", pattern:"GRCm39.fa", mode:'copy', overwrite: false
-  // publishDir "${projectDir}/reference_data/", pattern:"*.vcf.gz", mode:'copy', overwrite: false
-  
   input:
-  tuple file(ref_genome), file(sanger_snps), val(strains), val(chr)
+  tuple file(ref_genome), file(sanger_snps), val(strains), val(final_strain_order), val(chr)
 
   output:
-  tuple file(ref_genome), file(sanger_snps), file("mgp_REL2021_snps.vcf.gz.tbi"), val(strains), val(chr), file("*hom_seg_snps_indels.vcf.gz"), emit: filtered_sanger_snps
+  tuple file(ref_genome), file(sanger_snps), file("mgp_REL2021_snps.vcf.gz.tbi"), val(strains), val(final_strain_order), val(chr), file("*hom_seg_snps_indels.vcf.gz"), emit: filtered_sanger_snps
   
   script:
   
@@ -42,5 +39,6 @@ process FILTER_TO_STRAINS {
 
   """
     touch test_hom_seg_snps_indels.vcf.gz
+    touch mgp_REL2021_snps.vcf.gz.tbi
   """
 }

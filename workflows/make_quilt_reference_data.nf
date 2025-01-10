@@ -6,26 +6,13 @@ nextflow.enable.dsl=2
 // Import modules
 include {help} from "${projectDir}/bin/help/wgs.nf"
 include {param_log} from "${projectDir}/bin/log/make_quilt_reference_data.nf"
-include {DOWNLOAD_REFERENCE_DATA} from "${projectDir}/modules/utility_modules/download_reference_data"
+include {DOWNLOAD_INDEX_REFERENCE_DATA} from "${projectDir}/modules/utility_modules/download_reference_data"
 include {FILTER_TO_STRAINS} from "${projectDir}/modules/bcftools/filter_to_strains"
-
-//keep this in in case I need to revive some of the processes
-//include {EXPAND_BED} from "${projectDir}/modules/utility_modules/expand_bed.nf"
-//include {PILEUPS_TO_BAM} from "${projectDir}/modules/bedtools/filter_bams_to_coverage"
-//include {INDEX_FILTERED_BAM} from "${projectDir}/modules/samtools/index_covered_bam"
-//include {GENO_PROBS} from "${projectDir}/modules/stitch/genoprobs"
-//include {TRIMMOMATIC_PE} from "${projectDir}/modules/utility_modules/trimmomatic"
-//include {QUALITY_STATISTICS} from "${projectDir}/modules/utility_modules/quality_stats"
-//include {BOWTIE2} from "${projectDir}/modules/bowtie2/bowtie2"
-//include {AGGREGATE_STATS} from "${projectDir}/modules/utility_modules/aggregate_stats_wgs"
-//include {WRITE_QTL2_FILES} from "${projectDir}/modules/gatk/write_qtl2files"
-//include {GENO_PROBS} from "${projectDir}/modules/gatk/genoprobs"
-
-//include {MAKE_B6_VARIANTS} from "${projectDir}/modules/quilt/make_B6_sanger_variants"
-//include {MAKE_QUILT_REFERENCE_FILES} from "${projectDir}/modules/quilt/make_haplegendsample"
-//include {MAKE_QUILT_MAP} from "${projectDir}/modules/quilt/make_quilt_map"
-
-
+include {MAKE_B6_GENOS} from "${projectDir}/modules/make_ref_data/make_B6_genos"
+include {MERGE_B6_VCF} from "${projectDir}/modules/bcftools/merge_B6_vcf"
+include {PHASE_FOUNDER_VCF} from "${projectDir}/modules/bcftools/phase_founder_vcf"
+include {MAKE_REF_HAPLOTYPES} from "${projectDir}/modules/bcftools/make_haplegendsample"
+include {MAKE_QUILT_MAP} from "${projectDir}/modules/make_ref_data/make_quilt_map"
 
 // help if needed
 if (params.help){
@@ -43,31 +30,51 @@ chrs = Channel.of(1..19,"X")
 workflow MAKE_QUILT_REF_DATA {
 
     // Download reference genome and Sanger SNPs.
-    DOWNLOAD_REFERENCE_DATA()
+    DOWNLOAD_INDEX_REFERENCE_DATA()
     
-    // Gather strains to parse VCF
+    // Gather strains to parse VCFs
     if(params.cross_type == 'do'){
       strains = Channel.of('A_J,129S1_SvImJ,NOD_ShiLtJ,NZO_HlLtJ,CAST_EiJ,PWK_PhJ,WSB_EiJ')
+      final_strain_order = Channel.of('A_J,C57BL_6J,129S1_SvImJ,NOD_ShiLtJ,NZO_HlLtJ,CAST_EiJ,PWK_PhJ,WSB_EiJ')
     } else if(params.cross_type == 'bxd'){
       strains = Channel.of('DBA_2J')
+      final_strain_order = Channel.of('C57BL_6J,DBA_2J')
     } else if(params.cross_type == 'cc'){
       strains = Channel.of('A_J,129S1_SvImJ,NOD_ShiLtJ,NZO_HlLtJ,CAST_EiJ,PWK_PhJ,WSB_EiJ')
+      final_strain_order = Channel.of('A_J,C57BL_6J,129S1_SvImJ,NOD_ShiLtJ,NZO_HlLtJ,CAST_EiJ,PWK_PhJ,WSB_EiJ')
     } else if(params.cross_type == 'het3'){
-      strains = Channel.of('C3H_HeJ,BALB_cByJ,DBA_2J')
+      strains = Channel.of('BALB_cByJ,C3H_HeJ,DBA_2J')
+      final_strain_order = Channel.of('BALB_cByJ,C57BL_6J,C3H_HeJ,DBA_2J')
     }else {
       strains = Channel.of(params.custom_strains)
+      final_strain_order = Channel.of(params.custom_final_strain_order)
     }
+    strain_info_channel = strains.concat(final_strain_order).collect()
 
     // channel for reference files
-    reference_files = DOWNLOAD_REFERENCE_DATA.out.ref_data
+    reference_files = DOWNLOAD_INDEX_REFERENCE_DATA.out.ref_data
 
     // combine with strain set and chromosome channels
     strains_ref_data = reference_files.flatten()
-                                      .concat(strains)
+                                      .concat(strain_info_channel)
                                       .collect()
                                       .combine(chrs)
 
     // filter Sanger VCF to chromosome and strains
     FILTER_TO_STRAINS(strains_ref_data)
 
+    // make equivalent B6 variant calls
+    MAKE_B6_GENOS(FILTER_TO_STRAINS.out.filtered_sanger_snps)
+
+    // merge B6 vcf into filtered vcf of other strains
+    MERGE_B6_VCF(MAKE_B6_GENOS.out.b6_calls)
+
+    // make phased vcf
+    PHASE_FOUNDER_VCF(MERGE_B6_VCF.out.complete_vcf)
+
+    // make reference haplotypes
+    MAKE_REF_HAPLOTYPES(PHASE_FOUNDER_VCF.out.phased_vcf)
+
+    // make quilt genetic map
+    MAKE_QUILT_MAP(PHASE_FOUNDER_VCF.out.phased_vcf)
 }
