@@ -22,8 +22,10 @@ include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_col
 include {MPILEUP} from "${projectDir}/modules/bcftools/mpileup"
 include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
 include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
-include {DOWNSAMPLE_BAM_ALIGN_ONLY} from "${projectDir}/modules/samtools/downsample_bam_align_only"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
+include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
+include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
+include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 
 // help if needed
 if (params.help){
@@ -160,6 +162,17 @@ if (params.library_type == 'ddRADseq'){
     //Collect downsampled .bam filenames in its own list
     bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
     CREATE_BAMLIST(bams)
+
+    // For haplotype reconstruction, need to know which founder haplotypes are sourced
+    if(params.cross_type == 'do'){
+      ref_hap_dir = Channel.of( [params.do_ref_haps,  params.cross_type] )
+    } else if(params.cross_type == 'bxd'){
+      ref_hap_dir = Channel.of( [params.bxd_ref_haps, params.cross_type] )
+    } else if(params.cross_type == 'cc'){
+      ref_hap_dir = Channel.of( [params.do_ref_haps, params.cross_type] )
+    } else {
+      ref_hap_dir = Channel.of( [params.ref_hap_dir,  params.cross_type] )
+    }
   
     // bin shuffle radius channel import
     binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
@@ -167,11 +180,11 @@ if (params.library_type == 'ddRADseq'){
     // Run QUILT
     quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
                                               .combine(binShuffleChannel)
+                                              .combine(ref_hap_dir)
     RUN_QUILT(quilt_inputs)
     // Convert QUILT outputs to qtl2 files
     quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
     QUILT_TO_QTL2(quilt_for_qtl2)
-
     // Reconstruct haplotypes with qtl2
     GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   }

@@ -26,7 +26,7 @@ process PICARD_COLLECTWGSMETRICS {
   gatk --java-options "-Xmx${my_mem}G" CollectWgsMetrics \
   --INPUT ${bam} \
   --OUTPUT ${sampleID}_CollectWgsMetrics.txt \
-  --REFERENCE_SEQUENCE ${projectDir}/reference_data/GRCm39.fa \
+  --REFERENCE_SEQUENCE ${params.ref_fa} \
   --VALIDATION_STRINGENCY LENIENT
   """
 }

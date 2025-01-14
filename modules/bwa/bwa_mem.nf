@@ -28,6 +28,6 @@ process BWA_MEM {
   """
   rg=\$(cat $read_groups)
   bwa mem -R \${rg} \
-  -t $task.cpus ${params.mismatch_penalty} ${projectDir}/reference_data/GRCm39.fa $inputfq > ${sampleID}.sam
+  -t $task.cpus ${params.mismatch_penalty} ${params.ref_fa_indices} $inputfq > ${sampleID}.sam
   """
 }

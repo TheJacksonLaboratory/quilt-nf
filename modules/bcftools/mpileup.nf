@@ -21,7 +21,7 @@ process MPILEUP {
   """
   # get pileups
   # skipping indel calling with -I flag
-  bcftools mpileup -Ou -f ${projectDir}/reference_data/GRCm39.fa ${bam} -I -o ${sampleID}_mpileup.bcf
+  bcftools mpileup -Ou -f ${params.ref_fa} ${bam} -I -o ${sampleID}_mpileup.bcf
 
   # call variants
   bcftools call -mv ${sampleID}_mpileup.bcf -Oz -o ${sampleID}_calls.vcf.gz

@@ -24,8 +24,6 @@ ______________________________________________________________________________
 -c                                                  ${params.config}
 --pubdir                                            ${params.pubdir}
 --organize_by                                       ${params.organize_by}
---ref_fa                                            ${params.ref_fa}
---ref_fa_indices                                    ${params.ref_fa_indices}
 --min_pct_hq_reads                                  ${params.min_pct_hq_reads}
 --mismatch_penalty                                  ${params.mismatch_penalty}
 
