@@ -1,6 +1,6 @@
 # quilt-nf: A Nextflow pipeline for haplotype reconstruction using low-coverage whole-genome sequencing data
 
-These workflows support the service offered by JAX Genome Technologies for haplotype reconstruction with low-pass WGS. Please contact [Sam Widmayer](samuel.widmayer@jax.org) or [Dan Gatti](dan.gatti@jax.org) for more information.
+These workflows support the service offered by JAX Genome Technologies for haplotype reconstruction with low-pass WGS. Please contact [Sam Widmayer](mailto:samuel.widmayer@jax.org)  or [Dan Gatti](mailto:dan.gatti@jax.org) for more information.
 
 JAX users are required to have access to the Sumner cluster, and to have Nextflow installed in their home directory. Any setup for external users will require additional support, and those wishing to share these workflows are encouraged to contact the maintainers of this repository.
 
