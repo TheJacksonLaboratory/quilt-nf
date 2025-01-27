@@ -4,7 +4,7 @@
 #
 # Sam Widmayer
 # samuel.widmayer@jax.org
-# 2023-09-27
+# 2025-01-17
 ################################################################################
 
 # library(readxl)
@@ -50,35 +50,22 @@ grid_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/quilt_1M_physical_
 
 ##### TROUBLESHOOTING FILES #####
 # Founder genotypes and marker positions
-# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_phased_snps.vcf.gz'
-# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_phased_snps.vcf.gz'
-# founder_file = '/projects/compsci/vmp/lcgbs_ssif/data/BXD_founders/chr19_phased_snps.vcf.gz'
+# founder_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/het3/chrX_phased_snps.vcf.gz'
 
 # Sample genotypes from QUILT.
-# sample_file = "/projects/reinholdt-lab/DO_ESC/results/quilt/ /5/2000/quilt_vcfs/quilt.19.vcf.gz"
-# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20241203_DO_ddradseq/0.005/2000/quilt_vcfs/quilt.19.vcf.gz"
-# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20240222_4WC_downsampling_gridprobs/3/2000/quilt_vcfs/quilt.19.vcf.gz"
-# sample_file = "/projects/compsci/vmp/lcgbs_ssif/results/quilt/20241118_quilt_bxdtest/5/2000/quilt_vcfs/quilt.19.vcf.gz"
+# sample_file = "/projects/korstanje-lab/Pureplex/TumorStudy/results/quilt/20250110_tumorstudy_run2/10/10000/quilt_vcfs/quilt.X.vcf.gz"
 
 # Sample metadata file.
-# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_ESC_covar.csv'
-# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
-# meta_file = '/projects/compsci/vmp/lcgbs_ssif/data/GigaMUGA/4WC_covar_quilt.csv'
-# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/bxd_covar_risib.csv'
+# meta_file = '/projects/korstanje-lab/Pureplex/TumorStudy/metadata/korstanje_het3_covar_genail4.csv'
 
 # Cross type
-# cross_type = 'do'
-# cross_type = 'genail4'
-# cross_type = 'bxd'
-# cross_type = 'cc'
+# cross_type = 'het3'
 
 # Marker map.
-# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/DO_founders/chr19_gen_map.txt'
-# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/4wc_founders/chr19_gen_map.txt'
-# marker_file = '/projects/compsci/vmp/lcgbs_ssif/data/BXD_founders/chr19_gen_map.txt'
+# marker_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/het3/chrX_gen_map.txt'
 
 # chromosome
-# chr = "19"
+# chr = "X"
 
 
 
@@ -169,13 +156,13 @@ if(!all(meta$id %in% colnames(sample_gt)) && !all(colnames(sample_gt) %in% meta$
     result3 <- meta$id[sample_search_3]
     
     if(!is.null(result) && length(result) == 1){
-      print(result)
+      #print(result)
       return(result)
     } else if (!is.null(result2) && length(result2) == 1){
-      print(result2)
+      #print(result2)
       return(result2)
     } else if (!is.null(result3) && length(result3) == 1){
-      print(result3)
+      #print(result3)
       return(result3)
     } else {
       return(NULL)
@@ -249,6 +236,10 @@ if(chr != "X"){
     print("CC strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
     paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+  } else if(cross_type == "het3"){
+    print("HET3 strains; sites not expected to adhere to HWE")
+    print("Skipping HWE filter")
+    paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else {
     print("Pct of sites that deviate from HWE:")
     paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
@@ -284,24 +275,6 @@ if(above_threshold_sites < 10000){
   new_threshold <- lower_info_score
 }
 
-
-
-
-# filter further based on sample vcf metadata
-# REF allele pileup
-# nrow(sample_vcf_info)
-# upper <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.01))[[20]]
-# lower <- quantile(unlist(sample_vcf_info$ERC), seq(0,1,0.05))[[2]]
-# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) < upper),]
-# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$ERC) > lower),]
-# 
-# # ALT allele pileup
-# upper <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[20]]
-# lower <- quantile(unlist(sample_vcf_info$EAC), seq(0,1,0.05))[[2]]
-# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) < upper),]
-# sample_vcf_info = sample_vcf_info[which(unlist(sample_vcf_info$EAC) > lower),]
-
-
 # apply the changes to sample_gt and founder_gt
 founder_gt = founder_gt[rownames(founder_gt) %in% rownames(sample_vcf_info),]
 sample_gt = sample_gt[rownames(sample_gt) %in% rownames(sample_vcf_info),]
@@ -330,34 +303,6 @@ gt_num = data.frame(gt_num, stringsAsFactors = TRUE)
 message("How many alleles do we have?")
 num_geno = sapply(lapply(gt_num, levels), length)
 table(num_geno)
-
-# SNPs with one allele just take up space.
-# I'm not sure about SNPs with two genotypes. We should look into these and determine
-# what's going on. 
-# For now, I'm retaining SNPs with all three genotypes.
-# Note that I'm using the rownames(sample_gt) because the names of num_geno
-# were messed up by data.frame() above.
-
-
-# # NOTE: when running only 1 sample, this breaks vvv
-# if(resolution_summary$filtered_quilt_variants > 35000){
-#   keep = which(num_geno == 3)
-#   keep = rownames(sample_gt)[keep]
-#   
-#   # How many SNPs do we keep?
-#   print("How many alleles do we have?")
-#   length(keep)
-# 
-#   print("Filtering founder and sample SNPs")
-#   # Filter the founder and sample SNPs.
-#   founder_gt = founder_gt[keep,]
-#   sample_gt  = sample_gt[keep,]
-#   founder_rr = founder_rr[keep,]
-#   sample_rr  = sample_rr[keep,]
-# } else {
-#   print("Too few imputed SNPs to restrict to 3 genotypes; keeping what we have")
-# }
-
 
 # Verify that SNPs line up between founders and samples.
 stopifnot(rownames(founder_gt) == rownames(sample_gt))
@@ -398,6 +343,11 @@ if(cross_type == "do"){
 } else if(cross_type == "bxd"){
   
   colnames(founder_gt) = c("B","D")
+  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt) 
+  
+} else if(cross_type == "het3"){
+  
+  colnames(founder_gt) = c("Y","B","C","D")
   founder_gt = data.frame(marker = rownames(founder_gt), founder_gt) 
   
 } else {
@@ -441,7 +391,7 @@ write.csv(gmap, file = paste0("chr",chr,"_gmap.csv"),
 stopifnot("cross_type" %in% ls(pattern = "cross_type"))
 
 # Does the covar file match the format of the cross type?
-if(cross_type == "genail4" || cross_type == "genail8" || cross_type == "cc"){
+if(cross_type == "genail4" | cross_type == "genail8" | cross_type == "cc" | cross_type == "het3"){
   stopifnot("id" %in% colnames(meta))
   stopifnot("gen" %in% colnames(meta))
   stopifnot(colnames(founder_gt)[-1] %in% LETTERS)

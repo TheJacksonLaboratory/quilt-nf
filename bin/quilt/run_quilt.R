@@ -1,5 +1,14 @@
 #!/usr/bin/env Rscript
 
+################################################################################
+# Run QUILT on bam files
+#
+# Sam Widmayer
+# samuel.widmayer@jax.org
+# 20250127
+################################################################################
+
+
 # Load required packages
 library(QUILT)
 
@@ -39,9 +48,9 @@ leg <- args[7]
 rad <- args[8]
 
 # Take cross type and determine how QUILT should be executed
-if(cross_type == "do" | cross_type == "cc"){
+if(cross_type == "do" | cross_type == "cc" | cross_type == "het3"){
   
-  # DO covar files require generation estimates, so can use this for QUILT
+  # DO, CC, and het3 covar files require generation estimates, so can use this for QUILT
   
   # Use median generation from covar file as the nGen parameter in QUILT
   # kill if no generation is included in covar file

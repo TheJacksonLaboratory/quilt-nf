@@ -6,10 +6,10 @@ process MAKE_B6_GENOS {
   container 'docker://sjwidmay/lcgbs_hr:variantannotation'
   
   input:
-  tuple file(ref_genome), file(sanger_snps), file(sanger_snp_index), val(strains), val(final_strain_order), val(chr), file(filtered_sanger_snps)
+  tuple val(strains), val(final_strain_order), val(chr), file(filtered_sanger_snps)
 
   output:
-  tuple file(ref_genome), val(strains), val(final_strain_order), val(chr), file(filtered_sanger_snps), file("*_C57BL_6J.tab"), file("*hom_seg_snps_indels.vcf.bgz"), file("*hom_seg_snps_indels.vcf.bgz.tbi"), emit: b6_calls
+  tuple val(strains), val(final_strain_order), val(chr), file(filtered_sanger_snps), file("*_C57BL_6J.tab"), file("*hom_seg_snps_indels.vcf.bgz"), file("*hom_seg_snps_indels.vcf.bgz.tbi"), emit: b6_calls
   
   script:
   

@@ -6,21 +6,20 @@ process FILTER_TO_STRAINS {
   container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
 
   input:
-  tuple file(ref_genome), file(sanger_snps), val(strains), val(final_strain_order), val(chr)
+  tuple val(strains), val(final_strain_order), val(chr)
 
   output:
-  tuple file(ref_genome), file(sanger_snps), file("mgp_REL2021_snps.vcf.gz.tbi"), val(strains), val(final_strain_order), val(chr), file("*hom_seg_snps_indels.vcf.gz"), emit: filtered_sanger_snps
+  tuple val(strains), val(final_strain_order), val(chr), file("*hom_seg_snps_indels.vcf.gz"), emit: filtered_sanger_snps
   
   script:
   
   """
   # Filter reference SNPs to SNPs on the chromosome
-  bcftools index -t ${sanger_snps}
   bcftools filter --regions ${chr} \
       --include 'INFO/INDEL=0 && FILTER="PASS" && TYPE="snp"' \
       --output-type z \
       --output snps_indels_chr${chr}.vcf.gz \
-      ${sanger_snps}
+      ${params.ref_vcf}
   bcftools index snps_indels_chr${chr}.vcf.gz
 
   # Filter to include only polymorphic, biallelic SNPs.
@@ -39,6 +38,5 @@ process FILTER_TO_STRAINS {
 
   """
     touch test_hom_seg_snps_indels.vcf.gz
-    touch mgp_REL2021_snps.vcf.gz.tbi
   """
 }

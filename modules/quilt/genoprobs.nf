@@ -2,8 +2,8 @@ process GENOPROBS {
   tag "$chr, $downsample_to_cov"
 
   cpus 1
-  memory {499.GB * task.attempt}
-  time {12.hour * task.attempt}
+  memory {400.GB * task.attempt}
+  time {11.hour * task.attempt}
   errorStrategy 'retry' 
   maxRetries 1
 

@@ -148,6 +148,10 @@ if (params.library_type == 'ddRADseq'){
   SAMPLE_COVERAGE(data)
   //MPILEUP(data)
   
+
+
+  if (params.align_only == false){
+
   // Downsample bams to specified coverage if the full coverage allows
   coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
      tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
@@ -158,34 +162,22 @@ if (params.library_type == 'ddRADseq'){
   downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
   DOWNSAMPLE_BAM(downsampling_bams)
 
-  if (params.align_only == false){
-    //Collect downsampled .bam filenames in its own list
-    bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
-    CREATE_BAMLIST(bams)
-
-    // For haplotype reconstruction, need to know which founder haplotypes are sourced
-    if(params.cross_type == 'do'){
-      ref_hap_dir = Channel.of( [params.do_ref_haps,  params.cross_type] )
-    } else if(params.cross_type == 'bxd'){
-      ref_hap_dir = Channel.of( [params.bxd_ref_haps, params.cross_type] )
-    } else if(params.cross_type == 'cc'){
-      ref_hap_dir = Channel.of( [params.do_ref_haps, params.cross_type] )
-    } else {
-      ref_hap_dir = Channel.of( [params.ref_hap_dir,  params.cross_type] )
-    }
+  //Collect downsampled .bam filenames in its own list
+  bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
+  CREATE_BAMLIST(bams)
   
-    // bin shuffle radius channel import
-    binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
+  // bin shuffle radius channel import
+  binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
   
-    // Run QUILT
-    quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs)
-                                              .combine(binShuffleChannel)
-                                              .combine(ref_hap_dir)
-    RUN_QUILT(quilt_inputs)
-    // Convert QUILT outputs to qtl2 files
-    quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
-    QUILT_TO_QTL2(quilt_for_qtl2)
-    // Reconstruct haplotypes with qtl2
-    GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  // Run QUILT
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs).combine(binShuffleChannel)
+  RUN_QUILT(quilt_inputs)
+  
+  // Convert QUILT outputs to qtl2 files
+  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
+  QUILT_TO_QTL2(quilt_for_qtl2)
+    
+  // Reconstruct haplotypes with qtl2
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
   }
 }

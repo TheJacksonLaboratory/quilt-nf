@@ -1,19 +1,29 @@
 #!/usr/bin/env Rscript
+
+################################################################################
+# Calculate genotype and allele probabilities from filtered QUILT imputed
+# genotype calls.
+#
+# Sam Widmayer
+# samuel.widmayer@jax.org
+# 20250127
+################################################################################
+
 library(data.table)
 library(dplyr)
 library(purrr)
 library(qtl2)
 
 # test_dir
-# test_dir <- "/flashscratch/widmas/QUILT/work/4a/79cdc84f437cf0617d07f329e4c4fb"
+# test_dir <- "/flashscratch/widmas/QUILT/work/ea/265a9260b6142c01121836d52d5b62"
 # setwd(test_dir)
-# chrom <- "19"
+# chrom <- "X"
 # sample_genos <- list.files(pattern = "sample_geno")
 # founder_genos <- list.files(pattern = "founder_geno")
 # pmap <- list.files(pattern = "pmap")
 # gmap <- list.files(pattern = "gmap")
 # metadata <- "covar.csv"
-# cross_type <- "bxd"
+# cross_type <- "het3"
 
 # take arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -43,7 +53,7 @@ cross_type <- args[7]
 # Has a cross type been specified?
 stopifnot("cross_type" %in% ls(pattern = "cross_type"))
 
-if(cross_type == "genail4"){
+if(cross_type == "genail4" | cross_type == "het3"){
   # write control file for genail4 crosses
   write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
                      crosstype="genail4",
@@ -59,6 +69,7 @@ if(cross_type == "genail4"){
                                     "M"="male"),
                      covar_file = metadata,
                      crossinfo_covar = colnames(covar)[!colnames(covar) %in% c("id","sex")],
+                     xchr = "X",
                      overwrite = T)
 } else if(cross_type == "do"){
   # Write control file for DO crosses
@@ -95,6 +106,7 @@ if(cross_type == "genail4"){
                                     "M"="male"),
                      covar_file = metadata,
                      crossinfo_covar = colnames(covar)[!colnames(covar) %in% c("id","sex")],
+                     xchr = "X",
                      overwrite = T)
 } else if(cross_type == "bxd"){
   qtl2::write_control_file(output_file = paste0("chr",chrom,"_control_file.json"),
@@ -148,24 +160,6 @@ pr <- qtl2::calc_genoprob(cross = cross,
 # Calculate allele probs
 apr <- qtl2::genoprob_to_alleleprob(probs = pr,
                                     cores = (parallel::detectCores()/2), quiet = F)
-
-# ### for testing
-# load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_36_state_probs.RData")
-# load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_8_state_probs.RData")
-# load("/flashscratch/STITCH_outputDir/work/6b/994b581df800fc92b37a3525b55d8f/chr_5_cross.RData")
-
-# print("Counting Crossovers.")
-# # count crossovers
-# m_quilt <- qtl2::maxmarg(probs = pr,
-#                          cores = c(parallel::detectCores()/2))
-# crossovers <- qtl2::count_xo(geno = m_quilt,
-#                              quiet = F,
-#                              cores = c(parallel::detectCores()/2))
-# 
-# # find recombination breakpoints
-# crossover_locs <- qtl2::locate_xo(geno = m_quilt,
-#                                   map = cross$pmap,
-#                                   cores = c(parallel::detectCores()/2))[[1]]
 
 # Save objects
 save(cross, file = paste0("chr_",chrom,"_cross.RData"))

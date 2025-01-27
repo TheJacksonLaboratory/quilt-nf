@@ -6,13 +6,14 @@ nextflow.enable.dsl=2
 // Import modules
 include {help} from "${projectDir}/bin/help/wgs.nf"
 include {param_log} from "${projectDir}/bin/log/make_quilt_reference_data.nf"
-include {DOWNLOAD_INDEX_REFERENCE_DATA} from "${projectDir}/modules/utility_modules/download_reference_data"
 include {FILTER_TO_STRAINS} from "${projectDir}/modules/bcftools/filter_to_strains"
 include {MAKE_B6_GENOS} from "${projectDir}/modules/make_ref_data/make_B6_genos"
 include {MERGE_B6_VCF} from "${projectDir}/modules/bcftools/merge_B6_vcf"
 include {PHASE_FOUNDER_VCF} from "${projectDir}/modules/bcftools/phase_founder_vcf"
 include {MAKE_REF_HAPLOTYPES} from "${projectDir}/modules/bcftools/make_haplegendsample"
 include {MAKE_QUILT_MAP} from "${projectDir}/modules/make_ref_data/make_quilt_map"
+
+//include {DOWNLOAD_INDEX_REFERENCE_DATA} from "${projectDir}/modules/utility_modules/download_reference_data"
 
 // help if needed
 if (params.help){
@@ -30,7 +31,15 @@ chrs = Channel.of(1..19,"X")
 workflow MAKE_QUILT_REF_DATA {
 
     // Download reference genome and Sanger SNPs.
-    DOWNLOAD_INDEX_REFERENCE_DATA()
+    //DOWNLOAD_INDEX_REFERENCE_DATA()
+    // channel for reference files
+    //reference_files = DOWNLOAD_INDEX_REFERENCE_DATA.out.ref_data
+    // combine with strain set and chromosome channels
+    //strains_ref_data = reference_files.flatten()
+    //                                  .concat(strain_info_channel)
+    //                                  .collect()
+    //                                  .combine(chrs)
+
     
     // Gather strains to parse VCFs
     if(params.cross_type == 'do'){
@@ -45,23 +54,15 @@ workflow MAKE_QUILT_REF_DATA {
     } else if(params.cross_type == 'het3'){
       strains = Channel.of('BALB_cByJ,C3H_HeJ,DBA_2J')
       final_strain_order = Channel.of('BALB_cByJ,C57BL_6J,C3H_HeJ,DBA_2J')
-    }else {
+    } else {
       strains = Channel.of(params.custom_strains)
       final_strain_order = Channel.of(params.custom_final_strain_order)
     }
-    strain_info_channel = strains.concat(final_strain_order).collect()
+    strain_info_channel = strains.concat(final_strain_order).collect().combine(chrs)
 
-    // channel for reference files
-    reference_files = DOWNLOAD_INDEX_REFERENCE_DATA.out.ref_data
-
-    // combine with strain set and chromosome channels
-    strains_ref_data = reference_files.flatten()
-                                      .concat(strain_info_channel)
-                                      .collect()
-                                      .combine(chrs)
-
+  
     // filter Sanger VCF to chromosome and strains
-    FILTER_TO_STRAINS(strains_ref_data)
+    FILTER_TO_STRAINS(strain_info_channel)
 
     // make equivalent B6 variant calls
     MAKE_B6_GENOS(FILTER_TO_STRAINS.out.filtered_sanger_snps)

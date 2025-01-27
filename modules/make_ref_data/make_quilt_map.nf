@@ -1,11 +1,11 @@
 process MAKE_QUILT_MAP {
 
-  memory 50.GB
-  time '01:00:00'
+  memory 16.GB
+  time '00:30:00'
 
   container 'docker://sjwidmay/lcgbs_hr:variantannotation'
 
-  publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*_gen_map.txt", mode:'copy', overwrite: false
+  publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*_gen_map.txt", mode:'copy', overwrite: true
   
   input:
   tuple val(chr), file(phased_vcf)
