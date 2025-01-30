@@ -20,7 +20,6 @@ process SAMPLE_COVERAGE {
   tuple val(sampleID), file("*_GW_coverage.txt"), file("*_captured_site_HQ_coverage.txt"), file("*_summary_coverage.txt"), emit: depth_out
 
   script:
-  log.info "----- Create Pileups for Sample: ${sampleID} -----"
 
   """
   samtools depth ${bam} -a | awk 'BEGIN{sum=0} {sum += \$3; n++} END{print sum/n}' > ${sampleID}_GW_coverage.txt

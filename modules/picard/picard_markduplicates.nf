@@ -7,11 +7,6 @@ process PICARD_MARKDUPLICATES {
 
   container 'quay.io-biocontainers-picard-2.26.10--hdfd78af_0'
 
-  // save if mouse and wes or save if keep intermediate
-  //publishDir "${params.sample_folder}/bams"
-  //publishDir "${params.sample_folder}/bams", pattern: "*.bam", mode:'copy'
-  //publishDir "${params.sample_folder}/bams", pattern: "*.bai", mode:'copy'
-
   input:
   tuple val(sampleID), file(bam)
 
@@ -21,7 +16,7 @@ process PICARD_MARKDUPLICATES {
   tuple val(sampleID), file("*.txt"), emit: dedup_metrics
 
   script:
-  log.info "----- Picard SortSam Running on: ${sampleID} -----"
+  
   String my_mem = (task.memory-1.GB).toString()
   my_mem =  my_mem[0..-4]
 

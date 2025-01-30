@@ -7,8 +7,6 @@ process READ_GROUPS {
 
   container 'quay.io/jaxcompsci/python-bz2file:np_2.7.18'
 
-  publishDir "${params.pubdir}/${ params.organize_by=='sample' ? sampleID : 'read_groups' }", pattern: "*read_group.txt", mode:'copy', enabled: params.keep_intermediate
-
   input:
   tuple val(sampleID), file(fq_reads), file(report)
   val(picard)
@@ -17,7 +15,7 @@ process READ_GROUPS {
   tuple val(sampleID), file("*.txt"), emit: read_groups
 
   script:
-  log.info "----- Read Group Information Determination Running on: ${sampleID} -----"
+
   if (picard=="picard"){
     p='-p'
   }

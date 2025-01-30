@@ -16,7 +16,6 @@ process MULTIQC {
   tuple file('*_multiqc_report.html'), file('multiqc_data/multiqc_data.json'), emit: multiqc_report
 
   script:
-  log.info "----- Running MULTIQC on All Samples -----"
 
   """
   multiqc .

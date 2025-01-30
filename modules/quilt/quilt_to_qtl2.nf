@@ -9,8 +9,6 @@ process QUILT_TO_QTL2 {
 
   container 'sjwidmay-lcgbs_hr-variantannotation'
 
-  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/qtl2files", pattern:"*", mode:'copy'
-
   input:
   tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file(sample_genos), file(sample_genos_index)
 
@@ -19,7 +17,6 @@ process QUILT_TO_QTL2 {
   tuple val(chr), file("*_resolution_summary.csv"), emit: resolution_summary
 
   script:
-  log.info "----- Converting QUILT Genotypes to R/qtl2 Input Files for Chromosome: ${chr} -----"
 
   """
   Rscript --vanilla ${projectDir}/bin/quilt/prepare_qtl2_files.R ${projectDir}/reference_data/${params.cross_type}/chr${chr}_phased_snps.vcf.gz \

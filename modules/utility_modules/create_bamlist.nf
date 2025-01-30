@@ -15,10 +15,9 @@ process CREATE_BAMLIST {
   tuple path('bamlist.txt'), val(downsample_to_cov), emit: bam_list
 
   script:
-  log.info "----- Create List of .bam Files for STITCH -----"
 
   """
   echo ${bams} > bamlist.txt
-  Rscript --vanilla ${projectDir}/bin/stitch/create_bamlist.R
+  Rscript --vanilla ${projectDir}/bin/quilt/create_bamlist.R
   """
 }

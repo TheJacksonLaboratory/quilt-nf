@@ -18,7 +18,6 @@ process DOWNSAMPLE_BAM {
   tuple file("*_post_downsample_coverage.txt"), val(downsample_to_cov), emit: downsampled_cov_txt
   
   script:
-  log.info "----- Downsampling Reads: ${sampleID}, ${downsample_to_cov}X -----"
 
   """
   echo ${coverage}

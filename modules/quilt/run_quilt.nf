@@ -19,7 +19,6 @@ process RUN_QUILT {
   tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file("quilt.*.vcf.gz"), file("quilt.*.vcf.gz.tbi"), emit: quilt_vcf
 
   script:
-  log.info "----- Running QUILT on Chromosome ${chr}, ${downsample_to_cov}X, ${shuffle_bin_radius} -----"
 
   """
   Rscript --vanilla ${projectDir}/bin/quilt/run_quilt.R ${bamlist} \

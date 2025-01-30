@@ -15,7 +15,6 @@ process FASTP {
   tuple val(sampleID), file("*filtered_trimmed*"), file("*_fastp_report.html"), emit: fastp_filtered
 
   script:
-  log.info "----- FASTP Running on: ${sampleID} -----"
 
   if (params.library_type == "ddRADseq"){
    dedup_mode="--dont_eval_duplication"

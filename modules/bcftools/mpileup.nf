@@ -16,7 +16,6 @@ process MPILEUP {
   tuple val(sampleID), file("*_filtered_calls.txt"), emit: mpileup
 
   script:
-  log.info "----- Calling Variants with mpileup: ${sampleID} -----"
 
   """
   # get pileups
