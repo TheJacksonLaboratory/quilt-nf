@@ -6,7 +6,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
   memory 5.GB
   time '03:00:00'
 
-  container 'broadinstitute-gatk-4.2.4.1'
+  container 'docker://broadinstitute/gatk:4.2.4.1'
 
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern: "*.txt", mode:'copy'
 
@@ -17,7 +17,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
   path("*.txt"), emit: txt
 
   script:
-  log.info "----- Collect Alignment Summary Metrics Running on: ${sampleID} -----"
+
   String my_mem = (task.memory-1.GB).toString()
   my_mem =  my_mem[0..-4]
 

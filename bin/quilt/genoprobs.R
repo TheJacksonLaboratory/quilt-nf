@@ -158,10 +158,9 @@ pr <- qtl2::calc_genoprob(cross = cross,
                           error_prob = 0.002,
                           cores = (parallel::detectCores()/2), quiet = F)
 # Calculate allele probs
-apr <- qtl2::genoprob_to_alleleprob(probs = pr,
-                                    cores = (parallel::detectCores()/2), quiet = F)
+# apr <- qtl2::genoprob_to_alleleprob(probs = pr,cores = (parallel::detectCores()/2), quiet = F)
 
 # Save objects
 save(cross, file = paste0("chr_",chrom,"_cross.RData"))
 save(pr, file = paste0("chr_",chrom,"_36_state_probs.RData"))
-save(apr, file = paste0("chr_",chrom,"_8_state_probs.RData"))
+#save(apr, file = paste0("chr_",chrom,"_8_state_probs.RData"))

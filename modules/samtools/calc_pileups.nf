@@ -6,9 +6,9 @@ process SAMPLE_COVERAGE {
   errorStrategy 'retry' 
   maxRetries 3
 
-  container 'quay.io-biocontainers-samtools:1.16.1--h00cdaf9_2'
+  container 'quay.io/biocontainers/samtools:1.21--h96c455f_1'
 
-  publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_coverage.txt", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_GW_coverage.txt", mode:'copy'
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_captured_site_HQ_coverage.txt", mode:'copy'
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern:"*_summary_coverage.txt", mode:'copy'
 
@@ -20,7 +20,6 @@ process SAMPLE_COVERAGE {
   tuple val(sampleID), file("*_GW_coverage.txt"), file("*_captured_site_HQ_coverage.txt"), file("*_summary_coverage.txt"), emit: depth_out
 
   script:
-  log.info "----- Create Pileups for Sample: ${sampleID} -----"
 
   """
   samtools depth ${bam} -a | awk 'BEGIN{sum=0} {sum += \$3; n++} END{print sum/n}' > ${sampleID}_GW_coverage.txt

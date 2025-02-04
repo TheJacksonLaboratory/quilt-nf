@@ -4,7 +4,7 @@ process CREATE_BAMLIST {
   memory 15.GB
   time '00:30:00'
 
-  container 'quay.io-jaxcompsci-rstudio-4.2.0'
+  container 'docker://rocker/rstudio:latest'
 
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}", pattern: "bamlist.txt", mode:'copy'
 
@@ -15,10 +15,9 @@ process CREATE_BAMLIST {
   tuple path('bamlist.txt'), val(downsample_to_cov), emit: bam_list
 
   script:
-  log.info "----- Create List of .bam Files for STITCH -----"
 
   """
   echo ${bams} > bamlist.txt
-  Rscript --vanilla ${projectDir}/bin/stitch/create_bamlist.R
+  Rscript --vanilla ${projectDir}/bin/quilt/create_bamlist.R
   """
 }

@@ -5,11 +5,9 @@ process PICARD_COLLECTWGSMETRICS {
   memory = 50.GB
   time = '08:00:00'
 
-  container 'broadinstitute-gatk-4.2.4.1'
+  container 'docker://broadinstitute/gatk:4.2.4.1'
 
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern: "*.txt", mode:'copy'
-  publishDir "${params.pubdir}/${params.run_name}/bams", pattern: "*.bam", mode:'copy'
-  publishDir "${params.pubdir}/${params.run_name}/bams", pattern: "*.bai", mode:'copy'
 
   input:
   tuple val(sampleID), file(bam), file(bam_bai)
@@ -18,7 +16,7 @@ process PICARD_COLLECTWGSMETRICS {
   path("*.txt"), emit: txt
 
   script:
-  log.info "----- Collect WGS Metrics Running on: ${sampleID} -----"
+  
   String my_mem = (task.memory-1.GB).toString()
   my_mem =  my_mem[0..-4]
 

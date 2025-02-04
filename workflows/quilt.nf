@@ -26,6 +26,7 @@ include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_baml
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
 include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
+include {CONCATENATE_GENOPROBS} from "${projectDir}/modules/quilt/concatenate_genoprobs"
 
 // help if needed
 if (params.help){
@@ -179,5 +180,10 @@ if (params.library_type == 'ddRADseq'){
     
   // Reconstruct haplotypes with qtl2
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+
+  // Concatenate chromosome-level genotype probs and generate whole-genome objects
+  collected_probs = GENOPROBS.out.geno_probs_out.groupTuple(by: [1,2])
+  CONCATENATE_GENOPROBS(collected_probs)
+
   }
 }

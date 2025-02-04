@@ -15,9 +15,7 @@ process CLONE_FILTER {
   tuple val(sampleID), file("*1.1.fq.gz*"), file("*2.2.fq.gz"), emit: clone_filtered
 
   script:
-  log.info "----- Stacks Clone Filtering: ${sampleID} -----"
-
-
+  
   """
   /stacks-2.64/clone_filter -1 ${fq_reads[0]} \\
                             -2 ${fq_reads[1]} \\

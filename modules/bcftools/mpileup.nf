@@ -5,7 +5,7 @@ process MPILEUP {
   memory 75.GB
   time '03:00:00'
 
-  container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
+  container 'quay.io/biocontainers/bcftools:1.21--h8b25389_0'
 
   publishDir "${params.pubdir}/${params.run_name}/mpileup", pattern: "*_filtered_calls.txt", mode:'copy'
   
@@ -16,7 +16,6 @@ process MPILEUP {
   tuple val(sampleID), file("*_filtered_calls.txt"), emit: mpileup
 
   script:
-  log.info "----- Calling Variants with mpileup: ${sampleID} -----"
 
   """
   # get pileups

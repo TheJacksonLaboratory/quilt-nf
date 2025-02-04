@@ -3,7 +3,7 @@ process FILTER_TO_STRAINS {
   memory 50.GB
   time '1:00:00'
   
-  container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
+  container 'quay.io/biocontainers/bcftools:1.21--h8b25389_0'
 
   input:
   tuple val(strains), val(final_strain_order), val(chr)

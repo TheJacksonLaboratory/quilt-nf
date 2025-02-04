@@ -3,7 +3,7 @@ process PHASE_FOUNDER_VCF {
   memory 50.GB
   time '1:00:00'
 
-  container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
+  container 'quay.io/biocontainers/bcftools:1.21--h8b25389_0'
   
   publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*_phased_snps.vcf.gz", mode:'copy', overwrite: false
   

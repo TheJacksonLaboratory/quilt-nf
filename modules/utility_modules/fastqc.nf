@@ -15,7 +15,6 @@ process FASTQC {
   tuple file("*_fastqc.html"), file("*_fastqc.zip"), emit: to_multiqc
 
   script:
-  log.info "----- FASTQC Running on Sample: ${sampleID} -----"
 
   """
   fastqc ${fq_reads[0]} ${fq_reads[1]} 

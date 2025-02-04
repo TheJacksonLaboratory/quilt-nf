@@ -3,7 +3,7 @@ process MAKE_QUILT_MAP {
   memory 16.GB
   time '00:30:00'
 
-  container 'docker://sjwidmay/lcgbs_hr:variantannotation'
+  container 'docker://sjwidmay/variantannotation:latest'
 
   publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*_gen_map.txt", mode:'copy', overwrite: true
   

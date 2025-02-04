@@ -3,7 +3,7 @@ process MAKE_REF_HAPLOTYPES {
   memory 50.GB
   time '1:00:00'
 
-  container 'quay.io-biocontainers-bcftools-1.15--h0ea216a_2'
+  container 'quay.io/biocontainers/bcftools:1.21--h8b25389_0'
 
   publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*.hap.gz", mode:'copy', overwrite: false
   publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*.legend.gz", mode:'copy', overwrite: false
