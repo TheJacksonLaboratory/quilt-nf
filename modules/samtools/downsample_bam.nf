@@ -6,7 +6,7 @@ process DOWNSAMPLE_BAM {
   cpus 1
   time {4.hour * task.attempt}
 
-  container 'quay.io/biocontainers/samtools:1.16.1--h00cdaf9_2'
+  container 'quay.io/biocontainers/samtools:1.21--h96c455f_1'
 
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/coverage", pattern:"*_post_downsample_coverage.txt", mode:'copy'
 

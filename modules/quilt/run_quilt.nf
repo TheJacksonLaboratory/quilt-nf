@@ -2,13 +2,13 @@ process RUN_QUILT {
   tag "$chr, $downsample_to_cov"
   
   memory 300.GB
-  time {16.hour * task.attempt}
+  time {4.hour * task.attempt}
   cpus 1
   errorStrategy 'retry' 
   maxRetries 1
 
   
-  container 'sjwidmay-stitch_nf-QUILT'
+  container 'docker://sjwidmay/quilt-nf:latest'
 
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/quilt_vcfs", pattern:"*", mode:'copy'
   

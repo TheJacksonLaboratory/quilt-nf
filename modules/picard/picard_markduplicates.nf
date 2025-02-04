@@ -5,7 +5,7 @@ process PICARD_MARKDUPLICATES {
   memory 200.GB
   time '12:00:00'
 
-  container 'quay.io-biocontainers-picard-2.26.10--hdfd78af_0'
+  container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
 
   input:
   tuple val(sampleID), file(bam)

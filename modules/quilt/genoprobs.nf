@@ -9,8 +9,6 @@ process GENOPROBS {
 
 
   container 'docker://sjwidmay/lcgbs_hr:latest'
-
-  // publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/geno_probs", pattern:"*.RData", mode:'copy'
   
   input:
   tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file(founder_geno), file(sample_genos), file(pmap), file(gmap), file(covar), file(pheno)

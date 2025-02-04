@@ -1,7 +1,7 @@
 process CONCATENATE_GENOPROBS {
 
   cpus 1
-  memory {50.GB * task.attempt}
+  memory {200.GB * task.attempt}
   time {1.hour * task.attempt}
   errorStrategy 'retry' 
   maxRetries 1
@@ -14,7 +14,7 @@ process CONCATENATE_GENOPROBS {
   tuple val(chrs), val(downsample_to_cov), val(shuffle_bin_radius), file(genoprobs), file(crosses)
 
   output:
-  tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file("complete_cross.rds"), file("complete_genoprobs.rds"), file("complete_alleleprobs.rds"), emit: concat_probs
+  tuple val(chrs), val(downsample_to_cov), val(shuffle_bin_radius), file("complete_cross.rds"), file("complete_genoprobs.rds"), file("complete_alleleprobs.rds"), emit: concat_probs
 
   script:
 

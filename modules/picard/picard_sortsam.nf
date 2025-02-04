@@ -5,7 +5,7 @@ process PICARD_SORTSAM {
   memory 120.GB
   time '06:00:00'
 
-  container 'quay.io-biocontainers-picard:2.26.10--hdfd78af_0'
+  container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
 
   
   input:

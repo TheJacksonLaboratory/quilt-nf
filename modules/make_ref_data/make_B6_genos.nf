@@ -3,7 +3,7 @@ process MAKE_B6_GENOS {
   memory 50.GB
   time '1:00:00'
   
-  container 'docker://sjwidmay/lcgbs_hr:variantannotation'
+  container 'docker://sjwidmay/variantannotation:latest'
   
   input:
   tuple val(strains), val(final_strain_order), val(chr), file(filtered_sanger_snps)

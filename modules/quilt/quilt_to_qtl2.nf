@@ -1,13 +1,16 @@
 process QUILT_TO_QTL2 {
   tag "$chr, $downsample_to_cov"
 
-  time {90.min * task.attempt}
+  time {60.min * task.attempt}
   cpus 1
   memory {60.GB * task.attempt}
   maxRetries 1
   errorStrategy 'retry'
 
-  container 'sjwidmay-lcgbs_hr-variantannotation'
+  container 'docker://sjwidmay/variantannotation:latest'
+
+  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/geno_probs", pattern:"covar.csv", mode:'copy', overwrite: true
+  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/geno_probs", pattern:"pheno.csv", mode:'copy', overwrite: true
 
   input:
   tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file(sample_genos), file(sample_genos_index)

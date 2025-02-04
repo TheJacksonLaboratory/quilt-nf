@@ -6,7 +6,7 @@ process PICARD_COLLECTALIGNMENTSUMMARYMETRICS {
   memory 5.GB
   time '03:00:00'
 
-  container 'broadinstitute-gatk-4.2.4.1'
+  container 'docker://broadinstitute/gatk:4.2.4.1'
 
   publishDir "${params.pubdir}/${params.run_name}/coverage", pattern: "*.txt", mode:'copy'
 
