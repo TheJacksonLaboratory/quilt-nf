@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 // Nextflow pipeline for preparing lcWGS data for haplotype reconstruction using QUILT
 
 // Import modules
-include {help} from "${projectDir}/bin/help/wgs.nf"
 include {param_log} from "${projectDir}/bin/log/quilt.nf"
 include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
@@ -19,7 +18,6 @@ include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
-include {MPILEUP} from "${projectDir}/modules/bcftools/mpileup"
 include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
 include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
@@ -27,6 +25,7 @@ include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
 include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 include {CONCATENATE_GENOPROBS} from "${projectDir}/modules/quilt/concatenate_genoprobs"
+include {SMOOTH_GENOPROBS} from "${projectDir}/modules/quilt/smooth_genoprobs"
 
 // help if needed
 if (params.help){
@@ -181,9 +180,12 @@ if (params.library_type == 'ddRADseq'){
   // Reconstruct haplotypes with qtl2
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
 
+  // Smooth genoprobs using haplotype block detection
+  //SMOOTH_GENOPROBS(GENOPROBS.out.geno_probs_out)
+
   // Concatenate chromosome-level genotype probs and generate whole-genome objects
-  collected_probs = GENOPROBS.out.geno_probs_out.groupTuple(by: [1,2])
-  CONCATENATE_GENOPROBS(collected_probs)
+  //collected_probs = SMOOTH_GENOPROBS.out.smooth_probs.groupTuple(by: [1,2])
+  //CONCATENATE_GENOPROBS(collected_probs)
 
   }
 }
