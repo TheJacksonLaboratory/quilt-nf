@@ -5,40 +5,44 @@ library(mmconvert)
 # quilt directory
 quilt_dir <- "/projects/compsci/vmp/USERS/widmas/quilt-nf"
 
+# cross type
+cross_type <- "do"
+
 # grid size
-grid_size_M <- 3
+grid_size_M <- 1
 
-# chromosome lengths
-chr_lengths <- file.path(quilt_dir,"bin/shared/chr_length.txt")
-chr_lengths <- read.delim(chr_lengths, header = F)
-colnames(chr_lengths) <- c("chr","seq_lengths","isCircular","genome")
+# chromsome coordinates
+ref_maps <- list.files(file.path(quilt_dir,"reference_data",cross_type), pattern = "gen_map", full.names = T)
+map_bed <- Reduce(rbind,lapply(ref_maps, function(x){
+  start = as.numeric(strsplit(system(command = paste("head -n3", x), intern = T)[[2]]," ")[[1]][[1]])
+  stop = as.numeric(strsplit(system(command = paste("tail -n1", x), intern = T)," ")[[1]][[1]])
+  chr = gsub(x = strsplit(strsplit(x,"/")[[1]][[length(strsplit(x,"/")[[1]])]],"_")[[1]][[1]], 
+             pattern = "chr", 
+             replacement = "")
+  return(data.frame(chr, start, stop))
+}))
+map_bed$chr <- factor(map_bed$chr, levels = as.character(c(1:19,"X")))
 
-# make per-chromosome start and stop
-options(scipen = 99999)
-thin <- chr_lengths %>%
-  dplyr::mutate(start = 3000000) %>%
-  dplyr::filter(!chr %in% c("chrM","chrY")) %>%
-  dplyr::rename(end = seq_lengths) %>%
-  dplyr::select(chr, start, end)
-thin$total <- sum(thin$end)
-
-# determine number of markers per chromosome
-grid_breakdown_chr <- thin %>%
-  dplyr::mutate(pct = end/total,
-                n_markers = round((grid_size_M*1e6)*pct,0))
-sum(grid_breakdown_chr$n_markers)
-grid_breakdown_chr$chr <- gsub(x = grid_breakdown_chr$chr, pattern = "chr", replacement = "")
+# get map widths
+map_bed <- dplyr::arrange(map_bed, chr) %>%
+           dplyr::mutate(width = stop - start)
+map_bed$total <- sum(map_bed$width)
+map_bed$prop <- map_bed$width/map_bed$total
+map_bed$n_markers <- round((grid_size_M*1e6)*map_bed$prop,0)
+if(sum(map_bed$n_markers) < 1e6){
+  rem <- 1e6-sum(map_bed$n_markers)
+  map_bed$n_markers[20] <- map_bed$n_markers[20]+rem
+}
 
 # get marker grid
 grids <- list()
-for(i in 1:nrow(thin)){
-  start <- grid_breakdown_chr$start[i]
-  end <- grid_breakdown_chr$end[i]
-  chr <- grid_breakdown_chr$chr[i]
-  n_markers <- grid_breakdown_chr$n_markers[i]
+for(i in 1:nrow(map_bed)){
+  start <- map_bed$start[i]
+  end <- map_bed$stop[i]
+  chr <- map_bed$chr[i]
+  n_markers <- map_bed$n_markers[i]
   
-  pos <- round(seq(from = start, to = end, length.out = n_markers),0)
-  print(length(pos))
+  pos <- seq(from = start, to = end, length.out = n_markers)
   grid <- data.frame(chr, pos)
   
   gm_grid <- mmconvert::mmconvert(positions = grid, input_type = "bp")
@@ -46,6 +50,7 @@ for(i in 1:nrow(thin)){
   if(i == 20){
     gm_grid <- gm_grid %>%
       dplyr::select(chr, bp_grcm39, Mbp_grcm39, cM_coxV3_female) %>%
+      dplyr::mutate(bp_grcm39 = as.integer(bp_grcm39)) %>%
       tidyr::unite(chr:bp_grcm39, col = "marker", remove = F) 
     pmap <- gm_grid %>%
       dplyr::select(chr, marker, Mbp_grcm39) %>%
@@ -58,6 +63,7 @@ for(i in 1:nrow(thin)){
   } else {
     gm_grid <- gm_grid %>%
       dplyr::select(chr, bp_grcm39, Mbp_grcm39, cM_coxV3_ave) %>%
+      dplyr::mutate(bp_grcm39 = as.integer(bp_grcm39)) %>%
       tidyr::unite(chr:bp_grcm39, col = "marker", remove = F) 
     pmap <- gm_grid %>%
       dplyr::select(chr, marker, Mbp_grcm39) %>%
@@ -73,5 +79,5 @@ physical_grid <- Reduce(rbind,purrr::transpose(grids)[[1]])
 genetic_grid <- Reduce(rbind,purrr::transpose(grids)[[2]])
 
 # write the files
-write.csv(physical_grid, file.path(quilt_dir,"data",paste0("quilt_",grid_size_M,"M_physical_grid.csv")), row.names = F, quote = F)
-write.csv(genetic_grid, file.path(quilt_dir,"data",paste0("quilt_",grid_size_M,"M_genetic_grid.csv")), row.names = F, quote = F)
+write.csv(physical_grid, file.path(quilt_dir,"data",paste0("interp_",grid_size_M,"M_physical_grid.csv")), row.names = F, quote = F)
+write.csv(genetic_grid, file.path(quilt_dir,"data",paste0("interp_",grid_size_M,"M_genetic_grid.csv")), row.names = F, quote = F)

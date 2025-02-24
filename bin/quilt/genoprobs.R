@@ -11,19 +11,18 @@
 
 library(data.table)
 library(dplyr)
-library(purrr)
 library(qtl2)
 
 # test_dir
-# test_dir <- "/flashscratch/widmas/QUILT/work/ea/265a9260b6142c01121836d52d5b62"
+# test_dir <- "/flashscratch/widmas/QUILT/work/7d/cb753ced9d455d4d96aa9388126158"
 # setwd(test_dir)
-# chrom <- "X"
+# chrom <- "1"
 # sample_genos <- list.files(pattern = "sample_geno")
 # founder_genos <- list.files(pattern = "founder_geno")
 # pmap <- list.files(pattern = "pmap")
 # gmap <- list.files(pattern = "gmap")
 # metadata <- "covar.csv"
-# cross_type <- "het3"
+# cross_type <- "do"
 
 # take arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -125,6 +124,12 @@ if(cross_type == "genail4" | cross_type == "het3"){
   print("Cross type specified does not have a process to make .json file; ending")
 }
 
+# test if any sample genotypes from the segment of the chromosome
+any_markers <- nrow(read.csv(sample_genos))
+if (any_markers == 0) {
+  message("No markers in chromosome segment, exiting.")
+  quit(save = "no", status = 0, runLast = FALSE)
+}
 
 # Load in the cross object
 cross <- qtl2::read_cross2(paste0("chr",chrom,"_control_file.json"))
@@ -136,29 +141,29 @@ cross <- qtl2::drop_nullmarkers(cross)
 pr <- qtl2::calc_genoprob(cross = cross, 
                           map = cross$pmap, 
                           error_prob = 0.002, 
-                          cores = (parallel::detectCores()/2), quiet = F)
-# Estimate genotyping errors
-pr_errorlod <- qtl2::calc_errorlod(cross = cross,
-                                   probs = pr, 
-                                   cores = (parallel::detectCores()/2))
+                          cores = (parallel::detectCores()/1.2), quiet = F)
+# # Estimate genotyping errors
+# pr_errorlod <- qtl2::calc_errorlod(cross = cross,
+#                                    probs = pr, 
+#                                    cores = (parallel::detectCores()/1.2))
 
-# number of animals with that genotype with an error LOD > 2
-genotyping_errors <- rowSums(t(pr_errorlod[[1]]) > 2)
-error_genotypes <- names(which(genotyping_errors != 0))
-print("How many potential genotyping errors?")
-print(paste0(length(error_genotypes), " potential genotyping errors"))
+# # number of animals with that genotype with an error LOD > 2
+# genotyping_errors <- rowSums(t(pr_errorlod[[1]]) > 2)
+# error_genotypes <- names(which(genotyping_errors != 0))
+# print("How many potential genotyping errors?")
+# print(paste0(length(error_genotypes), " potential genotyping errors"))
 
-# Remove bad genotypes
-corrected_cross <- drop_markers(cross, error_genotypes)
-cross <- corrected_cross
+# # Remove bad genotypes
+# corrected_cross <- drop_markers(cross, error_genotypes)
+# cross <- corrected_cross
 
-# Calculate new genotype probs with reduced map
-pr <- qtl2::calc_genoprob(cross = cross, 
-                          map = cross$pmap,
-                          error_prob = 0.002,
-                          cores = (parallel::detectCores()/2), quiet = F)
+# # Calculate new genotype probs with reduced map
+# pr <- qtl2::calc_genoprob(cross = cross, 
+#                           map = cross$pmap,
+#                           error_prob = 0.002,
+#                           cores = (parallel::detectCores()/1.2), quiet = F)
 # Calculate allele probs
-# apr <- qtl2::genoprob_to_alleleprob(probs = pr,cores = (parallel::detectCores()/2), quiet = F)
+# apr <- qtl2::genoprob_to_alleleprob(probs = pr,cores = (parallel::detectCores()/1.2), quiet = F)
 
 # Save objects
 save(cross, file = paste0("chr_",chrom,"_cross.RData"))

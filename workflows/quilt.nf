@@ -24,8 +24,11 @@ include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_baml
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
 include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
+include {INTERPOLATE_GENOPROBS} from "${projectDir}/modules/quilt/interpolate_genoprobs"
+include {MERGE_CHROMS} from "${projectDir}/modules/quilt/merge_chrom_probs"
 include {CONCATENATE_GENOPROBS} from "${projectDir}/modules/quilt/concatenate_genoprobs"
-include {SMOOTH_GENOPROBS} from "${projectDir}/modules/quilt/smooth_genoprobs"
+
+//include {SMOOTH_GENOPROBS} from "${projectDir}/modules/quilt/smooth_genoprobs"
 
 // help if needed
 if (params.help){
@@ -168,9 +171,16 @@ if (params.library_type == 'ddRADseq'){
   
   // bin shuffle radius channel import
   binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
+  chrChunks = Channel.fromPath("${projectDir}/reference_data/${params.cross_type}/chromosome_chunks.csv")
+                    .splitCsv(header: true)
+                    .map {row -> 
+                            [ chr         = row.chr,
+                              chunk_start = row.start,
+                              chunk_stop  = row.stop] }
+                    .map {it -> [ it[0].toString(), it[1], it[2] ]}
   
   // Run QUILT
-  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs).combine(binShuffleChannel)
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrChunks).combine(binShuffleChannel)
   RUN_QUILT(quilt_inputs)
   
   // Convert QUILT outputs to qtl2 files
@@ -180,12 +190,19 @@ if (params.library_type == 'ddRADseq'){
   // Reconstruct haplotypes with qtl2
   GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
 
+  // Interpolate genoprobs to gridfile resolution
+  INTERPOLATE_GENOPROBS(GENOPROBS.out.geno_probs_out)
+  chrom_probs = INTERPOLATE_GENOPROBS.out.interpolated_probs.groupTuple(by: [0,1,2])
+
+  // Merge probabilities from the same chromosome
+  MERGE_CHROMS(chrom_probs)
+
   // Smooth genoprobs using haplotype block detection
   //SMOOTH_GENOPROBS(GENOPROBS.out.geno_probs_out)
 
   // Concatenate chromosome-level genotype probs and generate whole-genome objects
-  //collected_probs = SMOOTH_GENOPROBS.out.smooth_probs.groupTuple(by: [1,2])
-  //CONCATENATE_GENOPROBS(collected_probs)
+  all_probs = MERGE_CHROMS.out.chr_merged_probs.groupTuple(by: [0,1])
+  CONCATENATE_GENOPROBS(all_probs)
 
   }
 }

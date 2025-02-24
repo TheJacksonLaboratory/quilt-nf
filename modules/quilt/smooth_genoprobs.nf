@@ -1,20 +1,20 @@
 process SMOOTH_GENOPROBS {
 
+  tag "$chr, $downsample_to_cov"
+
   cpus 1
-  memory {200.GB * task.attempt}
-  time {1.hour * task.attempt}
+  memory {320.GB * task.attempt}
+  time {11.hour * task.attempt}
   errorStrategy 'retry' 
   maxRetries 1
 
   container 'docker://sjwidmay/lcgbs_hr:latest'
-
-  publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/geno_probs", pattern:"*_smooth.rds", mode:'copy', overwrite: true
   
   input:
-  tuple val(chrs), val(downsample_to_cov), val(shuffle_bin_radius), file(cross), file(geno_probs), file(allele_probs)
+  tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file(geno_probs), file(cross)
 
   output:
-  tuple val(chrs), val(downsample_to_cov), val(shuffle_bin_radius), file("complete_cross_smooth.rds"), file("complete_genoprobs_smooth.rds"), file("complete_alleleprobs_smooth.rds"), emit: smooth_probs
+  tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), file("*_36_state_probs_smooth.RData"), file("*_cross_smooth.RData"), emit: smooth_probs
 
   script:
 
@@ -24,6 +24,7 @@ process SMOOTH_GENOPROBS {
   ${downsample_to_cov} \
   ${shuffle_bin_radius} \
   ${params.hap_block_cor_thresh} \
+  ${chr} \
   ${projectDir}/bin/quilt/get_hap_blocks.R
   """
 }

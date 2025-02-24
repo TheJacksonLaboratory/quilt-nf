@@ -1,6 +1,6 @@
 process CONCATENATE_GENOPROBS {
 
-  cpus 1
+  cpus 2
   memory {200.GB * task.attempt}
   time {1.hour * task.attempt}
   errorStrategy 'retry' 
@@ -11,10 +11,10 @@ process CONCATENATE_GENOPROBS {
   publishDir "${params.pubdir}/${params.run_name}/${downsample_to_cov}/${shuffle_bin_radius}/geno_probs", pattern:"*.rds", mode:'copy', overwrite: true
   
   input:
-  tuple val(chrs), val(downsample_to_cov), val(shuffle_bin_radius), file(genoprobs), file(crosses)
+  tuple val(downsample_to_cov), val(shuffle_bin_radius), file(genoprobs), file(pmaps)
 
   output:
-  tuple val(chrs), val(downsample_to_cov), val(shuffle_bin_radius), file("complete_cross.rds"), file("complete_genoprobs.rds"), file("complete_alleleprobs.rds"), emit: concat_probs
+  tuple val(downsample_to_cov), val(shuffle_bin_radius), file("complete_pmap.rds"), file("complete_genoprobs.rds"), file("complete_alleleprobs.rds"), emit: concat_probs
 
   script:
 

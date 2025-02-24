@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 ################################################################################
 # Gather genotypes, markers, & covariates and format for qtl2::read_cross().
 # GRCm39.
@@ -7,8 +9,6 @@
 # 2025-02-11
 ################################################################################
 
-# library(readxl)
-# library(VariantAnnotation)
 library(qtl2convert)
 library(qtl2)
 library(stringr)
@@ -46,23 +46,28 @@ marker_file = args[5]
 chr = args[6]
 
 ##### TROUBLESHOOTING FILES #####
-# # Founder genotypes and marker positions
-# founder_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/chr19_fg.txt'
-# 
+# # # Founder genotypes and marker positions
+# test_dir <- "/flashscratch/widmas/QUILT/work/62/d2811bd7346cd0c440e9b2b1e8b5cf"
+# setwd(test_dir)
+# founder_file = list.files(pattern = "fg.txt", full.names = T)
+# #
 # # Sample genotypes from QUILT.
-# sample_file = "/projects/compsci/vmp/USERS/widmas/quilt-nf/chr19_sg.txt"
-# 
+# sample_file = list.files(pattern = "sg.txt", full.names = T)
+# #
 # # Sample metadata file.
 # meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
-# 
+# #
 # # Cross type
 # cross_type = 'do'
-# 
-# # Marker map.
-# marker_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/do/chr19_gen_map.txt'
+# #
 # 
 # # chromosome
-# chr = "19"
+# chr = "2"
+# 
+# # Marker map.
+# marker_file = file.path('/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/do',
+#                         paste0("chr",chr,"_gen_map.txt"))
+
 
 
 
@@ -207,8 +212,6 @@ stopifnot(ncol(sample_gt_genos) == nrow(meta))
 # how many sites deviate from HWE?
 if(chr != "X"){
   if(cross_type == "do"){
-    print("Pct of sites that deviate from HWE:")
-    paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
     
     # filtering by HWE
     sample_gt_renamed <- sample_gt_renamed[which(sample_gt_renamed$HWE > 0.05),]
@@ -216,18 +219,18 @@ if(chr != "X"){
   } else if(cross_type == "bxd"){
     print("BXD strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
-    paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else if(cross_type == "cc"){
     print("CC strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
-    paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else if(cross_type == "het3"){
     print("HET3 strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
-    paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else {
     print("Pct of sites that deviate from HWE:")
-    paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
     
     # filtering by HWE
     sample_gt_renamed <- sample_gt_renamed[which(sample_gt_renamed$HWE > 0.05),]
@@ -235,7 +238,7 @@ if(chr != "X"){
 } else {
   print("Chromosome X; sites not necessarily expected to adhere to HWE")
   print("Skipping HWE filter")
-  paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+  # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
 }
 
 # filtering by info score
@@ -243,23 +246,23 @@ lower_info_score <- 0.95
 above_threshold_sites <- length(which(sample_gt_renamed$INFO_SCORE > lower_info_score))
 paste0(signif(above_threshold_sites/length(sample_gt_renamed$INFO_SCORE), 4)*100,"% of sites above 0.95 INFO score threshold (",above_threshold_sites,")")
 
-if(above_threshold_sites < 10000){
-  message("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
-  count <- 0
-  new_threshold <- lower_info_score
-  while (count < 10000) {
-    new_threshold <- new_threshold - 0.01  # Increment the threshold
-    count <- length(which(sample_gt_renamed$INFO_SCORE > new_threshold))
-  }
-  sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > new_threshold),]
-  filtered_quilt_variants <- nrow(sample_gt_renamed)
-} else {
-  # This bin is for runs where there were sites above the threshold, but fewer
-  message(paste0(above_threshold_sites," info scores above 0.95; keeping just these"))
-  sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > lower_info_score),]
-  filtered_quilt_variants <- nrow(sample_gt_renamed)
-  new_threshold <- lower_info_score
-}
+# if(above_threshold_sites < 10000){
+#   message("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
+#   count <- 0
+#   new_threshold <- lower_info_score
+#   while (count < 10000) {
+#     new_threshold <- new_threshold - 0.01  # Increment the threshold
+#     count <- length(which(sample_gt_renamed$INFO_SCORE > new_threshold))
+#   }
+#   sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > new_threshold),]
+#   filtered_quilt_variants <- nrow(sample_gt_renamed)
+# } else {
+# This bin is for runs where there were sites above the threshold, but fewer
+message(paste0(above_threshold_sites," info scores above 0.95"))
+sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > lower_info_score),]
+filtered_quilt_variants <- nrow(sample_gt_renamed)
+new_threshold <- lower_info_score
+
 
 # apply the changes to founder_gt
 founder_gt_renamed = founder_gt_renamed[rownames(founder_gt_renamed) %in% rownames(sample_gt_renamed),]
