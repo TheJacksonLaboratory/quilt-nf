@@ -9,7 +9,7 @@ quilt_dir <- "/projects/compsci/vmp/USERS/widmas/quilt-nf"
 cross_type <- "do"
 
 # grid size
-grid_size_M <- 1
+grid_size_M <- 0.25
 
 # chromsome coordinates
 ref_maps <- list.files(file.path(quilt_dir,"reference_data",cross_type), pattern = "gen_map", full.names = T)
@@ -29,10 +29,10 @@ map_bed <- dplyr::arrange(map_bed, chr) %>%
 map_bed$total <- sum(map_bed$width)
 map_bed$prop <- map_bed$width/map_bed$total
 map_bed$n_markers <- round((grid_size_M*1e6)*map_bed$prop,0)
-if(sum(map_bed$n_markers) < 1e6){
-  rem <- 1e6-sum(map_bed$n_markers)
-  map_bed$n_markers[20] <- map_bed$n_markers[20]+rem
-}
+# if(sum(map_bed$n_markers) < 1e6){
+#   rem <- 1e6-sum(map_bed$n_markers)
+#   map_bed$n_markers[20] <- map_bed$n_markers[20]+rem
+# }
 
 # get marker grid
 grids <- list()
