@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 // Nextflow pipeline for preparing lcWGS data for haplotype reconstruction using QUILT
 
 // Import modules
-include {help} from "${projectDir}/bin/help/wgs.nf"
 include {param_log} from "${projectDir}/bin/log/quilt.nf"
 include {getLibraryId} from "${projectDir}/bin/shared/getLibraryId.nf"
 include {CONCATENATE_READS_PE} from "${projectDir}/modules/utility_modules/concatenate_reads_PE"
@@ -27,6 +26,8 @@ include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
 include {QUILT_TO_QTL2} from "${projectDir}/modules/quilt/quilt_to_qtl2"
 include {GENOPROBS} from "${projectDir}/modules/quilt/genoprobs"
 include {CONCATENATE_GENOPROBS} from "${projectDir}/modules/quilt/concatenate_genoprobs"
+
+//include {SMOOTH_GENOPROBS} from "${projectDir}/modules/quilt/smooth_genoprobs"
 
 // help if needed
 if (params.help){
@@ -182,6 +183,13 @@ if (params.library_type == 'ddRADseq'){
   
   // bin shuffle radius channel import
   binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
+  chrChunks = Channel.fromPath("${projectDir}/reference_data/${params.cross_type}/chromosome_chunks.csv")
+                    .splitCsv(header: true)
+                    .map {row -> 
+                            [ chr         = row.chr,
+                              chunk_start = row.start,
+                              chunk_stop  = row.stop] }
+                    .map {it -> [ it[0].toString(), it[1], it[2] ]}
   
   // Run QUILT
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrChunks).combine(binShuffleChannel).combine(SEX_CHECK.out.sex_checked_covar)
@@ -194,7 +202,7 @@ if (params.library_type == 'ddRADseq'){
     
   // // Reconstruct haplotypes with qtl2
   // GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
-
+  
   // // Concatenate chromosome-level genotype probs and generate whole-genome objects
   // collected_probs = GENOPROBS.out.geno_probs_out.groupTuple(by: [1,2])
   // CONCATENATE_GENOPROBS(collected_probs)

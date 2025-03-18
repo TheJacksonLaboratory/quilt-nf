@@ -1,17 +1,19 @@
+#!/usr/bin/env Rscript
+
 ################################################################################
 # Gather genotypes, markers, & covariates and format for qtl2::read_cross().
 # GRCm39.
 #
 # Sam Widmayer
 # samuel.widmayer@jax.org
-# 2025-01-17
+# 2025-02-11
 ################################################################################
 
-# library(readxl)
-library(VariantAnnotation)
 library(qtl2convert)
 library(qtl2)
 library(stringr)
+library(tidyr)
+library(dplyr)
 
 
 ##### VARIABLES #####
@@ -21,7 +23,6 @@ library(stringr)
 # sample_file:  path to sample VCF produced by QUILT.
 # meta_file:    path to sample metadata file.
 # marker_file:  path to QUILT marker file with bp and cM values.
-# qtl2_dir:     path to qtl2 output directory where files will be written.
 # cross_type:   cross type according to wrt qtl2 preferences
 
 args = commandArgs(trailingOnly = TRUE)
@@ -44,35 +45,36 @@ marker_file = args[5]
 # Chromosome
 chr = args[6]
 
-# Grid file
-grid_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/quilt_1M_physical_grid.csv'
-
-
 ##### TROUBLESHOOTING FILES #####
-# Founder genotypes and marker positions
-# founder_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/het3/chrX_phased_snps.vcf.gz'
+# # # Founder genotypes and marker positions
+# test_dir <- "/flashscratch/widmas/QUILT/work/62/d2811bd7346cd0c440e9b2b1e8b5cf"
+# setwd(test_dir)
+# founder_file = list.files(pattern = "fg.txt", full.names = T)
+# #
+# # Sample genotypes from QUILT.
+# sample_file = list.files(pattern = "sg.txt", full.names = T)
+# #
+# # Sample metadata file.
+# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
+# #
+# # Cross type
+# cross_type = 'do'
+# #
+# 
+# # chromosome
+# chr = "2"
+# 
+# # Marker map.
+# marker_file = file.path('/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/do',
+#                         paste0("chr",chr,"_gen_map.txt"))
 
-# Sample genotypes from QUILT.
-# sample_file = "/projects/korstanje-lab/Pureplex/TumorStudy/results/quilt/20250110_tumorstudy_run2/10/10000/quilt_vcfs/quilt.X.vcf.gz"
-
-# Sample metadata file.
-# meta_file = '/projects/korstanje-lab/Pureplex/TumorStudy/metadata/korstanje_het3_covar_genail4.csv'
-
-# Cross type
-# cross_type = 'het3'
-
-# Marker map.
-# marker_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/het3/chrX_gen_map.txt'
-
-# chromosome
-# chr = "X"
 
 
 
 
 ##### MAIN #####
 
-# dir.create(qtl2_dir, showWarnings = FALSE)
+
 message("Read in metadata")
 meta <- read.csv(meta_file)
 
@@ -82,54 +84,40 @@ meta <- meta[which(!duplicated(meta$id)),]
 # can't have any missing values in the covariate file and/or cross info columns
 meta <- meta[complete.cases(meta),]
 
-message("Read in founder genotypes")
 # Read in founder genotypes.
-founder_vcf = readVcf(founder_file, 'grcm39')
-founder_vcf = genotypeCodesToNucleotides(founder_vcf)
-founder_gt  = geno(founder_vcf)$GT
-founder_gt  = sub('\\|', '', founder_gt)
+message("Read in founder genotypes")
+founder_gt = read.delim(founder_file, check.names = F)
+fg_mkrs = paste(founder_gt$CHROM,founder_gt$POS,founder_gt$REF,founder_gt$ALT, sep = "_")
+rownames(founder_gt) <- fg_mkrs
 quilt_variants <- nrow(founder_gt)
-rownames(founder_gt) = gsub("[^A-Za-z0-9_]", "_", rownames(founder_gt))
-head(rownames(founder_gt))
 
-message("Getting founder marker positions")
-# Get the marker positions for the founders.
-founder_rr = rowRanges(founder_vcf)
-names(founder_rr) = gsub("[^A-Za-z0-9_]", "_", names(founder_rr))
-# head(founder_rr)
-rm(founder_vcf)
-
-message("Transposing to grid positions")
-grid <- read.csv(grid_file)
-grid <- grid[grid$chr == chr,]
-grid_gr <- GRanges(seqnames = grid$chr,
-                   ranges = IRanges(start = grid$pos*1e6, end = grid$pos*1e6))
-grid_nearest <- nearest(grid_gr, founder_rr)
-grid_nearest <- unique(grid_nearest)
-founder_rr <- founder_rr[grid_nearest,]
-
+# Read sample genotypes
 message("Reading in sample genotypes")
-# Read in sample genotypes.
-sample_vcf = readVcf(sample_file, 'grcm39', founder_rr)
-sample_vcf = genotypeCodesToNucleotides(sample_vcf)
-sample_vcf_info = info(sample_vcf)
-rownames(sample_vcf_info) = gsub("[^A-Za-z0-9_]", "_", rownames(sample_vcf_info))
-
-# isolate sample genotypes
-sample_gt  = geno(sample_vcf)$GT
-sample_gt  = sub('\\|', '', sample_gt)
+sample_gt <- read.delim(sample_file, check.names = F)
+sg_mkrs = paste(sample_gt$CHROM,sample_gt$POS,sample_gt$REF,sample_gt$ALT, sep = "_")
+rownames(sample_gt) <- sg_mkrs
+stopifnot(rownames(sample_gt) == rownames(founder_gt))
 stopifnot("id" %in% colnames(meta))
 covar_sample_inds <- c()
 
+# get metadata
+sample_gt_meta <- sample_gt %>%
+  dplyr::select(CHROM, POS, REF, ALT, HWE, INFO_SCORE)
+
+# get genos to fix names
+sample_gt_genos <- sample_gt %>%
+  dplyr::select(-c(CHROM, POS, REF, ALT, HWE, INFO_SCORE))
+stopifnot(rownames(sample_gt_meta) == rownames(sample_gt_genos))
+
 # attempt a clean join; this is only possible when exact sample names are known
-if(!all(meta$id %in% colnames(sample_gt)) && !all(colnames(sample_gt) %in% meta$id)){
+if(!all(meta$id %in% colnames(sample_gt_genos)) && !all(colnames(sample_gt_genos) %in% meta$id)){
   
   message("At least one sample name as supplied in metadata doesn't match sequencing data.")
   message("Searching sample genotypes for metadata sample names...")
   
   # link the sample IDs
   # assuming that the covar file has some element of the library name in it
-  covar_sample_ids <- lapply(colnames(sample_gt), function(x){
+  covar_sample_ids <- lapply(colnames(sample_gt_genos), function(x){
     
     # try a symbol split
     first_split <- stringr::str_split(string = x, pattern = "[:punct:]")[[1]]
@@ -174,167 +162,142 @@ if(!all(meta$id %in% colnames(sample_gt)) && !all(colnames(sample_gt) %in% meta$
   quilt_samples_absent_from_meta <- unlist(lapply(covar_sample_ids, is.null))
   if(any(quilt_samples_absent_from_meta)){
     covar_sample_ids <- covar_sample_ids[-which(quilt_samples_absent_from_meta)]
-    sample_gt <- sample_gt[,-which(quilt_samples_absent_from_meta)]
+    sample_gt_genos <- sample_gt_genos[,-which(quilt_samples_absent_from_meta)]
   }
   # assign the sample names from the metadata present in both files to the sample genotypes
-  colnames(sample_gt) <- unlist(covar_sample_ids)
+  colnames(sample_gt_genos) <- unlist(covar_sample_ids)
   
 } else {
   message("All sample names as supplied in metadata match sequencing data.")
-  sample_gt <- sample_gt
+  sample_gt_genos <- sample_gt_genos
 }
 
+# bind things back together
+sample_gt_renamed <- cbind(sample_gt_meta, sample_gt_genos)
+
+# recode sample genotypes
+recoded_sample_genos <- apply(sample_gt_renamed, 1, function(x){
+  REF = x[3]
+  ALT = x[4]
+  g = as.numeric(gsub(pattern = "[|]",replacement = "",x[-c(1:6)]))
+  g[g == 0] <- paste0(REF,REF)
+  g[g == 11] <- paste0(ALT,ALT)
+  g[g %in% c(10,1)] <- paste0(REF, ALT)
+  return(g)
+})
+recoded_sample_genos <- t(recoded_sample_genos)
+colnames(recoded_sample_genos) <- colnames(sample_gt_genos)
+sample_gt_renamed <- cbind(sample_gt_meta, recoded_sample_genos)
+
+# recode founder genotypes
+recoded_founder_genos <- apply(founder_gt, 1, function(x){
+  REF = x[3]
+  ALT = x[4]
+  g = as.numeric(gsub(pattern = "[|]",replacement = "",x[-c(1:4)]))
+  g[g == 0] <- paste0(REF,REF)
+  g[g == 11] <- paste0(ALT,ALT)
+  g[g %in% c(10,1)] <- paste0(REF, ALT)
+  return(g)
+})
+recoded_founder_genos <- t(recoded_founder_genos)
+colnames(recoded_founder_genos) <- colnames(founder_gt)[-c(1:4)]
+founder_gt_renamed <- cbind(founder_gt[,1:4], recoded_founder_genos)
+
 # filter metadata down to samples in the genotype file
-meta <- meta[which(meta$id %in% colnames(sample_gt)),]
+meta <- meta[which(meta$id %in% colnames(sample_gt_renamed)),]
 
 # at this point, metadata sample size should match the quilt sample size
-stopifnot(ncol(sample_gt) == nrow(meta))
-
-message("Getting sample marker positions")
-# Get the marker positions for the samples.
-sample_rr = rowRanges(sample_vcf)
-names(sample_rr) = gsub("[^A-Za-z0-9_]", "_", names(sample_rr))
-rownames(sample_gt) = gsub("[^A-Za-z0-9_]", "_", rownames(sample_gt))
-rm(sample_vcf)
-
-message("Retain SNPs in founder file")
-# Retain the SNPs in the founder file.
-# We may need to revisit this step later, but I'm being conservative.
-common_snps = intersect(rownames(founder_gt), rownames(sample_gt))
-founder_gt  = founder_gt[common_snps,]
-sample_gt   = sample_gt[common_snps,]
-founder_rr  = founder_rr[common_snps,]
-sample_rr   = sample_rr[common_snps,]
-sample_vcf_info = sample_vcf_info[rownames(sample_vcf_info) %in% common_snps,]
-
-# Verify that SNPs line up between founders and samples.
-stopifnot(rownames(founder_gt) == rownames(sample_gt))
-stopifnot(names(founder_rr)    == names(sample_rr))
-stopifnot(rownames(founder_gt) == rownames(sample_vcf_info))
-stopifnot(names(founder_rr) == rownames(sample_vcf_info))
-
-
-# load in data from a failed job with this intermediate file in the Nextflow work directory
-save(founder_gt, founder_rr, sample_gt, sample_rr, sample_vcf_info, 
-     file = paste0("chrom_",chr,"_quilt2qtl2_intermediate.RData"))
-# load("/flashscratch/widmas/QUILT_outputDir/work/2a/02e14676a53c74f27cb603c714fe54/chrom_X_quilt2qtl2_intermediate.RData")
-
+stopifnot(ncol(sample_gt_genos) == nrow(meta))
 
 # how many sites deviate from HWE?
-sample_vcf_info <- data.frame(apply(sample_vcf_info, 2, function(x) unlist(x)))
 if(chr != "X"){
   if(cross_type == "do"){
-    print("Pct of sites that deviate from HWE:")
-    paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    
     # filtering by HWE
-    sample_vcf_info <- sample_vcf_info[which(sample_vcf_info$HWE > 0.05),]
+    sample_gt_renamed <- sample_gt_renamed[which(sample_gt_renamed$HWE > 0.05),]
+    
   } else if(cross_type == "bxd"){
     print("BXD strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
-    paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else if(cross_type == "cc"){
     print("CC strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
-    paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else if(cross_type == "het3"){
     print("HET3 strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
-    paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
   } else {
     print("Pct of sites that deviate from HWE:")
-    paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+    
     # filtering by HWE
-    sample_vcf_info <- sample_vcf_info[which(sample_vcf_info$HWE > 0.05),]
+    sample_gt_renamed <- sample_gt_renamed[which(sample_gt_renamed$HWE > 0.05),]
   }
 } else {
   print("Chromosome X; sites not necessarily expected to adhere to HWE")
   print("Skipping HWE filter")
-  paste0(round((table(sample_vcf_info$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
+  # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
 }
 
 # filtering by info score
 lower_info_score <- 0.95
-above_threshold_sites <- length(which(sample_vcf_info$INFO_SCORE > lower_info_score))
-paste0(signif(above_threshold_sites/length(sample_vcf_info$INFO_SCORE), 4)*100,"% of sites above 0.95 INFO score threshold (",above_threshold_sites,")")
+above_threshold_sites <- length(which(sample_gt_renamed$INFO_SCORE > lower_info_score))
+paste0(signif(above_threshold_sites/length(sample_gt_renamed$INFO_SCORE), 4)*100,"% of sites above 0.95 INFO score threshold (",above_threshold_sites,")")
 
-if(above_threshold_sites < 10000){
-  message("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
-  count <- 0
-  new_threshold <- lower_info_score
-  while (count < 10000) {
-    new_threshold <- new_threshold - 0.01  # Increment the threshold
-    count <- length(which(sample_vcf_info$INFO_SCORE > new_threshold))
-  }
-  sample_vcf_info = sample_vcf_info[which(sample_vcf_info$INFO_SCORE > new_threshold),]
-  filtered_quilt_variants <- nrow(sample_vcf_info)
-} else {
-  # This bin is for runs where there were sites above the threshold, but fewer
-  message(paste0(above_threshold_sites," info scores above 0.95; keeping just these"))
-  sample_vcf_info = sample_vcf_info[which(sample_vcf_info$INFO_SCORE > lower_info_score),]
-  filtered_quilt_variants <- nrow(sample_vcf_info)
-  new_threshold <- lower_info_score
-}
+# if(above_threshold_sites < 10000){
+#   message("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
+#   count <- 0
+#   new_threshold <- lower_info_score
+#   while (count < 10000) {
+#     new_threshold <- new_threshold - 0.01  # Increment the threshold
+#     count <- length(which(sample_gt_renamed$INFO_SCORE > new_threshold))
+#   }
+#   sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > new_threshold),]
+#   filtered_quilt_variants <- nrow(sample_gt_renamed)
+# } else {
+# This bin is for runs where there were sites above the threshold, but fewer
+message(paste0(above_threshold_sites," info scores above 0.95"))
+sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > lower_info_score),]
+filtered_quilt_variants <- nrow(sample_gt_renamed)
+new_threshold <- lower_info_score
 
-# apply the changes to sample_gt and founder_gt
-founder_gt = founder_gt[rownames(founder_gt) %in% rownames(sample_vcf_info),]
-sample_gt = sample_gt[rownames(sample_gt) %in% rownames(sample_vcf_info),]
-founder_rr = founder_rr[which(names(founder_rr) %in% rownames(sample_vcf_info)),]
-sample_rr = sample_rr[which(names(sample_rr) %in% rownames(sample_vcf_info)),]
-filtered_quilt_variants <- nrow(sample_gt)
+
+# apply the changes to founder_gt
+founder_gt_renamed = founder_gt_renamed[rownames(founder_gt_renamed) %in% rownames(sample_gt_renamed),]
+filtered_quilt_variants <- nrow(sample_gt_renamed)
 resolution_summary <- data.frame(quilt_variants,filtered_quilt_variants, new_threshold)
 resolution_summary$chr <- chr
 write.csv(resolution_summary, paste0("chr",chr,"_resolution_summary.csv"), quote = F, row.names = F)
 
-# Make heterozygous alleles consistent.
-gt_num = t(sample_gt)
-gt_num[gt_num == 'CA'] = 'AC'
-gt_num[gt_num == 'GA'] = 'AG'
-gt_num[gt_num == 'TA'] = 'AT' 
-gt_num[gt_num == 'GC'] = 'CG'
-gt_num[gt_num == 'TC'] = 'CT'
-gt_num[gt_num == 'TG'] = 'GT'
-
-
-message("Convert genotypes to numerics")
-# Convert genotypes to numbers.
-# Note that the SNP names will be messed up by the data.frame.
-gt_num = data.frame(gt_num, stringsAsFactors = TRUE)
-# How many alleles do we have?
-message("How many alleles do we have?")
-num_geno = sapply(lapply(gt_num, levels), length)
-table(num_geno)
-
-# Verify that SNPs line up between founders and samples.
-stopifnot(rownames(founder_gt) == rownames(sample_gt))
-stopifnot(names(founder_rr)    == names(sample_rr))
-
 # Merge founders and samples together.
-all_gt = base::merge(founder_gt, sample_gt, by = 'row.names',
-                     all.x = TRUE, sort = FALSE)
-rownames(all_gt) = all_gt$Row.names
-all_gt = as.matrix(all_gt[,-1])
-
+all_gt <- dplyr::full_join(founder_gt_renamed, sample_gt_renamed) %>%
+  dplyr::select(-HWE, -INFO_SCORE) %>%
+  dplyr::arrange(CHROM, POS)
+rownames(all_gt) <- rownames(founder_gt_renamed)
 
 message("Get allele codes for each SNP")
 # Get the allele codes for each SNP.
-ref = as.character(founder_rr$REF)
-alt = as.character(unlist(founder_rr$ALT))
+ref = as.character(all_gt$REF)
+alt = as.character(all_gt$ALT)
 alleles = cbind(ref, alt)
 rm(ref, alt)
 
-# Encode the genotypes from qtl2.
+#Encode the genotypes from qtl2.
+all_gt_meta <- all_gt[,1:4]
 if(cross_type == "bxd"){
-  all_gt = encode_geno(all_gt, alleles, output_codes = c("-","B","H","D"))
+  all_gt = encode_geno(all_gt[,-c(1:4)], alleles, output_codes = c("-","B","H","D"))
 } else {
-  all_gt = encode_geno(all_gt, alleles)
+  all_gt = encode_geno(all_gt[,-c(1:4)], alleles)
 }
+all_gt <- cbind(all_gt_meta, all_gt)
 
-# Subset the samples to include informative SNPs.
-sample_gt = all_gt[,colnames(sample_gt)]
 
-# Write out the founders.
-# NOTE: Don't forget to change the order to the standard order!
-founder_gt = all_gt[,!colnames(all_gt) %in% colnames(sample_gt)]
+# format founder genos for qtl2
+founder_gt <- all_gt %>%
+  dplyr::select(colnames(founder_gt_renamed)[-c(1:4)])
+
 if(cross_type == "do"){
   
   colnames(founder_gt) = LETTERS[1:ncol(founder_gt)]
@@ -360,26 +323,26 @@ write.csv(founder_gt, file = paste0("chr",chr,"_founder_geno.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out sample genotypes.
-# keep an eye on the column names here - if there are parsing errors downstream,
-# this might be why
+sample_gt <- all_gt %>%
+  dplyr::select(colnames(sample_gt_renamed)[-c(1:6)])
 sample_gt = data.frame(marker = rownames(sample_gt), 
                        sample_gt, check.names = F)
 write.csv(sample_gt, file = paste0("chr",chr,"_sample_geno.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out physical map.
-pmap = data.frame(marker = names(founder_rr),
-                  chr    = seqnames(founder_rr),
-                  pos    = start(founder_rr) * 1e-6)
+pmap = data.frame(marker = rownames(founder_gt_renamed),
+                  chr    = founder_gt_renamed$CHROM,
+                  pos    = founder_gt_renamed$POS * 1e-6)
 write.csv(pmap, file = paste0("chr",chr,"_pmap.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out genetic map.
 markers = read.delim(marker_file, sep = ' ')
-markers = subset(markers, position %in% start(founder_rr))
-stopifnot(markers$position == start(founder_rr))
-gmap = data.frame(marker = names(founder_rr),
-                  chr    = seqnames(founder_rr),
+markers = subset(markers, position %in% founder_gt_renamed$POS)
+stopifnot(markers$position == founder_gt_renamed$POS)
+gmap = data.frame(marker = rownames(founder_gt_renamed),
+                  chr    = founder_gt_renamed$CHROM,
                   pos    = markers$Genetic_Map.cM.)
 write.csv(gmap, file = paste0("chr",chr,"_gmap.csv"),
           quote = FALSE, row.names = FALSE)

@@ -5,7 +5,7 @@ process PHASE_FOUNDER_VCF {
 
   container 'quay.io/biocontainers/bcftools:1.21--h8b25389_0'
   
-  publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*_phased_snps.vcf.gz", mode:'copy', overwrite: false
+  publishDir "${projectDir}/reference_data/${params.cross_type}", pattern:"*_phased_snps.vcf.gz", mode:'copy', overwrite: true
   
   input:
   tuple val(chr), file(merged_vcf)
@@ -16,12 +16,13 @@ process PHASE_FOUNDER_VCF {
   script:
   
   """
-  zcat ${merged_vcf} | sed '/^##/! s/\\//\\|/g' > chr${chr}_phased_snps.vcf.gz
+  zcat ${merged_vcf} | sed '/^##/! s/\\//\\|/g' > chr${chr}_phased_snps.vcf
+  bgzip chr${chr}_phased_snps.vcf
   """
 
   stub:
 
   """
-  touch test_phased_snps.vcf.gz
+  touch test_phased_snps.vcf
   """
 }
