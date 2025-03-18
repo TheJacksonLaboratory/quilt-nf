@@ -6,7 +6,7 @@ process FASTQC {
   memory 50.GB
   time '01:00:00'
 
-  container 'docker://biocontainers/fastqc:v0.11.9_cv8'
+  container 'quay.io/biocontainers/fastqc:0.11.9--hdfd78af_1'
 
   input:
   tuple val(sampleID), file(fq_reads), file(fastp_reports)
@@ -17,6 +17,6 @@ process FASTQC {
   script:
 
   """
-  fastqc ${fq_reads[0]} ${fq_reads[1]} 
+  fastqc ${fq_reads}
   """
 }
