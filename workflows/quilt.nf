@@ -19,8 +19,8 @@ include {PICARD_SORTSAM} from "${projectDir}/modules/picard/picard_sortsam"
 include {PICARD_MARKDUPLICATES} from "${projectDir}/modules/picard/picard_markduplicates"
 include {PICARD_COLLECTALIGNMENTSUMMARYMETRICS} from "${projectDir}/modules/picard/picard_collectalignmentsummarymetrics"
 include {PICARD_COLLECTWGSMETRICS} from "${projectDir}/modules/picard/picard_collectwgsmetrics"
-include {MPILEUP} from "${projectDir}/modules/bcftools/mpileup"
 include {SAMPLE_COVERAGE} from "${projectDir}/modules/samtools/calc_pileups"
+include {SEX_CHECK} from "${projectDir}/modules/utility_modules/sex_check"
 include {DOWNSAMPLE_BAM} from "${projectDir}/modules/samtools/downsample_bam"
 include {CREATE_BAMLIST} from "${projectDir}/modules/utility_modules/create_bamlist"
 include {RUN_QUILT} from "${projectDir}/modules/quilt/run_quilt"
@@ -63,7 +63,14 @@ if (params.concat_lanes){
 // if channel is empty give error message and exit
 read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder} Matching Pattern: ${params.pattern}"}
 
-chrs = Channel.of(1..19,"X")
+//chrs = Channel.of(1..19,"X")
+chrChunks = Channel.fromPath("${projectDir}/reference_data/${params.cross_type}/chromosome_chunks.csv")
+                    .splitCsv(header: true)
+                    .map {row -> 
+                            [ chr         = row.chr,
+                              chunk_start = row.start,
+                              chunk_stop  = row.stop] }
+                    .map {it -> [ it[0].toString(), it[1], it[2] ]}
 
 // main workflow
 workflow QUILT {
@@ -113,8 +120,8 @@ if (params.library_type == 'ddRADseq'){
         FASTP(read_ch)
         
         // Run fastqc on adapter trimmed reads
-        FASTQC(FASTP.out.fastp_filtered)
-        fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
+        //FASTQC(FASTP.out.fastp_filtered)
+        //fastqc_reports = FASTQC.out.to_multiqc.flatten().collect()
 
         // Generate read groups
         READ_GROUPS(FASTP.out.fastp_filtered, "gatk")
@@ -138,8 +145,7 @@ if (params.library_type == 'ddRADseq'){
   wgs_summaries = PICARD_COLLECTWGSMETRICS.out.txt
 
   // Run multiqc
-  to_multiqc = fastqc_reports
-                    .mix(align_summaries)
+  to_multiqc = align_summaries
                     .mix(wgs_summaries)
                     .flatten()
                     .collect()
@@ -147,43 +153,51 @@ if (params.library_type == 'ddRADseq'){
       
   // Calculate pileups
   SAMPLE_COVERAGE(data)
-  //MPILEUP(data)
-  
-
+  coverage_files_channel=SAMPLE_COVERAGE.out.chrX_depth_out.collect()
+  SEX_CHECK(coverage_files_channel)
 
   if (params.align_only == false){
 
-  // Downsample bams to specified coverage if the full coverage allows
-  coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
-     tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+  if (params.downsample){
+    // Extract samtools coverage estimate    
+    coverageFilesChannel = SAMPLE_COVERAGE.out.depth_out.map { 
+        tuple -> [tuple[0], tuple[1].splitText()[0].replaceAll("\\n", "").toFloat()] 
+    }
+    
+    // Use full coverage estimate and specified downsampling levels to subset the bam file
+    downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
+    downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
+    DOWNSAMPLE_BAM(downsampling_bams)
+    bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
+  } else {
+    bams = PICARD_MARKDUPLICATES.out.dedup_bam.map {
+      tuple -> tuple[1]
+    }.collect().map{
+      bamlist -> [bamlist, "no_downsample"]
+    }
   }
-
-  //downsample bam files
-  downsampleChannel = Channel.fromPath("${params.downsample_to_cov}").splitCsv()
-  downsampling_bams = coverageFilesChannel.join(SAMPLE_COVERAGE.out.bam_out).combine(downsampleChannel)
-  DOWNSAMPLE_BAM(downsampling_bams)
-
-  //Collect downsampled .bam filenames in its own list
-  bams = DOWNSAMPLE_BAM.out.downsampled_bam.groupTuple(by: 1)
+    
+  // Collect downsampled .bam filenames in its own list
   CREATE_BAMLIST(bams)
   
   // bin shuffle radius channel import
   binShuffleChannel = Channel.fromPath("${params.bin_shuffling_file}").splitCsv()
   
   // Run QUILT
-  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrs).combine(binShuffleChannel)
-  RUN_QUILT(quilt_inputs)
+  quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrChunks).combine(binShuffleChannel).combine(SEX_CHECK.out.sex_checked_covar)
+  quilt_inputs.view()
+  //RUN_QUILT(quilt_inputs)
   
-  // Convert QUILT outputs to qtl2 files
-  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
-  QUILT_TO_QTL2(quilt_for_qtl2)
+  // // Convert QUILT outputs to qtl2 files
+  // quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
+  // QUILT_TO_QTL2(quilt_for_qtl2)
     
-  // Reconstruct haplotypes with qtl2
-  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+  // // Reconstruct haplotypes with qtl2
+  // GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
 
-  // Concatenate chromosome-level genotype probs and generate whole-genome objects
-  collected_probs = GENOPROBS.out.geno_probs_out.groupTuple(by: [1,2])
-  CONCATENATE_GENOPROBS(collected_probs)
+  // // Concatenate chromosome-level genotype probs and generate whole-genome objects
+  // collected_probs = GENOPROBS.out.geno_probs_out.groupTuple(by: [1,2])
+  // CONCATENATE_GENOPROBS(collected_probs)
 
   }
 }
