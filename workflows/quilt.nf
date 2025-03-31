@@ -64,15 +64,6 @@ if (params.concat_lanes){
 // if channel is empty give error message and exit
 read_ch.ifEmpty{ exit 1, "ERROR: No Files Found in Path: ${params.sample_folder} Matching Pattern: ${params.pattern}"}
 
-//chrs = Channel.of(1..19,"X")
-chrChunks = Channel.fromPath("${projectDir}/reference_data/${params.cross_type}/chromosome_chunks.csv")
-                    .splitCsv(header: true)
-                    .map {row -> 
-                            [ chr         = row.chr,
-                              chunk_start = row.start,
-                              chunk_stop  = row.stop] }
-                    .map {it -> [ it[0].toString(), it[1], it[2] ]}
-
 // main workflow
 workflow QUILT {
 
@@ -193,19 +184,20 @@ if (params.library_type == 'ddRADseq'){
   
   // Run QUILT
   quilt_inputs = CREATE_BAMLIST.out.bam_list.combine(chrChunks).combine(binShuffleChannel).combine(SEX_CHECK.out.sex_checked_covar)
-  quilt_inputs.view()
-  //RUN_QUILT(quilt_inputs)
+  RUN_QUILT(quilt_inputs)
   
-  // // Convert QUILT outputs to qtl2 files
-  // quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf
-  // QUILT_TO_QTL2(quilt_for_qtl2)
+  // Convert QUILT outputs to qtl2 files by chromosome
+  quilt_for_qtl2 = RUN_QUILT.out.quilt_vcf.groupTuple()
+                                          .map {tuple -> [ tuple[0], tuple[1][0], tuple[2], tuple[3], tuple[4][0], tuple[5], tuple[6], tuple[7][0] ]}
+  QUILT_TO_QTL2(quilt_for_qtl2)
     
-  // // Reconstruct haplotypes with qtl2
-  // GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
-  
-  // // Concatenate chromosome-level genotype probs and generate whole-genome objects
-  // collected_probs = GENOPROBS.out.geno_probs_out.groupTuple(by: [1,2])
-  // CONCATENATE_GENOPROBS(collected_probs)
+  // Reconstruct haplotypes with qtl2
+  GENOPROBS(QUILT_TO_QTL2.out.qtl2files)
+
+  // Concatenate chromosome-level genotype probs and generate whole-genome objects at 1M and 250k resolution
+  interp250k_file = Channel.fromPath("${projectDir}/data/interp_0.25M_physical_grid.csv")
+  collected_probs = GENOPROBS.out.geno_probs_out.groupTuple(by: [1,2]).combine(interp250k_file)
+  CONCATENATE_GENOPROBS(collected_probs)
 
   }
 }

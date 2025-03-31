@@ -14,9 +14,9 @@ library(dplyr)
 library(qtl2)
 
 # test_dir
-# test_dir <- "/flashscratch/widmas/QUILT/work/7d/cb753ced9d455d4d96aa9388126158"
+# test_dir <- "/flashscratch/widmas/QUILT/work/c0/cccd87d2056c81eb89c26d91eb6d07"
 # setwd(test_dir)
-# chrom <- "1"
+# chrom <- "19"
 # sample_genos <- list.files(pattern = "sample_geno")
 # founder_genos <- list.files(pattern = "founder_geno")
 # pmap <- list.files(pattern = "pmap")
@@ -45,6 +45,11 @@ gmap <- args[5]
 # sample metadata
 metadata <- args[6]
 covar <- read.csv(metadata)
+if("X" %in% colnames(covar)){
+  revised_covar <- covar[,-1]
+  write.csv(revised_covar, file = "covar.csv", row.names = F, quote = F)
+  covar <- read.csv(metadata)
+}
 
 # cross type
 cross_type <- args[7]

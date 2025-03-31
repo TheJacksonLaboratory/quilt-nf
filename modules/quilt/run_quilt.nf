@@ -1,6 +1,6 @@
 process RUN_QUILT {
 
-  memory 50.GB
+  memory {100.GB * task.attempt}
   time {4.hour * task.attempt}
   cpus 1
   errorStrategy 'retry' 

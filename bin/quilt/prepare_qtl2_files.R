@@ -6,7 +6,7 @@
 #
 # Sam Widmayer
 # samuel.widmayer@jax.org
-# 2025-02-11
+# 2025-03-20
 ################################################################################
 
 library(qtl2convert)
@@ -16,14 +16,14 @@ library(tidyr)
 library(dplyr)
 
 
-##### VARIABLES #####
+# ##### VARIABLES #####
 
-# Arguments:
-# founder_file: path to founder VCF. 
-# sample_file:  path to sample VCF produced by QUILT.
-# meta_file:    path to sample metadata file.
-# marker_file:  path to QUILT marker file with bp and cM values.
-# cross_type:   cross type according to wrt qtl2 preferences
+# # Arguments:
+# # founder_file: path to founder VCF. 
+# # sample_file:  path to sample VCF produced by QUILT.
+# # meta_file:    path to sample metadata file.
+# # marker_file:  path to QUILT marker file with bp and cM values.
+# # cross_type:   cross type according to wrt qtl2 preferences
 
 args = commandArgs(trailingOnly = TRUE)
 
@@ -45,34 +45,35 @@ marker_file = args[5]
 # Chromosome
 chr = args[6]
 
-##### TROUBLESHOOTING FILES #####
+# Grid file
+gridfile <- args[7]
+
+# ##### TROUBLESHOOTING FILES #####
 # # # Founder genotypes and marker positions
-# test_dir <- "/flashscratch/widmas/QUILT/work/62/d2811bd7346cd0c440e9b2b1e8b5cf"
+# test_dir <- "/flashscratch/widmas/QUILT/work/f4/8fdd96e6ba60cf326b3c6466f49b99"
 # setwd(test_dir)
 # founder_file = list.files(pattern = "fg.txt", full.names = T)
-# #
+# 
 # # Sample genotypes from QUILT.
 # sample_file = list.files(pattern = "sg.txt", full.names = T)
-# #
+# 
 # # Sample metadata file.
-# meta_file = '/projects/compsci/vmp/USERS/widmas/quilt-nf/data/DO_covar.csv'
-# #
+# meta_file = 'sex_check_covar.csv'
+# 
 # # Cross type
 # cross_type = 'do'
-# #
 # 
 # # chromosome
-# chr = "2"
+# chr = "19"
 # 
 # # Marker map.
 # marker_file = file.path('/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/do',
 #                         paste0("chr",chr,"_gen_map.txt"))
+# 
+# # Grid file
+# gridfile <- "/projects/compsci/vmp/USERS/widmas/quilt-nf/data/interp_1M_physical_grid.csv"
 
-
-
-
-
-##### MAIN #####
+# ##### MAIN #####
 
 
 message("Read in metadata")
@@ -94,6 +95,7 @@ quilt_variants <- nrow(founder_gt)
 # Read sample genotypes
 message("Reading in sample genotypes")
 sample_gt <- read.delim(sample_file, check.names = F)
+sample_gt <- sample_gt[order(sample_gt$POS),]
 sg_mkrs = paste(sample_gt$CHROM,sample_gt$POS,sample_gt$REF,sample_gt$ALT, sep = "_")
 rownames(sample_gt) <- sg_mkrs
 stopifnot(rownames(sample_gt) == rownames(founder_gt))
@@ -111,14 +113,14 @@ stopifnot(rownames(sample_gt_meta) == rownames(sample_gt_genos))
 
 # attempt a clean join; this is only possible when exact sample names are known
 if(!all(meta$id %in% colnames(sample_gt_genos)) && !all(colnames(sample_gt_genos) %in% meta$id)){
-  
+
   message("At least one sample name as supplied in metadata doesn't match sequencing data.")
   message("Searching sample genotypes for metadata sample names...")
-  
+
   # link the sample IDs
   # assuming that the covar file has some element of the library name in it
   covar_sample_ids <- lapply(colnames(sample_gt_genos), function(x){
-    
+
     # try a symbol split
     first_split <- stringr::str_split(string = x, pattern = "[:punct:]")[[1]]
     sample_search_1 <- lapply(first_split, function(y){
@@ -128,7 +130,7 @@ if(!all(meta$id %in% colnames(sample_gt_genos)) && !all(colnames(sample_gt_genos
       }
     })
     result <- unlist(sample_search_1[which(lapply(sample_search_1, function(x) is.null(x)) == FALSE)])
-    
+
     # try a dot split
     dot_split <- stringr::str_split(string = x, pattern = "[.]")[[1]]
     sample_search_2 <- lapply(dot_split, function(y){
@@ -138,11 +140,11 @@ if(!all(meta$id %in% colnames(sample_gt_genos)) && !all(colnames(sample_gt_genos
       }
     })
     result2 <- unlist(sample_search_2[which(lapply(sample_search_2, function(x) is.null(x)) == FALSE)])
-    
+
     # try a simple grep
     sample_search_3 <- which(lapply(meta$id, function(y){grep(pattern = paste0("*",y), x = x)}) == 1)
     result3 <- meta$id[sample_search_3]
-    
+
     if(!is.null(result) && length(result) == 1){
       #print(result)
       return(result)
@@ -156,7 +158,7 @@ if(!all(meta$id %in% colnames(sample_gt_genos)) && !all(colnames(sample_gt_genos
       return(NULL)
     }
   })
-  
+
   # get rid of samples from quilt vcf not present in the metadata
   # remove the null sample names from the covar file ids
   quilt_samples_absent_from_meta <- unlist(lapply(covar_sample_ids, is.null))
@@ -166,7 +168,7 @@ if(!all(meta$id %in% colnames(sample_gt_genos)) && !all(colnames(sample_gt_genos
   }
   # assign the sample names from the metadata present in both files to the sample genotypes
   colnames(sample_gt_genos) <- unlist(covar_sample_ids)
-  
+
 } else {
   message("All sample names as supplied in metadata match sequencing data.")
   sample_gt_genos <- sample_gt_genos
@@ -176,6 +178,7 @@ if(!all(meta$id %in% colnames(sample_gt_genos)) && !all(colnames(sample_gt_genos
 sample_gt_renamed <- cbind(sample_gt_meta, sample_gt_genos)
 
 # recode sample genotypes
+message("Recoding sample genotypes.")
 recoded_sample_genos <- apply(sample_gt_renamed, 1, function(x){
   REF = x[3]
   ALT = x[4]
@@ -190,6 +193,7 @@ colnames(recoded_sample_genos) <- colnames(sample_gt_genos)
 sample_gt_renamed <- cbind(sample_gt_meta, recoded_sample_genos)
 
 # recode founder genotypes
+message("Recoding founder genotypes.")
 recoded_founder_genos <- apply(founder_gt, 1, function(x){
   REF = x[3]
   ALT = x[4]
@@ -212,10 +216,10 @@ stopifnot(ncol(sample_gt_genos) == nrow(meta))
 # how many sites deviate from HWE?
 if(chr != "X"){
   if(cross_type == "do"){
-    
+
     # filtering by HWE
     sample_gt_renamed <- sample_gt_renamed[which(sample_gt_renamed$HWE > 0.05),]
-    
+
   } else if(cross_type == "bxd"){
     print("BXD strains; sites not expected to adhere to HWE")
     print("Skipping HWE filter")
@@ -231,7 +235,7 @@ if(chr != "X"){
   } else {
     print("Pct of sites that deviate from HWE:")
     # paste0(round((table(sample_gt_renamed$HWE < 0.05)[[2]]/quilt_variants*100),2),"%")
-    
+
     # filtering by HWE
     sample_gt_renamed <- sample_gt_renamed[which(sample_gt_renamed$HWE > 0.05),]
   }
@@ -246,36 +250,54 @@ lower_info_score <- 0.95
 above_threshold_sites <- length(which(sample_gt_renamed$INFO_SCORE > lower_info_score))
 paste0(signif(above_threshold_sites/length(sample_gt_renamed$INFO_SCORE), 4)*100,"% of sites above 0.95 INFO score threshold (",above_threshold_sites,")")
 
-# if(above_threshold_sites < 10000){
-#   message("Fewer than 10,000 sites with info scores > 0.95, setting new threshold and extracting")
-#   count <- 0
-#   new_threshold <- lower_info_score
-#   while (count < 10000) {
-#     new_threshold <- new_threshold - 0.01  # Increment the threshold
-#     count <- length(which(sample_gt_renamed$INFO_SCORE > new_threshold))
-#   }
-#   sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > new_threshold),]
-#   filtered_quilt_variants <- nrow(sample_gt_renamed)
-# } else {
 # This bin is for runs where there were sites above the threshold, but fewer
 message(paste0(above_threshold_sites," info scores above 0.95"))
 sample_gt_renamed = sample_gt_renamed[which(sample_gt_renamed$INFO_SCORE > lower_info_score),]
 filtered_quilt_variants <- nrow(sample_gt_renamed)
 new_threshold <- lower_info_score
 
-
 # apply the changes to founder_gt
 founder_gt_renamed = founder_gt_renamed[rownames(founder_gt_renamed) %in% rownames(sample_gt_renamed),]
 filtered_quilt_variants <- nrow(sample_gt_renamed)
 resolution_summary <- data.frame(quilt_variants,filtered_quilt_variants, new_threshold)
 resolution_summary$chr <- chr
+
+# load 1M grid
+grid <- read.csv(gridfile)
+chr_grid <- grid[which(grid$chr == chr),]
+
+# find nearest sample gt to grid locations
+nearest_base <- function(query, subject) {
+  # Ensure query and subject are data frames with columns 'start' and 'end'
+  if (!all(c("start", "end") %in% colnames(query)) || !all(c("start", "end") %in% colnames(subject))) {
+    stop("Both query and subject must have 'start' and 'end' columns")
+  }
+  
+  nearest_indices <- sapply(query$start, function(q_start) {
+    distances <- abs(subject$start - q_start)
+    nearest_index <- which.min(distances)
+    return(nearest_index)
+  })
+  
+  return(nearest_indices)
+}
+sample_subject <- data.frame(start = sample_gt_renamed$POS, end = sample_gt_renamed$POS)
+grid_query <- data.frame(start = chr_grid$pos*1e6, end = chr_grid$pos*1e6)
+nearest_indices <- nearest_base(grid_query, sample_subject)
+nearest_indices <- unique(nearest_indices)
+
+# anchor to the grid
+anchored_sample_gt <- sample_gt_renamed[nearest_indices,]
+anchored_founder_gt <- founder_gt_renamed[nearest_indices,]
+stopifnot(rownames(anchored_sample_gt) == rownames(anchored_founder_gt))
+resolution_summary$grid_variants <- nrow(anchored_sample_gt)
 write.csv(resolution_summary, paste0("chr",chr,"_resolution_summary.csv"), quote = F, row.names = F)
 
 # Merge founders and samples together.
-all_gt <- dplyr::full_join(founder_gt_renamed, sample_gt_renamed) %>%
+all_gt <- dplyr::full_join(anchored_founder_gt, anchored_sample_gt) %>%
   dplyr::select(-HWE, -INFO_SCORE) %>%
   dplyr::arrange(CHROM, POS)
-rownames(all_gt) <- rownames(founder_gt_renamed)
+rownames(all_gt) <- rownames(anchored_founder_gt)
 
 message("Get allele codes for each SNP")
 # Get the allele codes for each SNP.
@@ -301,22 +323,22 @@ founder_gt <- all_gt %>%
 if(cross_type == "do"){
   
   colnames(founder_gt) = LETTERS[1:ncol(founder_gt)]
-  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt) 
+  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt)
   
 } else if(cross_type == "bxd"){
   
   colnames(founder_gt) = c("B","D")
-  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt) 
+  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt)
   
 } else if(cross_type == "het3"){
   
   colnames(founder_gt) = c("Y","B","C","D")
-  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt) 
+  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt)
   
 } else {
   
   colnames(founder_gt) = LETTERS[1:ncol(founder_gt)]
-  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt) 
+  founder_gt = data.frame(marker = rownames(founder_gt), founder_gt)
   
 }
 write.csv(founder_gt, file = paste0("chr",chr,"_founder_geno.csv"),
@@ -324,25 +346,25 @@ write.csv(founder_gt, file = paste0("chr",chr,"_founder_geno.csv"),
 
 # Write out sample genotypes.
 sample_gt <- all_gt %>%
-  dplyr::select(colnames(sample_gt_renamed)[-c(1:6)])
-sample_gt = data.frame(marker = rownames(sample_gt), 
+  dplyr::select(colnames(anchored_sample_gt)[-c(1:6)])
+sample_gt = data.frame(marker = rownames(sample_gt),
                        sample_gt, check.names = F)
 write.csv(sample_gt, file = paste0("chr",chr,"_sample_geno.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out physical map.
-pmap = data.frame(marker = rownames(founder_gt_renamed),
-                  chr    = founder_gt_renamed$CHROM,
-                  pos    = founder_gt_renamed$POS * 1e-6)
+pmap = data.frame(marker = rownames(anchored_founder_gt),
+                  chr    = anchored_founder_gt$CHROM,
+                  pos    = anchored_founder_gt$POS * 1e-6)
 write.csv(pmap, file = paste0("chr",chr,"_pmap.csv"),
           quote = FALSE, row.names = FALSE)
 
 # Write out genetic map.
 markers = read.delim(marker_file, sep = ' ')
-markers = subset(markers, position %in% founder_gt_renamed$POS)
-stopifnot(markers$position == founder_gt_renamed$POS)
-gmap = data.frame(marker = rownames(founder_gt_renamed),
-                  chr    = founder_gt_renamed$CHROM,
+markers = subset(markers, position %in% anchored_founder_gt$POS)
+stopifnot(markers$position == anchored_founder_gt$POS)
+gmap = data.frame(marker = rownames(anchored_founder_gt),
+                  chr    = anchored_founder_gt$CHROM,
                   pos    = markers$Genetic_Map.cM.)
 write.csv(gmap, file = paste0("chr",chr,"_gmap.csv"),
           quote = FALSE, row.names = FALSE)
@@ -399,5 +421,5 @@ if(cross_type == "genail4" | cross_type == "genail8" | cross_type == "cc" | cros
 pheno = data.frame(id  = meta$id,
                    val = rep(1, nrow(meta)))
 write.csv(pheno, file = 'pheno.csv',
-           quote = FALSE, row.names = FALSE) 
+           quote = FALSE, row.names = FALSE)
 

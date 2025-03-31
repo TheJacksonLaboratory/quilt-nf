@@ -5,7 +5,7 @@
 #
 # Sam Widmayer
 # samuel.widmayer@jax.org
-# 20250127
+# 20250331
 ################################################################################
 
 
@@ -33,7 +33,6 @@ mouse_chr <- paste0(args[2])
 
 # Path to qtl2 covar file
 meta_file <- args[3]
-print(meta_file)
 
 # Read covar file
 covar <- read.csv(meta_file)
@@ -52,10 +51,10 @@ options(scipen = 99999999)
 start <- as.integer(args[9])
 end   <- as.integer(args[10])
 print(args)
-str(args[9])
-str(args[10])
-str(start)
-str(end)
+# str(args[9])
+# str(args[10])
+# str(start)
+# str(end)
 
 # Take cross type and determine how QUILT should be executed
 if(cross_type == "do" | cross_type == "cc" | cross_type == "het3"){
