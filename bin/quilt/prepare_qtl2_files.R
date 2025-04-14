@@ -6,7 +6,7 @@
 #
 # Sam Widmayer
 # samuel.widmayer@jax.org
-# 2025-03-20
+# 20250402
 ################################################################################
 
 library(qtl2convert)
@@ -18,12 +18,12 @@ library(dplyr)
 
 # ##### VARIABLES #####
 
-# # Arguments:
-# # founder_file: path to founder VCF. 
-# # sample_file:  path to sample VCF produced by QUILT.
-# # meta_file:    path to sample metadata file.
-# # marker_file:  path to QUILT marker file with bp and cM values.
-# # cross_type:   cross type according to wrt qtl2 preferences
+# Arguments:
+# founder_file: path to founder VCF.
+# sample_file:  path to sample VCF produced by QUILT.
+# meta_file:    path to sample metadata file.
+# marker_file:  path to QUILT marker file with bp and cM values.
+# cross_type:   cross type according to wrt qtl2 preferences
 
 args = commandArgs(trailingOnly = TRUE)
 
@@ -49,8 +49,8 @@ chr = args[6]
 gridfile <- args[7]
 
 # ##### TROUBLESHOOTING FILES #####
-# # # Founder genotypes and marker positions
-# test_dir <- "/flashscratch/widmas/QUILT/work/f4/8fdd96e6ba60cf326b3c6466f49b99"
+# Founder genotypes and marker positions
+# test_dir <- "/flashscratch/widmas/QUILT/work/58/ec5c31c3088af673d05ac58406d35c/"
 # setwd(test_dir)
 # founder_file = list.files(pattern = "fg.txt", full.names = T)
 # 
@@ -61,13 +61,13 @@ gridfile <- args[7]
 # meta_file = 'sex_check_covar.csv'
 # 
 # # Cross type
-# cross_type = 'do'
+# cross_type = 'het3'
 # 
 # # chromosome
-# chr = "19"
+# chr = "X"
 # 
 # # Marker map.
-# marker_file = file.path('/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data/do',
+# marker_file = file.path('/projects/compsci/vmp/USERS/widmas/quilt-nf/reference_data',cross_type,
 #                         paste0("chr",chr,"_gen_map.txt"))
 # 
 # # Grid file
@@ -78,6 +78,13 @@ gridfile <- args[7]
 
 message("Read in metadata")
 meta <- read.csv(meta_file)
+if(all(meta$sex == FALSE)){
+  meta$sex <- "F"
+}
+
+if("original_sex" %in% colnames(meta) & all(meta$original_sex == FALSE)){
+  meta$original_sex <- "F"
+}
 
 # can't have duplicate sample ids in the metadata for qtl2
 meta <- meta[which(!duplicated(meta$id)),]

@@ -6,7 +6,7 @@
 #
 # Sam Widmayer
 # samuel.widmayer@jax.org
-# 20250127
+# 20250402
 ################################################################################
 
 library(data.table)
@@ -44,11 +44,17 @@ gmap <- args[5]
 
 # sample metadata
 metadata <- args[6]
-covar <- read.csv(metadata)
+covar <- read.csv(metadata, tryLogical = F)
 if("X" %in% colnames(covar)){
   revised_covar <- covar[,-1]
   write.csv(revised_covar, file = "covar.csv", row.names = F, quote = F)
-  covar <- read.csv(metadata)
+  covar <- read.csv(metadata, tryLogical = F)
+}
+if(all(covar$sex == FALSE)){
+  covar$sex <- "F"
+}
+if("original_sex" %in% colnames(covar) & all(covar$original_sex == FALSE)){
+  covar$original_sex <- "F"
 }
 
 # cross type

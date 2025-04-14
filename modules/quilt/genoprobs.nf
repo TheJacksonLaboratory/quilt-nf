@@ -10,6 +10,7 @@ process GENOPROBS {
   container 'docker://sjwidmay/lcgbs_hr:latest'
 
   publishDir "${params.pubdir}/${params.run_name}/${shuffle_bin_radius}/geno_probs", pattern:"*.RData", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/${shuffle_bin_radius}/geno_probs", pattern:"covar.csv", mode:'copy'
   
   input:
   tuple val(chr), val(downsample_to_cov), val(shuffle_bin_radius), path(founder_geno), path(sample_genos), path(pmap), path(gmap), path(covar), path(pheno)

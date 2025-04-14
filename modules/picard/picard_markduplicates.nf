@@ -7,6 +7,9 @@ process PICARD_MARKDUPLICATES {
 
   container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
 
+  publishDir "${params.pubdir}/${params.run_name}/bams", pattern:"*_dedup.bam", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/bams", pattern:"*_dedup.bai", mode:'copy'
+  
   input:
   tuple val(sampleID), file(bam)
 

@@ -15,7 +15,7 @@ args <- commandArgs(trailingOnly = TRUE)
 
 # what chromosome?
 metadata <- args[1]
-# metadata <- "/projects/compsci/vmp/USERS/widmas/DO_DIF/metadata/DO_breeders_covar.csv"
+# metadata <- "/projects/korstanje-lab/Pureplex/TumorStudy_2/metadata/korstanje_het3_covar_genail4.csv"
 covar <- read.csv(metadata, tryLogical = F)
 
 # sample coverage files
@@ -40,9 +40,9 @@ relative_coverage_df <- Reduce(rbind, relative_coverage_list) %>%
   dplyr::mutate(rel_cov = s_x/s_gw)
 
 # denote sex information
-cutoff <- mean(relative_coverage_df$rel_cov) 
-relative_coverage_df$inferred_sex <- as.factor(relative_coverage_df$rel_cov > cutoff)
-levels(relative_coverage_df$inferred_sex) <- c("M","F")
+cutoff <- 0.75
+relative_coverage_df <- relative_coverage_df %>%
+  dplyr::mutate(inferred_sex = dplyr::if_else(rel_cov > 0.75, "F", "M"))
 
 # join new sex info to covar
 new_covar <- relative_coverage_df %>%
@@ -50,11 +50,11 @@ new_covar <- relative_coverage_df %>%
   dplyr::right_join(covar,.)
 
 # select variables
-slim_new_covar <- new_covar %>%
-  dplyr::mutate(original_sex = sex) %>%
-  dplyr::select(id, inferred_sex, gen, rel_cov, original_sex) %>%
-  dplyr::rename(sex = inferred_sex)
-
+sex_checked <- new_covar[,c(colnames(covar),"inferred_sex","rel_cov")] %>%
+  dplyr::rename(original_sex = sex,
+                sex = inferred_sex)
+slim_new_covar <- sex_checked[,c(colnames(covar),"original_sex","rel_cov")]
+  
 # write the new covar file
 write.csv(slim_new_covar, file = "sex_check_covar.csv", row.names = F, quote = F)
 
