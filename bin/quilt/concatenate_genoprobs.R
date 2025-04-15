@@ -70,7 +70,7 @@ for(i in 1:length(names(new_pmaps))){
   new_pmaps[[names(new_pmaps)[i]]] <- cross$pmap[[1]]
 }
 message("Saving genotype probabilities")
-saveRDS(object = pr, file = "complete_genoprobs.rds")
+saveRDS(object = probs, file = "complete_genoprobs.rds")
 saveRDS(object = new_pmaps, file = "complete_pmap.rds")
 
 
