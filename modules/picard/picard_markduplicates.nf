@@ -1,15 +1,19 @@
 process PICARD_MARKDUPLICATES {
   tag "$sampleID"
 
-  cpus 1
-  memory 200.GB
+  cpus 2
+  memory {200.GB * task.attempt}
   time '12:00:00'
+  errorStrategy 'retry' 
+  maxRetries 1
 
   container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
 
+  if (params.publish_bams) {
   publishDir "${params.pubdir}/${params.run_name}/bams", pattern:"*_dedup.bam", mode:'copy'
   publishDir "${params.pubdir}/${params.run_name}/bams", pattern:"*_dedup.bai", mode:'copy'
-  
+  }
+
   input:
   tuple val(sampleID), file(bam)
 
