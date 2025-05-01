@@ -98,11 +98,23 @@ names(grid_map) <- chroms
 
 # multiply the map to make the ranges work
 interp_pmap <- lapply(new_pmaps, function(x) x*1e6)
+pr_interp <- interpolate_genoprobs(probs1 = pr,
+                                    markers1 = interp_pmap,
+                                    markers2 = grid_map)
 apr_interp <- interpolate_genoprobs(probs1 = apr,
                                     markers1 = interp_pmap,
                                     markers2 = grid_map)
 # divide to get it back to Mb
 grid_map <- lapply(grid_map, function(x) x/1e6)
+
+# assign interpolated attributes
+message("Assigning interpolated genoprob attributes...")
+attr(pr_interp, "crosstype") <- cross_type
+attr(pr_interp, "is_x_chr") <- c(rep(FALSE,19),TRUE)
+attr(pr_interp, "alleleprobs") <- FALSE
+class(pr_interp) <- c("calc_genoprob", "list")
+attr(pr_interp, "alleles") <- unique(unlist(lapply(dimnames(pr_interp[[1]])[[2]],
+                                               function(x) strsplit(x, split = "")[[1]])))
 
 # assign interpolated attributes
 message("Assigning interpolated alleleprob attributes...")
@@ -115,5 +127,6 @@ attr(apr_interp, "alleles") <- unique(unlist(lapply(dimnames(apr_interp[[1]])[[2
 
 # save everything
 message("Saving interpolated allele probabilities and pmap")
+saveRDS(object = pr_interp, file = "interp_250k_genoprobs.rds")
 saveRDS(object = apr_interp, file = "interp_250k_alleleprobs.rds")
 saveRDS(object = grid_map, file = "grid_pmap.rds")

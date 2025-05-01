@@ -14,7 +14,7 @@ process CONCATENATE_GENOPROBS {
   tuple val(chrs), val(downsample_to_cov), val(shuffle_bin_radius), file(genoprobs), file(crosses), file(interp_gridfile)
 
   output:
-  tuple val(downsample_to_cov), val(shuffle_bin_radius), file("complete_pmap.rds"), file("complete_genoprobs.rds"), file("complete_alleleprobs.rds"), file("interp_250k_alleleprobs.rds"), file("grid_pmap.rds"), emit: concat_probs
+  tuple val(downsample_to_cov), val(shuffle_bin_radius), file("complete_pmap.rds"), file("complete_genoprobs.rds"), file("complete_alleleprobs.rds"), file("interp_250k_alleleprobs.rds"), file("interp_250k_genoprobs.rds"), file("grid_pmap.rds"), emit: concat_probs
 
   script:
 
