@@ -1,6 +1,6 @@
 process MAKE_B6_GENOS {
 
-  memory 50.GB
+  memory 100.GB
   time '1:00:00'
   
   container 'docker://sjwidmay/variantannotation:latest'

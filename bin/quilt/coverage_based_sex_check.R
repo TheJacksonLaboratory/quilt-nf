@@ -15,7 +15,7 @@ args <- commandArgs(trailingOnly = TRUE)
 
 # what chromosome?
 metadata <- args[1]
-# metadata <- "/projects/korstanje-lab/Pureplex/TumorStudy_2/metadata/korstanje_het3_covar_genail4.csv"
+# metadata <- "/projects/compsci/vmp/USERS/widmas/quilt-nf/data/F1_mut_covar_genail.csv"
 covar <- read.csv(metadata, tryLogical = F)
 
 # sample coverage files
@@ -40,9 +40,12 @@ relative_coverage_df <- Reduce(rbind, relative_coverage_list) %>%
   dplyr::mutate(rel_cov = s_x/s_gw)
 
 # denote sex information
-cutoff <- 0.75
 relative_coverage_df <- relative_coverage_df %>%
   dplyr::mutate(inferred_sex = dplyr::if_else(rel_cov > 0.75, "F", "M"))
+
+if(!any(relative_coverage_df$s %in% covar$id)){
+  relative_coverage_df$s <- covar$id[unlist(lapply(relative_coverage_df$s, function(x) grep(pattern = x, covar$id)))]
+}
 
 # join new sex info to covar
 new_covar <- relative_coverage_df %>%

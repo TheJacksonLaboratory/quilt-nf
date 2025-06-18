@@ -383,7 +383,7 @@ write.csv(gmap, file = paste0("chr",chr,"_gmap.csv"),
 stopifnot("cross_type" %in% ls(pattern = "cross_type"))
 
 # Does the covar file match the format of the cross type?
-if(cross_type == "genail4" | cross_type == "genail8" | cross_type == "cc" | cross_type == "het3"){
+if(cross_type == "genail4" | cross_type == "genail8" | cross_type == "cc" | cross_type == "het3" | cross_type == "F1_mut"){
   stopifnot("id" %in% colnames(meta))
   stopifnot("gen" %in% colnames(meta))
   stopifnot(colnames(founder_gt)[-1] %in% LETTERS)

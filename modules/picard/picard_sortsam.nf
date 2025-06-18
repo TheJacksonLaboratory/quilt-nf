@@ -7,7 +7,11 @@ process PICARD_SORTSAM {
 
   container 'quay.io/biocontainers/picard:2.26.10--hdfd78af_0'
 
-  
+  if (params.publish_bams && params.library_type == 'ddRADseq') {
+  publishDir "${params.pubdir}/${params.run_name}/bams", pattern:"*_sortsam.bam", mode:'copy'
+  publishDir "${params.pubdir}/${params.run_name}/bams", pattern:"*_sortsam.bai", mode:'copy'
+  }
+
   input:
   tuple val(sampleID), file(sam)
 
