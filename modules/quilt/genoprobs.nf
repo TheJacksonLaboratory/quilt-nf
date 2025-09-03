@@ -7,7 +7,7 @@ process GENOPROBS {
   errorStrategy 'retry' 
   maxRetries 1
 
-  container 'docker://sjwidmay/lcgbs_hr:latest'
+  container 'lcgbs_hr'
 
   publishDir "${params.pubdir}/${params.run_name}/${shuffle_bin_radius}/geno_probs", pattern:"*.RData", mode:'copy'
   publishDir "${params.pubdir}/${params.run_name}/${shuffle_bin_radius}/geno_probs", pattern:"covar.csv", mode:'copy'
@@ -27,6 +27,8 @@ process GENOPROBS {
 	${pmap} \
 	${gmap} \
 	${covar} \
-	${params.cross_type}
+	${params.cross_type} \
+  ${projectDir}/bin/quilt/smooth_genoprobs.R \
+  ${params.smooth_window}
   """
 }

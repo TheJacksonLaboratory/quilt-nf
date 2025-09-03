@@ -9,12 +9,11 @@
 # 20250402
 ################################################################################
 
-library(data.table)
 library(dplyr)
 library(qtl2)
 
 # test_dir
-# test_dir <- "/flashscratch/widmas/QUILT/work/c0/cccd87d2056c81eb89c26d91eb6d07"
+# test_dir <- "/flashscratch/widmas/QUILT/work/e7/b25b26fc4d81239f8e71d96c7d2958"
 # setwd(test_dir)
 # chrom <- "19"
 # sample_genos <- list.files(pattern = "sample_geno")
@@ -23,6 +22,8 @@ library(qtl2)
 # gmap <- list.files(pattern = "gmap")
 # metadata <- "covar.csv"
 # cross_type <- "do"
+# smooth_function <- "/projects/compsci/vmp/USERS/widmas/quilt-nf/bin/quilt/smooth_genoprobs.R"
+# smooth_window <- 100
 
 # take arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -44,6 +45,17 @@ gmap <- args[5]
 
 # sample metadata
 metadata <- args[6]
+
+# cross type
+cross_type <- args[7]
+
+# smoothing function
+smooth_function <- args[8]
+
+# smoothing window
+smooth_window <- as.numeric(args[9])
+
+## RUN ##
 covar <- read.csv(metadata, tryLogical = F)
 if("X" %in% colnames(covar)){
   revised_covar <- covar[,-1]
@@ -57,8 +69,7 @@ if("original_sex" %in% colnames(covar) & all(covar$original_sex == FALSE)){
   covar$original_sex <- "F"
 }
 
-# cross type
-cross_type <- args[7]
+
 
 # Has a cross type been specified?
 stopifnot("cross_type" %in% ls(pattern = "cross_type"))
@@ -166,33 +177,18 @@ cross <- qtl2::read_cross2(paste0("chr",chrom,"_control_file.json"))
 # Drop null markers
 cross <- qtl2::drop_nullmarkers(cross)
 
+# subset during testing
+# cross <- subset(cross, ind = c(1:3))
+
 # Calculate genotype probs
 pr <- qtl2::calc_genoprob(cross = cross, 
                           map = cross$pmap, 
                           error_prob = 0.002, 
                           cores = (parallel::detectCores()/1.2), quiet = F)
-# # Estimate genotyping errors
-# pr_errorlod <- qtl2::calc_errorlod(cross = cross,
-#                                    probs = pr, 
-#                                    cores = (parallel::detectCores()/1.2))
 
-# # number of animals with that genotype with an error LOD > 2
-# genotyping_errors <- rowSums(t(pr_errorlod[[1]]) > 2)
-# error_genotypes <- names(which(genotyping_errors != 0))
-# print("How many potential genotyping errors?")
-# print(paste0(length(error_genotypes), " potential genotyping errors"))
-
-# # Remove bad genotypes
-# corrected_cross <- drop_markers(cross, error_genotypes)
-# cross <- corrected_cross
-
-# # Calculate new genotype probs with reduced map
-# pr <- qtl2::calc_genoprob(cross = cross, 
-#                           map = cross$pmap,
-#                           error_prob = 0.002,
-#                           cores = (parallel::detectCores()/1.2), quiet = F)
-# Calculate allele probs
-# apr <- qtl2::genoprob_to_alleleprob(probs = pr,cores = (parallel::detectCores()/1.2), quiet = F)
+# Smooth genotype probs
+source(smooth_function)
+pr <- smooth_genoprobs(pr, window = smooth_window)
 
 # Save objects
 save(cross, file = paste0("chr_",chrom,"_cross.RData"))
