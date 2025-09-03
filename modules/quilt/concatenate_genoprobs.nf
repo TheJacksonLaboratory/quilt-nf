@@ -6,7 +6,7 @@ process CONCATENATE_GENOPROBS {
   errorStrategy 'retry' 
   maxRetries 1
 
-  container 'docker://sjwidmay/lcgbs_hr:latest'
+  container 'lcgbs_hr'
 
   publishDir "${params.pubdir}/${params.run_name}/${shuffle_bin_radius}/geno_probs", pattern:"*.rds", mode:'copy'
   

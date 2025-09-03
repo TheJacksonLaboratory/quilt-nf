@@ -16,8 +16,20 @@ library(qtl2)
 #      & markers in slices.
 # mkr1: Named numeric vector of marker position (in bp) in pr1.
 # mkr2: Names numeric vector of marker positions (in bp) to interpolate genoprobs to.
+
 interpolate_one_chr = function(pr1, mkr1, mkr2) {
   
+  # Verify that the marker names in pr1 and mkr1 are identical and in the same
+  # order.
+  stopifnot(dimnames(pr1)[[3]] == names(mkr1))
+  
+  # Verify that the markers are in bp and not Mbp.
+  # Chr 1 is 195 Mbp long, so if the minimum value is greater than 200,
+  # I'm assuming the marker units are bp. The start of most chromosomes is
+  # around 3 Mbp.
+  stopifnot(min(mkr1) > 200)
+  stopifnot(min(mkr2) > 200)
+
   # Convert markers to IRanges to used inter-range functions.
   mkr1 = IRanges(start = mkr1, width = 1, names = names(mkr1))
   mkr2 = IRanges(start = mkr2, width = 1, names = names(mkr2))
@@ -26,25 +38,29 @@ interpolate_one_chr = function(pr1, mkr1, mkr2) {
   # in mkr2.
   proximal = follow(mkr2,  mkr1)
   distal   = precede(mkr2, mkr1)
-  
   proximal[is.na(proximal)] = 1
   distal[is.na(distal)]     = length(mkr1)
   
-  # Get the proximal and distal probs.
-  prox_pr = pr1[,,proximal]
-  dist_pr = pr1[,,distal]
+  # Ensure indices are within the range
+  proximal[proximal > dim(pr1)[3]] = dim(pr1)[3]
+  distal[distal     > dim(pr1)[3]] = dim(pr1)[3]
   
+  # Get the proximal and distal probs.
+  prox_pr = pr1[,,proximal, drop = FALSE]
+  dist_pr = pr1[,,distal,   drop = FALSE]
+  
+  # interpolate values
   mkr_interp = (start(mkr2) - start(mkr1)[proximal]) / (start(mkr1)[distal] - start(mkr1)[proximal])
   mkr_interp[is.infinite(mkr_interp)] = 1
-  mkr_interp = array(rep(mkr_interp, each = nrow(pr1) * ncol(pr1)), 
-                     c(nrow(pr1), ncol(pr1), length(mkr2)), 
+  mkr_interp = array(rep(mkr_interp, each = nrow(pr1) * ncol(pr1)),
+                     c(nrow(pr1), ncol(pr1), length(mkr2)),
                      dimnames = list(rownames(pr1), colnames(pr1), names(mkr2)))
-  
+
   # Create the new probs array.
   tmp = prox_pr + (mkr_interp) * (dist_pr - prox_pr)
   dimnames(tmp)[[3]] = names(mkr2)
   return(tmp)
-  
+
 } # interpolate_one_chr()
 
 
