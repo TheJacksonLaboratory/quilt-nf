@@ -71,6 +71,11 @@ for(i in 1:length(names(new_pmaps))){
   load(pmaps[i])
   new_pmaps[[names(new_pmaps)[i]]] <- cross$pmap[[1]]
 }
+
+# Clean genotype probabilities
+probs <- qtl2::clean_genoprob(probs)
+
+# Save objects
 message("Saving genotype probabilities")
 saveRDS(object = probs, file = "complete_genoprobs.rds")
 saveRDS(object = new_pmaps, file = "complete_pmap.rds")
